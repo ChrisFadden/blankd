@@ -9,14 +9,23 @@ import gameobject;
 import std.conv;
 import ObjLoader;
 
+import networking;
+
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 import derelict.sdl2.net;
 
 class GameManager {
 
-	Camera camera;
-    Renderer renderer;
+	static Camera camera;
+	float[] targetCamera = [0, 4, 1];
+    static Renderer renderer;
+    float lrAmnt;
+    float fbAmnt;
+    float udAmnt;
+
+    static TCPsocket[] sockets;
+    static int socketNum;
 
     int frameDelay = 1000/61;
 
@@ -44,54 +53,20 @@ class GameManager {
 
     BlockBuilder builder;
 
-	this(Window* win) {
+    static int server;
+
+	this(Window* win, int server) {
 		camera = new Camera();
 		camera.setTranslation(0f,4f,1f);
 		camera.moveRotation(-.3f,0);
     	renderer = new Renderer(win, &camera);
+    	this.server = server;
+
+    	lrAmnt = 0;
+    	fbAmnt = 0;
+    	udAmnt = 0;
 
     	window = win;
-
-    	/*
-    	GameObject go1;
-
-    	go1 = new GameObject(-1, -1, 1, 1, 1, -1);
-	    go1.visible = true;
-	    go1.x = 3.0;
-	    go1.y = 0.0;
-	    go1.z = -3.0;
-        go1.setRGB(1.0, 0.5, 1.0);
-        go1.updateMatrix();
-	    renderer.register(go1);
-    	
-    	GameObject go2 = new GameObject(-1, -1, 1, 1, 1, -1);
-    	//go2.problematic = true;
-    	go2.x = 1;
-    	go2.y = 0;
-    	go2.z = -3;
-    	go2.updateMatrix();
-    	go2.setRGB(0.5, 1.0, 0.5);
-    	renderer.register(go2);
-
-    	go3 = new GameObject(-1.0, -1.0, 1.0, 1.0, 1.0, -1.0);
-	    go3.visible = true;
-	    go3.x = -1.0;
-	    go3.y = 0.0;
-	    go3.z = -3.0;
-        go3.setRGB(1.0, 0.5, 0.5);
-        go3.updateMatrix();
-	    renderer.register(go3);
-
-	    GameObject go4 = new GameObject(-1, -1, 3, 1, 1, 1);
-	    go4.visible = true;
-	    go4.x = -3.0;
-	    go4.y = 0.0;
-	    go4.z = -3.0;
-        go4.setRGB(0.9, 0.9, 0.9);
-        go4.updateMatrix();
-	    renderer.register(go4);
-	    */
-	    
 
 	    builder = new BlockBuilder(-1.0, -1.0, -4.0);
 	    GameObject b = builder.getGameObject();
@@ -133,6 +108,16 @@ class GameManager {
 
 	    stage = Stage.MAP_MAKER;
 
+	    if (server == 1) {
+	    	SDLNet_InitServer(1234, 20);
+	    	sockets = new TCPsocket[20];
+	    	socketNum = 0;
+	    } else if (server == 0) {
+	    	if (!SDLNet_InitClient("127.0.0.1", 1234)){
+	    		return;
+	    	}
+	    }
+
 	    run();
 	}
 
@@ -149,11 +134,69 @@ class GameManager {
 
 	void step(float deltaTime){
 		frameTime = SDL_GetTicks();
+
 		SDL_Event event;
 		if (stage == Stage.MAP_MAKER)
 			handleMapMakerInput(&event);
+
+		camera.moveTranslation(lrAmnt,udAmnt,fbAmnt);
+
 		
+		if (server == 1){
+			TCPsocket client;
+			if (checkSockets() > 0){
+				TCPsocket tempClient = checkForNewClient();
+				if (tempClient !is null) {
+					writeln("New client.");
+					sockets[socketNum] = tempClient;
+					socketNum++;
+					writebyte(2);
+					writefloat(117f);
+					sendmessage(tempClient);
+				}
+				for (int i = 0; i < socketNum; i++) {
+					readsocket(sockets[i], &userDefined );
+				}
+			}
+		} else if (server == 0){
+			if (checkSockets() > 0){
+				readsocket(getSocket(), &userDefined);
+			}
+		}
 	}
+
+	static void userDefined(byte** array, TCPsocket socket){
+		writeln("USER DEFINED");
+		byte MSG_ID = readbyte(array);
+		switch(MSG_ID) {
+			case 1:
+				writeln("Adding block.");
+				float[] xyz = [readfloat(array), readfloat(array), readfloat(array),
+					readfloat(array), readfloat(array), readfloat(array)];
+				writeln(xyz);
+				if (server == 1) {
+					writeln("Sending block to other clients.");
+					for (int c = 0; c < socketNum; c++){
+						if (socket != sockets[c]){
+							clearbuffer();
+							writebyte(1);
+							for (int i = 0; i < 6; i++)
+								writefloat(xyz[i]);
+							sendmessage(sockets[c]);
+						}
+					}
+				}
+				addBlock(xyz[0], xyz[1], xyz[2], xyz[3], xyz[4], xyz[5], 1f, .5f, .5f);
+				break;
+			case 2:
+				writeln(readfloat(array));
+				break;
+			default:
+				writeln("Unsupported message.");
+				break;
+		}
+	}
+
 
 	void draw(){
 		renderer.draw();
@@ -164,7 +207,7 @@ class GameManager {
 			fps = fpsCounter;
 			fpsCounter = 0;
 			fpsTime = SDL_GetTicks();
-			debug writeln("FPS: ", fps);
+			//debug writeln("FPS: ", fps);
 		}
 
 		int time = cast(int)(SDL_GetTicks() - frameTime);
@@ -218,11 +261,39 @@ class GameManager {
 	}
 	void placeBlock(){
 		if (builder.placing){
-			renderer.register(builder.place());
-			//renderer.reregister(builder);
+			float[] coords = builder.place();
+			if (coords !is null) {
+				addBlock(coords[0],coords[1],coords[2],coords[3],
+					coords[4],coords[5],.5f,1f,.5f);
+				if (server == 1){
+					writeln("Sending block to clients.");
+					for (int c = 0; c < socketNum; c++){
+						clearbuffer();
+						writebyte(1);
+						for (int i = 0; i < 6; i++)
+							writefloat(coords[i]);
+						sendmessage(sockets[c]);
+					}
+				} else if (server == 0){
+					writeln("Sending block to server.");
+					clearbuffer();
+					writebyte(1);
+					for (int i = 0; i < 6; i++)
+						writefloat(coords[i]);
+					sendmessage(getSocket());
+				}
+			}
 		}
 		else
 			builder.beginPlace();
+	}
+
+	static void addBlock(float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b){
+		GameObject got = new GameObject(x1,y1,z1,x2,y2,z2);
+        got.visible = true;
+        got.setRGB(r, g, b);
+        got.updateMatrix();
+        renderer.register(got);
 	}
 
 
@@ -230,7 +301,38 @@ class GameManager {
 		while (SDL_PollEvent(event)) {
 			switch(event.type){
 				case SDL_JOYBUTTONDOWN:
+					switch(event.jbutton.button){
+						case 1:
+						placeBlock();
+							break;
+						case 5:
+						raiseBlock();
+							break;
+						case 4:
+						lowerBlock();
+							break;
+						case 6:
+						udAmnt = -.25f;
+							break;
+						case 7:
+						udAmnt = .25f;
+							break;
+						default:
+						break;
+					}
 					debug writeln("Button ", event.jbutton.button);
+				break;
+				case SDL_JOYBUTTONUP:
+					switch(event.jbutton.button){
+						case 6:
+						udAmnt = 0f;
+							break;
+						case 7:
+						udAmnt = 0f;
+							break;
+						default:
+						break;
+					}
 				break;
 				case SDL_JOYHATMOTION:
 					if (event.jhat.value & SDL_HAT_UP) {
@@ -246,9 +348,15 @@ class GameManager {
 				case SDL_JOYAXISMOTION:
 				if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)){
 					if (event.jaxis.axis == 0) {
-						// Left-Right
+						lrAmnt = event.jaxis.value/(cast(float)short.max);
 					} if (event.jaxis.axis == 1) {
-						// Up-down
+						fbAmnt = event.jaxis.value/(cast(float)short.max);
+					}
+				} else {
+					if (event.jaxis.axis == 0){
+						lrAmnt = 0;
+					} else if (event.jaxis.axis == 1) {
+						fbAmnt = 0;
 					}
 				}
 				break;
@@ -270,7 +378,7 @@ class GameManager {
 					int difx = midx-x;
 					int dify = midy-y;
 					camera.moveRotation(dify/200f, difx/200f);
-					SDL_WarpMouseInWindow(window.window, midx, midy);
+                    SDL_WarpMouseInWindow(window.window, midx, midy);
 				break;
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym){
@@ -303,14 +411,18 @@ class GameManager {
 							break;
 						case SDLK_i:
 							moveCameraUp();
+							//fbAmnt = -1f;
 							break;
 						case SDLK_j:
+							//lrAmnt = 1f;
 							moveCameraLeft();
 							break;
 						case SDLK_k:
+							//fbAmnt = 1f;
 							moveCameraDown();
 							break;
 						case SDLK_l:
+							//lrAmnt = -1f;
 							moveCameraRight();
 							break;
 						default:
@@ -337,14 +449,19 @@ class GameManager {
 		double norm_x = double(window_x)/double(window_width/2.0f);
 
 		float[4] ray_vec = [norm_x, norm_y, -znear, 0.0f];
-		Matrix m = builder.gameObject.modelMatrix;
-		m.matrix[0] = -m.matrix[0];
-        m.matrix[5] = -m.matrix[5];
-        m.matrix[10] = -m.matrix[10];
-		Matrix v = camera.viewMatrix;
-		v.matrix[0] = -v.matrix[0];
-        v.matrix[5] = -v.matrix[5];
-        v.matrix[10] = -v.matrix[10];
+		
+		float[16] mat = builder.gameObject.modelMatrix.matrix;
+		Matrix m = new Matrix;
+		m.matrix = mat;
+		m.matrix[0] = -mat[0];
+        m.matrix[5] = -mat[5];
+        m.matrix[10] = -mat[10];
+		
+		float[16] cmat = camera.viewMatrix.matrix;
+		Matrix v = new Matrix;
+		v.matrix[0] = -cmat[0];
+        v.matrix[5] = -cmat[5];
+        v.matrix[10] = -cmat[10];
 
         Matrix temp = m*v;
 

@@ -276,15 +276,12 @@ class BlockBuilder {
         placing = true;
     }
 
-    GameObject place() {
-        GameObject go1 = new GameObject(startx,starty,startz,startx+width,starty+height,startz-length);
-        go1.visible = true;
-        go1.setRGB(0.2, 1.0, 0.4);
-        go1.updateMatrix();
+    float[6] place() {
+        float[6] output = [startx, starty, startz, startx+width, starty+height, startz-length];
         placing = false;
         startx = startx+width;
         reset();
-        return go1;
+        return output;
     }
 
     GameObject getGameObject() {
