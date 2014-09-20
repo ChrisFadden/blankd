@@ -2,7 +2,9 @@ import std.stdio;
 
 import derelict.sdl2.net;
 
-byte writeBuffer[512] = 0;
+immutable uint maxBufferSize = 512;
+
+byte writeBuffer[maxBufferSize] = 0;
 int bufferIndex;
 
 SDLNet_SocketSet socketSet;
@@ -12,8 +14,8 @@ TCPsocket socket;
 bool readsocket(TCPsocket msocket, void function(byte*) func) {
 	if (SDLNet_SocketReady(msocket)){
 		int len;
-		byte readBuffer[512];
-		if ((len = SDLNet_TCP_Recv(msocket, &readBuffer, 512)) > 0) {
+		byte readBuffer[maxBufferSize];
+		if ((len = SDLNet_TCP_Recv(msocket, &readBuffer, maxBufferSize)) > 0) {
 			func(cast(byte*)readBuffer);
 			return true;
 		} else {

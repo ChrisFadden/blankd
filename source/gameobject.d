@@ -38,8 +38,6 @@ class GameObject {
 
 	void draw()
 	{
-		writeln("To Implement... For Nathan to do?");
-		writeln("Did do good buddy");
         shaderProgram.bind();
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vBuffer);

@@ -4,7 +4,6 @@ import std.string;
 
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
-import derelict.sdl2.net;
 
 class Window {
     string title; 
@@ -18,7 +17,7 @@ class Window {
     }
 
     void init() {
-        if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
             writeln("SDL2 failed to init: ", SDL_GetError());
             return;
         }
