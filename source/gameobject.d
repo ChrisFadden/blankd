@@ -13,8 +13,8 @@ class GameObject {
 	float y;
 	float z;
     Matrix modelMatrix;
-    string[] verts;
-    string[] faces;
+    float[] verts;
+    int[] faces;
 
 	bool visible = false;
 
@@ -35,6 +35,8 @@ class GameObject {
 		x = 0;
 		y = 0;
 		z = 0;
+        verts.length = 24;
+        faces.length = 24;
         modelMatrix = new Matrix();
         updateMatrix();
         writeln("Done matrix");
@@ -79,5 +81,6 @@ class GameObject {
     void printVerts()
     {
         writeln(verts);
+        writeln(faces);
     }
 }

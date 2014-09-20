@@ -1,4 +1,4 @@
-import std.file, std.stdio, std.string;
+import std.file, std.stdio, std.string, std.conv;
 import gameobject;
 
 class ObjLoader
@@ -14,7 +14,7 @@ class ObjLoader
 		File file = File(fname, "r");
 
 		string[] v;
-		v.length = 100;
+		v.length = 10;
 		string[] f;
 		f.length = 100;
 		string temp;
@@ -38,10 +38,36 @@ class ObjLoader
 				//printf("%s",toStringz(temp));
 			}
 		}
+		
 		if(v[0] != "")
 		{
-			g.verts = v;
-			g.faces = f;
+			//Write values to given object;
+			//g.verts = v;
+			int count = 0;
+			while(v[count] != "" && v.length > count)
+			{
+				string[] splitted = split(v[count]);
+				g.verts[0+count*3] = to!float(splitted[1]);
+				g.verts[1+count*3] = to!float(splitted[2]);
+				g.verts[2+count*3] = to!float(splitted[3]);
+				count++;
+			}
+
+			count = 0;
+			int s = 0;
+			int t = 0;
+			while(f[count] != "" && f.length > count)
+			{
+				string[] splitted = split(f[count]);
+				t = 1;
+				while(t < splitted.length)
+				{
+					g.faces[s] = to!int(splitted[t]);
+					s++;
+					t++;
+				}
+				count++;
+			}
 		}
 		//writeln(file);
 
