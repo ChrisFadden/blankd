@@ -21,7 +21,7 @@ class GameManager {
 
     Window* window;
 
-    GameObject go1;
+    //GameObject go1;
 
     bool running;
 
@@ -39,13 +39,16 @@ class GameManager {
 
     Stage stage;
 
+    BlockBuilder builder;
+
 	this(Window* win) {
 		camera = new Camera();
-		camera.setTranslation(0f,0f,0f);
+		camera.setTranslation(0f,0f,1f);
     	renderer = new Renderer(win, &camera);
 
     	window = win;
 
+    	/*
     	go1 = new GameObject(-1.0, -1.0, 1.0, 1.0, 1.0, -1.0);
 	    go1.visible = true;
 	    go1.x = 0.0;
@@ -54,10 +57,21 @@ class GameManager {
         go1.setRGB(0.2, 1.0, 0.4);
         go1.updateMatrix();
 	    renderer.register(go1);
+	    */
+	    
+	    
 
 	    //ObjLoader objloader = new ObjLoader();
     	//objloader.open("block.obj", go1);
-    	go1.printVerts();
+    	
+
+    	builder = new BlockBuilder(-1.0, -1.0, -4.0);
+    	builder.visible = true;
+    	builder.setRGB(0.6, 1.0, 0.9);
+    	renderer.register(builder);
+    	
+    	
+    	
 
 	    fpsTime = SDL_GetTicks();
 	    fps = 1;
@@ -99,7 +113,7 @@ class GameManager {
 			fps = fpsCounter;
 			fpsCounter = 0;
 			fpsTime = SDL_GetTicks();
-			writeln("FPS: ", fps);
+			debug writeln("FPS: ", fps);
 		}
 
 		int time = cast(int)(SDL_GetTicks() - frameTime);
@@ -113,20 +127,42 @@ class GameManager {
 
 	}
 
+	void moveCameraLeft(){
+		camera.moveTranslation(-.1f,0f,0f);
+	}
+	void moveCameraRight(){
+		camera.moveTranslation(.1f,0f,0f);
+	}
+	void moveCameraUp(){
+		camera.moveTranslation(0f,0.1f,0f);
+	}
+	void moveCameraDown(){
+		camera.moveTranslation(0f,-0.1f,0f);
+	}
+
+
 	void moveBlockLeft(){
-		camera.moveTranslation(-.05f,0f,0f);
+		builder.left();
+		//camera.moveTranslation(-.05f,0f,0f);
 	}
 	void moveBlockRight(){
-		camera.moveTranslation(.05f,0f,0f);
+		builder.right();
+		//camera.moveTranslation(.05f,0f,0f);
 	}
 	void moveBlockUp(){
-		camera.moveTranslation(0f,0.05f,0f);
+		builder.up();
+		//camera.moveTranslation(0f,0.05f,0f);
 	}
 	void moveBlockDown(){
-		camera.moveTranslation(0f,-0.05f,0f);
+		builder.down();
+		//camera.moveTranslation(0f,-0.05f,0f);
 	}
-	void raiseBlock(){}
-	void lowerBlock(){}
+	void raiseBlock(){
+		builder.raise();
+	}
+	void lowerBlock(){
+		builder.lower();
+	}
 	void placeBlock(){}
 
 
@@ -134,7 +170,7 @@ class GameManager {
 		while (SDL_PollEvent(event)) {
 			switch(event.type){
 				case SDL_JOYBUTTONDOWN:
-					writeln("Button ", event.jbutton.button);
+					debug writeln("Button ", event.jbutton.button);
 				break;
 				case SDL_JOYHATMOTION:
 					if (event.jhat.value & SDL_HAT_UP) {
@@ -197,6 +233,18 @@ class GameManager {
 						case SDLK_DOWN:
 							lowerBlock();
 							break;
+						case SDLK_i:
+							moveCameraUp();
+							break;
+						case SDLK_j:
+							moveCameraLeft();
+							break;
+						case SDLK_k:
+							moveCameraDown();
+							break;
+						case SDLK_l:
+							moveCameraRight();
+							break;
 						default:
 						break;
 					}
@@ -221,5 +269,69 @@ class GameManager {
 		double norm_x = double(window_x)/double(window_width/2.0f);
 
 		float[4] ray_vec = [norm_x, norm_y, -znear, 0.0f];
+	}
+}
+
+class BlockBuilder : GameObject{
+	float startx, starty, startz;
+	float dx = 2.0;
+	float dy = 1.0;
+	float dz = 2.0;
+	float width;
+	float length;
+	float height;
+
+	this(float startx, float starty, float startz) {
+		super(startx,starty,startz,startx+dx,starty+dy,startz-dz);
+		this.startx = startx;
+		this.starty = starty;
+		this.startz = startz;
+		width = dx;
+		length = dz;
+		height = dy;
+		updateMesh();
+	}
+
+	void right() {
+		width += dx;
+		updateMesh();
+	}
+
+	void left() {
+		if (width > dx)
+			width -= dx;
+		else
+			startx -= dx;
+		updateMesh();
+	}
+
+	void up() {
+		length += dz;
+		updateMesh();
+	}
+
+	void down() {
+		if (length > dz)
+			length -= dz;
+		else
+			startz += dz;
+		updateMesh();
+	}
+
+	void raise() {
+		height += dy;
+		updateMesh();
+	}
+
+	void lower() {
+		if (height > dy)
+			height -= dy;
+		updateMesh();
+	}
+
+	override
+	void updateMesh() {
+		setVertexBuffer(startx,starty,startz,startx+width,starty+height,startz-length);
+		super.updateMesh();
 	}
 }

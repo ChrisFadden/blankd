@@ -37,6 +37,56 @@ class GameObject {
 
 	this(float x1, float y1, float z1, float x2, float y2, float z2) {
         bufferLen = 6*3*6;
+        setVertexBuffer(x1, y1, z1, x2, y2, z2);
+        nBufferData = [
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1,
+
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0,
+
+            0, 0, -1,
+            0, 0, -1,
+            0, 0, -1,
+            0, 0, -1,
+            0, 0, -1,
+            0, 0, -1,
+
+            0, -1, 0,
+            0, -1, 0,
+            0, -1, 0,
+            0, -1, 0,
+            0, -1, 0,
+            0, -1, 0,
+
+            -1, 0, 0,
+            -1, 0, 0,
+            -1, 0, 0,
+            -1, 0, 0,
+            -1, 0, 0,
+            -1, 0, 0,
+
+            1, 0, 0,
+            1, 0, 0,
+            1, 0, 0,
+            1, 0, 0,
+            1, 0, 0,
+            1, 0, 0,
+        ];
+        
+        setup();
+    }
+
+    void setVertexBuffer(float x1, float y1, float z1, float x2, float y2, float z2) {
+        debug writeln("Creating vertex buffer");
         vBufferData = [
             // Front face
             x1, y1, z1,
@@ -86,51 +136,6 @@ class GameObject {
             x2, y1, z2,
             x2, y2, z2,
         ];
-        nBufferData = [
-            0, 0, 1,
-            0, 0, 1,
-            0, 0, 1,
-            0, 0, 1,
-            0, 0, 1,
-            0, 0, 1,
-
-            0, 1, 0,
-            0, 1, 0,
-            0, 1, 0,
-            0, 1, 0,
-            0, 1, 0,
-            0, 1, 0,
-
-            0, 0, -1,
-            0, 0, -1,
-            0, 0, -1,
-            0, 0, -1,
-            0, 0, -1,
-            0, 0, -1,
-
-            0, -1, 0,
-            0, -1, 0,
-            0, -1, 0,
-            0, -1, 0,
-            0, -1, 0,
-            0, -1, 0,
-
-            -1, 0, 0,
-            -1, 0, 0,
-            -1, 0, 0,
-            -1, 0, 0,
-            -1, 0, 0,
-            -1, 0, 0,
-
-            1, 0, 0,
-            1, 0, 0,
-            1, 0, 0,
-            1, 0, 0,
-            1, 0, 0,
-            1, 0, 0,
-        ];
-        
-        setup();
     }
 
 	this()
@@ -170,6 +175,10 @@ class GameObject {
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Pre buffer error!");
 
+        updateMesh();
+	}
+
+    void updateMesh(){
         glGenBuffers(1, &vBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
         glBufferData(GL_ARRAY_BUFFER, bufferLen*GLfloat.sizeof, cast(void*)vBufferData, GL_STATIC_DRAW);
@@ -178,11 +187,11 @@ class GameObject {
         glGenBuffers(1, &nBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, nBuffer);
         glBufferData(GL_ARRAY_BUFFER, bufferLen*GLfloat.sizeof, cast(void*)nBufferData, GL_STATIC_DRAW);
-        
+        int error;
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Is buffer error!");
         writeln("Done buffers, shader");
-	}
+    }
 	
 	~this()
 	{
