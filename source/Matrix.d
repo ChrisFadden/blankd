@@ -6,7 +6,7 @@ class Matrix {
         setIdentity();
     }
 
-    Matrix opUnary(string op)(Matrix rhs) {
+    Matrix opBinary(string op)(Matrix rhs) {
         static if (op == "+") { 
            Matrix result = new Matrix();
            result.matrix[] = matrix[] + rhs.matrix[];
@@ -65,7 +65,13 @@ class Matrix {
 
     }
 
-    void setPerspectiveMatrix(float near, float far, float fov) {
+    void setPerspectiveMatrix(float fovy, float aspect, float zNear, float zFar) {
+        float f = 1/tan(degtorad(fovy/2));
+        matrix[0] = f/aspect;
+        matrix[5] = f;
+        matrix[10] = (zFar+zNear)/(zNear-zFar);
+        matrix[11] = -1;
+        matrix[14] = (2*zFar*zNear)/(zNear-zFar);
     }
 }
 

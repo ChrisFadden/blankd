@@ -106,6 +106,11 @@ GLuint makeShaders(string vertSource, string fragSource) {
     glAttachShader(progID, fragID);
     glLinkProgram(progID);
 
+    while ((error = glGetError()) != GL_NO_ERROR)
+            writeln("Link error!", error);
+
+    //TODO FIX THIS
+    /*
     debug {
         glGetProgramiv(progID, GL_LINK_STATUS, &result);
         glGetProgramiv(progID, GL_INFO_LOG_LENGTH, &logLength);
@@ -113,8 +118,7 @@ GLuint makeShaders(string vertSource, string fragSource) {
         glGetShaderInfoLog(progID, logLength, cast(GLsizei*)null, progLog.ptr);
         writeln("Linking program info log: ", progLog);
     }
-        while ((error = glGetError()) != GL_NO_ERROR)
-            writeln("Link error!", error);
+    */
     glDeleteShader(vertID);
     glDeleteShader(fragID);
         while ((error = glGetError()) != GL_NO_ERROR)

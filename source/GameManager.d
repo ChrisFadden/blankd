@@ -11,7 +11,6 @@ import ObjLoader;
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 import derelict.sdl2.net;
-import derelict.sdl2.ttf;
 
 class GameManager {
 
@@ -34,24 +33,29 @@ class GameManager {
 
     SDL_Joystick *joystick;
 
-    TTF_Font *font;
+    enum Stage {
+    	MAP_MAKER, GAMEPLAY
+    }
+
+    Stage stage;
 
 	this(Window* win) {
 		camera = new Camera();
+		camera.setTranslation(0f,0f,0f);
     	renderer = new Renderer(win, &camera);
 
     	window = win;
 
-    	go1 = new GameObject;
+    	go1 = new GameObject(-1.0, -1.0, -1.0, 1.0, 1.0, -3.0);
 	    go1.visible = true;
-	    go1.x = 1.0;
-	    go1.y = 1.0;
-	    go1.z = 0.0;
+	    go1.x = 0.0;
+	    go1.y = 0.0;
+	    go1.z = -3.0;
         go1.updateMatrix();
 	    renderer.register(go1);
 
-	    ObjLoader objloader = new ObjLoader();
-    	objloader.open("block.obj", go1);
+	    //ObjLoader objloader = new ObjLoader();
+    	//objloader.open("block.obj", go1);
     	go1.printVerts();
 
 	    fpsTime = SDL_GetTicks();
@@ -61,12 +65,12 @@ class GameManager {
 	    SDL_JoystickEventState(SDL_ENABLE);
 	    joystick = SDL_JoystickOpen(0);
 
+	    stage = Stage.MAP_MAKER;
 
 	    run();
 	}
 
 	void run(){
-		writeln("Go!");
 		running = true;
 
 		while (running) {
@@ -81,7 +85,8 @@ class GameManager {
 		//moduleFunc();
 		frameTime = SDL_GetTicks();
 		SDL_Event event;
-		handleInput(&event);
+		if (stage == Stage.MAP_MAKER)
+			handleMapMakerInput(&event);
 		
 	}
 
@@ -108,7 +113,24 @@ class GameManager {
 
 	}
 
-	void handleInput(SDL_Event *event) {
+	void moveBlockLeft(){
+		camera.moveTranslation(-.05f,0f,0f);
+	}
+	void moveBlockRight(){
+		camera.moveTranslation(.05f,0f,0f);
+	}
+	void moveBlockUp(){
+		camera.moveTranslation(0f,0.05f,0f);
+	}
+	void moveBlockDown(){
+		camera.moveTranslation(0f,-0.05f,0f);
+	}
+	void raiseBlock(){}
+	void lowerBlock(){}
+	void placeBlock(){}
+
+
+	void handleMapMakerInput(SDL_Event *event) {
 		while (SDL_PollEvent(event)) {
 			switch(event.type){
 				case SDL_JOYBUTTONDOWN:
@@ -140,6 +162,27 @@ class GameManager {
 					switch(event.key.keysym.sym){
 						case SDLK_ESCAPE:
 							running = false;
+							break;
+						case SDLK_a:
+							moveBlockLeft();
+							break;
+						case SDLK_d:
+							moveBlockRight();
+							break;
+						case SDLK_w:
+							moveBlockUp();
+							break;
+						case SDLK_s:
+							moveBlockDown();
+							break;
+						case SDLK_RETURN:
+							placeBlock();
+							break;
+						case SDLK_UP:
+							raiseBlock();
+							break;
+						case SDLK_DOWN:
+							lowerBlock();
 							break;
 						default:
 						break;
