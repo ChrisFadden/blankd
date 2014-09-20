@@ -135,6 +135,18 @@ class GameManager {
 		while (SDL_PollEvent(event)) {
 			switch(event.type){
 				case SDL_JOYBUTTONDOWN:
+					writeln("Button ", event.jbutton.button);
+				break;
+				case SDL_JOYHATMOTION:
+					if (event.jhat.value & SDL_HAT_UP) {
+						moveBlockUp();
+					} else if (event.jhat.value & SDL_HAT_RIGHT) {
+						moveBlockRight();
+					} else if (event.jhat.value & SDL_HAT_DOWN) {
+						moveBlockDown();
+					} else if (event.jhat.value & SDL_HAT_LEFT) {
+						moveBlockLeft();
+					}
 				break;
 				case SDL_JOYAXISMOTION:
 				if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)){
