@@ -6,6 +6,7 @@ import Window;
 import Renderer;
 import gameobject;
 import blankdmod.myo.functions;
+import ObjLoader;
 
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
@@ -47,6 +48,10 @@ class GameManager {
 	    go1.y = 1.0;
 	    go1.z = 2.0;
 	    renderer.register(go1);
+
+	    ObjLoader objloader = new ObjLoader();
+    	objloader.open("block.obj", go1);
+    	go1.printVerts();
 
 	    fpsTime = SDL_GetTicks();
 	    fps = 1;
