@@ -17,6 +17,8 @@ class Vector {
     }
 
     float magnitude() {
+        writeln(x,y,z);
+        writeln(x*x+y*y+z*z);
         return sqrt(x*x + y*y + z*z);
     }
     Vector opBinary(string op)(Vector rhs) {

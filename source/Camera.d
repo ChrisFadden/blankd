@@ -19,11 +19,13 @@ class Camera {
     }
 
     void setLookAt(Vector eye, Vector center, Vector up) {
-        //viewMatrix.setLookAtMatrix(position, eye, up);
+        //viewMatrix.setLookAtMatrix(eye, center, up);
+        writeln(viewMatrix.matrix);
         Matrix look = new Matrix();
-        look.setLookAtMatrix(eye.x, eye.y, eye.z,
-                    center.x, center.y, center.z,
-                    up.x, up.y, up.z);
+        //look.setLookAtMatrix(eye.x, eye.y, eye.z,
+                    //center.x, center.y, center.z,
+                    //up.x, up.y, up.z);
+        look.setLookAtMatrix(eye, center, up);
         viewMatrix.setIdentity();
         viewMatrix.translate(-eye.x, -eye.y, -eye.z);
         viewMatrix = look * viewMatrix;
@@ -50,8 +52,8 @@ class Camera {
     }
 
     void moveRotation(float dx, float dy) {
-        horizontalAngle += dy;
-        verticalAngle += dx;
+        horizontalAngle += dx;
+        verticalAngle += dy;
         direction = new Vector(cos(verticalAngle)*sin(horizontalAngle),
                                 sin(verticalAngle),
                                 cos(verticalAngle)*cos(horizontalAngle));
@@ -59,6 +61,7 @@ class Camera {
                                     0,
                                     cos(horizontalAngle - 3.14/2.0));
         up = right * direction;
+        //up = new Vector(0,1,0);
     }
 
 

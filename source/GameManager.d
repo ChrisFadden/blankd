@@ -377,7 +377,7 @@ class GameManager {
 					int y = event.motion.y;
 					int difx = midx-x;
 					int dify = midy-y;
-					camera.moveRotation(dify/200f, difx/200f);
+					camera.moveRotation(difx/200f, dify/200f);
                     SDL_WarpMouseInWindow(window.window, midx, midy);
 				break;
 				case SDL_KEYDOWN:
