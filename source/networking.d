@@ -11,12 +11,13 @@ SDLNet_SocketSet socketSet;
 TCPsocket socket;
 
 // Returns whether or not the socket is still connected
-bool readsocket(TCPsocket msocket, void function(byte*) func) {
+bool readsocket(TCPsocket msocket, void function(byte**, TCPsocket) func) {
 	if (SDLNet_SocketReady(msocket)){
 		int len;
 		byte readBuffer[maxBufferSize];
 		if ((len = SDLNet_TCP_Recv(msocket, &readBuffer, maxBufferSize)) > 0) {
-			func(cast(byte*)readBuffer);
+			byte* buf = cast(byte*)readBuffer;
+			func(&buf, msocket);
 			return true;
 		} else {
 			SDLNet_TCP_DelSocket(socketSet, msocket);
@@ -27,18 +28,20 @@ bool readsocket(TCPsocket msocket, void function(byte*) func) {
 	return true;
 }
 
-byte readbyte(byte* readBuffer){
-	byte b = readBuffer[0];
-	readBuffer += 1;
+byte readbyte(byte** readBuffer){
+	byte b = *readBuffer[0];
+	*readBuffer += 1;
 	return b;
 }
 
-float readfloat(byte* readBuffer){
-	byte[] outFloatArr = new byte[float.sizeof];
+float readfloat(byte** readBuffer){
+	byte[float.sizeof] outFloatArr = new byte[float.sizeof];
 	for (int i = 0; i < float.sizeof; i++) {
-		outFloatArr[i] = readBuffer[i];
+		outFloatArr[i] = *readBuffer[0];
+		writeln("byte ",*readBuffer[0]);
+		*readBuffer += 1;
 	}
-	readBuffer += float.sizeof;
+	//*readBuffer += float.sizeof;
 	float* outFloatP = cast(float*)(outFloatArr);
 	return(*outFloatP);
 }
@@ -52,6 +55,7 @@ void writefloat(float f){
 	byte* fp = cast(byte*)&f;
 	for (int i = 0; i < float.sizeof; i++) {
 		writeBuffer[bufferIndex] = fp[i];
+		writeln("byte ",fp[i]);
 		bufferIndex++;
 	}
 }
