@@ -174,9 +174,11 @@ class GameObject {
         glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
         glBufferData(GL_ARRAY_BUFFER, bufferLen*GLfloat.sizeof, cast(void*)vBufferData, GL_STATIC_DRAW);
 
+        
         glGenBuffers(1, &nBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, nBuffer);
         glBufferData(GL_ARRAY_BUFFER, bufferLen*GLfloat.sizeof, cast(void*)nBufferData, GL_STATIC_DRAW);
+        
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Is buffer error!");
         writeln("Done buffers, shader");
@@ -193,19 +195,23 @@ class GameObject {
 	void draw(Camera camera)
 	{
         // Model matrix
-        shaderProgram.bind(modelMatrix, camera.getVPMatrix(), r, g, b);       
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
+        shaderProgram.bind(modelMatrix, camera.getVPMatrix(), r, g, b);    
+        int mPositionHandle = glGetAttribLocation(shaderProgram.programID, "vertPos_model");   
+        int mNormalHandle = glGetAttribLocation(shaderProgram.programID, "vertNorm_model");
+        
         // attribute 0?, size, type, normalized, stride, array buffer offset
         glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
+        glVertexAttribPointer(mPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
+        glEnableVertexAttribArray(mPositionHandle);
+        
         glBindBuffer(GL_ARRAY_BUFFER, nBuffer);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
+        glVertexAttribPointer(mNormalHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
+        glEnableVertexAttribArray(mNormalHandle);
 
         // start from vertex 0, bufferLen/3 total
         glDrawArrays(GL_TRIANGLES, 0, bufferLen/3);
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(mPositionHandle);
+        glDisableVertexAttribArray(mNormalHandle);
 	}
 
     void setRGB(float r, float g, float b) {

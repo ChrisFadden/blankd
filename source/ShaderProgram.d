@@ -6,7 +6,7 @@ import derelict.opengl3.gl3;
 import Matrix;
 
 class ShaderProgram {
-    GLuint progamID;
+    GLuint programID;
     this() {
         this(simpleVertShaderSource, simpleFragShaderSource);
     }
@@ -14,7 +14,7 @@ class ShaderProgram {
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Pre makeShaders error!");
-        progamID = makeShaders(vertSrc, fragSrc);
+        programID = makeShaders(vertSrc, fragSrc);
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("makeShaders error!");
     }
@@ -24,19 +24,19 @@ class ShaderProgram {
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Not uniform location error!");
-        GLint modelMatrixHandle = glGetUniformLocation(progamID, "modelMatrix");
+        GLint modelMatrixHandle = glGetUniformLocation(programID, "modelMatrix");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 1!");
-        GLint viewProjectionMatrixHandle = glGetUniformLocation(progamID, "viewProjectionMatrix");
+        GLint viewProjectionMatrixHandle = glGetUniformLocation(programID, "viewProjectionMatrix");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 2!");
-        GLint colorHandle = glGetUniformLocation(progamID, "materialColor");
+        GLint colorHandle = glGetUniformLocation(programID, "materialColor");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 2!");
         glUniformMatrix4fv(modelMatrixHandle, 1, GL_FALSE, cast(float*)modelMatrix.matrix);
         glUniformMatrix4fv(viewProjectionMatrixHandle, 1, GL_FALSE, cast(float*)viewProjectionMatrix.matrix);
         glUniform3f(colorHandle, r, g, b);
-        glUseProgram(progamID); 
+        glUseProgram(programID); 
     }
 }
 
@@ -80,7 +80,7 @@ void main() {
     //gl_FragColor =  vec4(cosTheta * light_color, 1);
     gl_FragColor =  vec4((cosTheta * materialColor * light_color) / (dist * dist), 1);
     //gl_FragColor =  vec4(light_color / (distance * distance), 1);
-    //gl_FragColor = vec4(1,1,1,1);
+    //gl_FragColor = vec4(1,0,0,1);
 }
 ";
 
