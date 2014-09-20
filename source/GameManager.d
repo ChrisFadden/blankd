@@ -72,7 +72,6 @@ class GameManager {
     	go2.setRGB(0.5, 1.0, 0.5);
     	renderer.register(go2);
 
-	    
     	go3 = new GameObject(-1.0, -1.0, 1.0, 1.0, 1.0, -1.0);
 	    go3.visible = true;
 	    go3.x = -1.0;
@@ -91,7 +90,6 @@ class GameManager {
         go4.updateMatrix();
 	    renderer.register(go4);
 	    */
-	    
 
 	    builder = new BlockBuilder(-1.0, -1.0, -4.0);
 	    GameObject b = builder.getGameObject();
@@ -327,7 +325,7 @@ class GameManager {
 		double norm_x = double(window_x)/double(window_width/2.0f);
 
 		float[4] ray_vec = [norm_x, norm_y, -znear, 0.0f];
-		Matrix m = builder.modelMatrix;
+		Matrix m = builder.gameObject.modelMatrix;
 		m.matrix[0] = -m.matrix[0];
         m.matrix[5] = -m.matrix[5];
         m.matrix[10] = -m.matrix[10];
