@@ -9,12 +9,12 @@ SDLNet_SocketSet socketSet;
 TCPsocket socket;
 
 // Returns whether or not the socket is still connected
-bool readsocket(TCPsocket msocket, void function(byte[]) func) {
+bool readsocket(TCPsocket msocket, void function(byte*) func) {
 	if (SDLNet_SocketReady(msocket)){
 		int len;
 		byte readBuffer[512];
 		if ((len = SDLNet_TCP_Recv(msocket, &readBuffer, 512)) > 0) {
-			func(readBuffer);
+			func(cast(byte*)readBuffer);
 			return true;
 		} else {
 			SDLNet_TCP_DelSocket(socketSet, msocket);
@@ -86,6 +86,8 @@ bool SDLNet_InitServer(ushort port, uint clients) {
 		return false;
 	}
 	SDLNet_TCP_AddSocket(socketSet, socket);
+
+	writeln("Initialized server on port ", port);
 
 	return true;
 }

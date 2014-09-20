@@ -7,7 +7,7 @@ private {
 	import core.stdc.stdarg;
 }
 
-/*
+
 extern( C ) @nogc nothrow {
 	//file1.h
 
@@ -15,7 +15,7 @@ extern( C ) @nogc nothrow {
 
 	//file2.h
 }
-*/
+
 
 void moduleFunc()
 {
