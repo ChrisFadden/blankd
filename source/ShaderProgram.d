@@ -19,9 +19,8 @@ class ShaderProgram {
             writeln("makeShaders error!");
     }
     void bind(Matrix modelMatrix, Matrix viewProjectionMatrix) {
-        modelMatrix.setIdentity();
-        viewProjectionMatrix.setIdentity();
-        writeln("Binding shader");
+        //modelMatrix.setIdentity();
+        //viewProjectionMatrix.setIdentity();
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Not uniform location error!");
@@ -45,9 +44,7 @@ uniform mat4 modelMatrix;
 uniform mat4 viewProjectionMatrix;
 
 void main() {
-    gl_Position.xyz = (viewProjectionMatrix * modelMatrix * vec4(vertPos_model.x, vertPos_model.y, vertPos_model.z, 1)).xyz;
-    //gl_Position.xyz = vertPos_model;
-    gl_Position.w = 1;
+    gl_Position = viewProjectionMatrix * modelMatrix * vec4(vertPos_model, 1);
 }
 ";
 
