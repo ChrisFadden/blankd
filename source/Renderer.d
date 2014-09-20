@@ -10,7 +10,6 @@ import Camera;
 class Renderer {
     Window window;
     Camera camera;
-    Array!(GameObject) toAddObjects;
     Array!(GameObject) objects;
 
     this(Window* window, Camera* camera) {
@@ -30,13 +29,17 @@ class Renderer {
     }
     */
 
-    void draw() {
+    void draw(GameObject o = null) {
         //foreach (GameObject toAddObj; toAddObjects)
         //    objects ~= toAddObj;
         //toAddObjects.clear();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         foreach (GameObject obj; objects)
             obj.draw(camera);
+
+        if (o !is null){
+            o.draw(camera);
+        }
         window.flip();
     }
 }

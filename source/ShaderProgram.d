@@ -19,6 +19,7 @@ class ShaderProgram {
             writeln("makeShaders error!");
     }
     void bind(Matrix modelMatrix, Matrix viewProjectionMatrix, float r, float g, float b) {
+        glUseProgram(programID);
         //modelMatrix.setIdentity();
         //viewProjectionMatrix.setIdentity();
         glUseProgram(programID);
@@ -26,17 +27,24 @@ class ShaderProgram {
         while ((error = glGetError()) != GL_NO_ERROR)
         {
             writeln("Not uniform location error!");
+<<<<<<< HEAD
             writeln(error);
         }
+=======
+
+>>>>>>> 77efd06e314194f20447b5f2c9b6a046ff9920dc
         GLint modelMatrixHandle = glGetUniformLocation(programID, "modelMatrix");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 1!");
+
         GLint viewProjectionMatrixHandle = glGetUniformLocation(programID, "viewProjectionMatrix");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 2!");
+
         GLint colorHandle = glGetUniformLocation(programID, "materialColor");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 2!");
+<<<<<<< HEAD
         float[3] farr = [r,g,b];
         glUniform3fv(colorHandle, 1, farr.ptr);
         //glUniform3f(colorHandle, r, g, b);
@@ -45,6 +53,10 @@ class ShaderProgram {
             writeln("Bad Uniform3f!");
             writeln(error);
         }
+=======
+
+        glUniform3f(colorHandle, r, g, b);
+>>>>>>> 77efd06e314194f20447b5f2c9b6a046ff9920dc
         glUniformMatrix4fv(modelMatrixHandle, 1, GL_FALSE, cast(float*)modelMatrix.matrix);
         while ((error = glGetError()) != GL_NO_ERROR)
         {
@@ -52,12 +64,15 @@ class ShaderProgram {
             writeln(error);
         }
         glUniformMatrix4fv(viewProjectionMatrixHandle, 1, GL_FALSE, cast(float*)viewProjectionMatrix.matrix);
+<<<<<<< HEAD
         while ((error = glGetError()) != GL_NO_ERROR)
         {
             writeln("UniformMatrix4fv 2!");
             writeln(error);
         }
 
+=======
+>>>>>>> 77efd06e314194f20447b5f2c9b6a046ff9920dc
     }
 }
 
