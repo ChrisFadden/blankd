@@ -116,6 +116,7 @@ void freesockets(){
 }
 
 SDLNet_SocketSet SDLNet_Initialize(uint socketSetSize) {
+
 	// Initialize SDLNet
 	if (SDLNet_Init() < 0) {
 		// If we fail...
