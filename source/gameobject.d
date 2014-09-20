@@ -61,8 +61,6 @@ class GameObject {
 
 	void draw()
 	{
-		writeln("To Implement... For Nathan to do?");
-		writeln("Did do good buddy");
         // Model matrix
         shaderProgram.bind(modelMatrix, new Matrix);       
         glEnableVertexAttribArray(0);

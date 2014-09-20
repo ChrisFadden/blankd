@@ -12,9 +12,9 @@ class Renderer {
     Camera camera;
     Array!(GameObject) objects;
 
-    this(Window window, Camera camera) {
-        this.window = window;
-        this.camera = camera;
+    this(Window* window, Camera* camera) {
+        this.window = *window;
+        this.camera = *camera;
     }
 
     void register(GameObject obj) {

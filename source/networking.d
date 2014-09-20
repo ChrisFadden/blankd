@@ -2,7 +2,9 @@ import std.stdio;
 
 import derelict.sdl2.net;
 
-byte writeBuffer[512] = 0;
+immutable uint maxBufferSize = 512;
+
+byte writeBuffer[maxBufferSize] = 0;
 int bufferIndex;
 
 SDLNet_SocketSet socketSet;
@@ -12,8 +14,8 @@ TCPsocket socket;
 bool readsocket(TCPsocket msocket, void function(byte*) func) {
 	if (SDLNet_SocketReady(msocket)){
 		int len;
-		byte readBuffer[512];
-		if ((len = SDLNet_TCP_Recv(msocket, &readBuffer, 512)) > 0) {
+		byte readBuffer[maxBufferSize];
+		if ((len = SDLNet_TCP_Recv(msocket, &readBuffer, maxBufferSize)) > 0) {
 			func(cast(byte*)readBuffer);
 			return true;
 		} else {
@@ -31,9 +33,27 @@ byte readbyte(byte* readBuffer){
 	return b;
 }
 
+float readfloat(byte* readBuffer){
+	byte[] outFloatArr = new byte[float.sizeof];
+	for (int i = 0; i < float.sizeof; i++) {
+		outFloatArr[i] = readBuffer[i];
+	}
+	readBuffer += float.sizeof;
+	float* outFloatP = cast(float*)(outFloatArr);
+	return(*outFloatP);
+}
+
 void writebyte(byte b){
 	writeBuffer[bufferIndex] = b;
 	bufferIndex++;
+}
+
+void writefloat(float f){
+	byte* fp = cast(byte*)&f;
+	for (int i = 0; i < float.sizeof; i++) {
+		writeBuffer[bufferIndex] = fp[i];
+		bufferIndex++;
+	}
 }
 
 void clearbuffer(){
