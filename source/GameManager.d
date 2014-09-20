@@ -10,7 +10,6 @@ import blankdmod.myo.functions;
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 import derelict.sdl2.net;
-import derelict.sdl2.ttf;
 
 class GameManager {
 
@@ -33,7 +32,11 @@ class GameManager {
 
     SDL_Joystick *joystick;
 
-    TTF_Font *font;
+    enum Stage {
+    	MAP_MAKER, GAMEPLAY
+    }
+
+    Stage stage;
 
 	this(Window* win) {
 		camera = new Camera();
@@ -56,12 +59,12 @@ class GameManager {
 	    SDL_JoystickEventState(SDL_ENABLE);
 	    joystick = SDL_JoystickOpen(0);
 
+	    stage = Stage.MAP_MAKER;
 
 	    run();
 	}
 
 	void run(){
-		writeln("Go!");
 		running = true;
 
 		while (running) {
@@ -76,7 +79,8 @@ class GameManager {
 		//moduleFunc();
 		frameTime = SDL_GetTicks();
 		SDL_Event event;
-		handleInput(&event);
+		if (stage == Stage.MAP_MAKER)
+			handleMapMakerInput(&event);
 		
 	}
 
@@ -103,7 +107,16 @@ class GameManager {
 
 	}
 
-	void handleInput(SDL_Event *event) {
+	void moveBlockLeft(){}
+	void moveBlockRight(){}
+	void moveBlockUp(){}
+	void moveBlockDown(){}
+	void raiseBlock(){}
+	void lowerBlock(){}
+	void placeBlock(){}
+
+
+	void handleMapMakerInput(SDL_Event *event) {
 		while (SDL_PollEvent(event)) {
 			switch(event.type){
 				case SDL_JOYBUTTONDOWN:
@@ -135,6 +148,27 @@ class GameManager {
 					switch(event.key.keysym.sym){
 						case SDLK_ESCAPE:
 							running = false;
+							break;
+						case SDLK_a:
+							moveBlockLeft();
+							break;
+						case SDLK_d:
+							moveBlockRight();
+							break;
+						case SDLK_w:
+							moveBlockUp();
+							break;
+						case SDLK_s:
+							moveBlockDown();
+							break;
+						case SDLK_RETURN:
+							placeBlock();
+							break;
+						case SDLK_UP:
+							raiseBlock();
+							break;
+						case SDLK_DOWN:
+							lowerBlock();
 							break;
 						default:
 						break;
