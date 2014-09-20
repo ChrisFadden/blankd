@@ -7,7 +7,11 @@ import Renderer;
 import gameobject;
 import blankd.myo.functions;
 
+import networking;
+
 void main() {
+    DerelictSDL2Net.load();
+
     Window window = new Window("HackGT - blankd");
     window.init();
 
@@ -24,8 +28,15 @@ void main() {
     renderer.register(go1);
     renderer.draw();
     moduleFunc();
+
+    SDLNet_InitServer(1234, 20);
+
     //Finish and quit
-    window.pause(2000);
     window.quit();
+    SDL_GL_DeleteContext(glcontext);
+    SDL_DestroyWindow(window);
+    freesockets();
+    SDLNet_Quit();
+    SDL_Quit();
 }
 
