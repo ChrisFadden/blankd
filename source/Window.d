@@ -17,10 +17,6 @@ class Window {
     }
 
     void init() {
-        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
-            writeln("SDL2 failed to init: ", SDL_GetError());
-            return;
-        }
 
         version (OSX) {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);

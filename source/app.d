@@ -18,6 +18,11 @@ void main() {
     DerelictSDL2.load();
     DerelictSDL2Net.load();
 
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
+        writeln("SDL2 failed to init: ", SDL_GetError());
+        return;
+    }
+
     Window window = new Window("HackGT - blankd");
     window.init();
     // Has to reload after we have a context

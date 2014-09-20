@@ -30,6 +30,8 @@ class GameManager {
 
     long frameTime;
 
+    SDL_Joystick *joystick;
+
 	this(Window* win) {
 		camera = new Camera();
     	renderer = new Renderer(win, &camera);
@@ -38,17 +40,19 @@ class GameManager {
 
     	go1 = new GameObject;
 	    go1.visible = true;
-	    writeln(go1.visible);
 	    go1.coords[0] = 0.0;
 	    go1.coords[1] = 1.0;
 	    go1.coords[2] = 2.0;
-	    writeln(go1.coords);
 	    renderer.register(go1);
 
-	    run();
 	    fpsTime = SDL_GetTicks();
 	    fps = 1;
 	    fpsCounter = 0;
+
+	    SDL_JoystickEventState(SDL_ENABLE);
+	    joystick = SDL_JoystickOpen(0);
+
+	    run();
 	}
 
 	void run(){
@@ -94,6 +98,17 @@ class GameManager {
 	void handleInput(SDL_Event *event) {
 		while (SDL_PollEvent(event)) {
 			switch(event.type){
+				case SDL_JOYBUTTONDOWN:
+				break;
+				case SDL_JOYAXISMOTION:
+				if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)){
+					if (event.jaxis.axis == 0) {
+						// Left-Right
+					} if (event.jaxis.axis == 1) {
+						// Up-down
+					}
+				}
+				break;
 				case SDL_MOUSEBUTTONDOWN:
 					switch(event.button.button){
 						case SDL_BUTTON_LEFT:
