@@ -61,7 +61,7 @@ class GameManager {
 	this(Window* win, int server) {
 		camera = new Camera();
 		camera.setTranslation(0f,4f,1f);
-		camera.moveRotation(-.3f,0,0);
+		camera.moveRotation(-.3f,0);
     	renderer = new Renderer(win, &camera);
     	this.server = server;
 
@@ -71,7 +71,7 @@ class GameManager {
 
     	window = win;
 
-    	player = new Player();
+    	player = new Player(0, 0, 0, &camera);
 
 	    builder = new BlockBuilder(-1.0, 0.0, -4.0);
 	    GameObject b = builder.getGameObject();
@@ -146,14 +146,19 @@ class GameManager {
 		frameTime = SDL_GetTicks();
 
 		SDL_Event event;
-		if (stage == Stage.MAP_MAKER)
+		if (stage == Stage.MAP_MAKER){
 			handleMapMakerInput(&event);
-		else
+			camera.moveTranslation(lrAmnt,udAmnt,fbAmnt);
+		}
+		else{
 			handleGameplayInput(&event);
+			player.move(lrAmnt, fbAmnt);
+			camera.setTranslation(player.x,player.y+player.height,player.z);
+		}
 
 		networkCalls();
 
-		camera.moveTranslation(lrAmnt,udAmnt,fbAmnt);
+		
 
 	}
 
@@ -239,7 +244,9 @@ class GameManager {
 
 	void swapMode(){
 		stage = Stage.GAMEPLAY;
-		player.x = 0;
+		player.x = camera.position.x;
+		player.z = camera.position.z;
+		player.y = 0;
 	}
 
 	void moveCameraLeft(){
@@ -339,6 +346,15 @@ class GameManager {
 					}
 				}
 				break;
+				case SDL_KEYDOWN:
+					switch(event.key.keysym.sym){
+						case SDLK_ESCAPE:
+							running = false;
+							break;
+						default:
+						break;
+					}
+					break;
 				default:
 				break;
 			}
@@ -431,10 +447,8 @@ class GameManager {
 					int y = event.motion.y;
 					int difx = midx-x;
 					int dify = midy-y;
-					/*
-					camera.moveRotation(dify/200f, difx/200f, 0);
-					SDL_WarpMouseInWindow(window.window, midx, midy);
-					*/
+					camera.moveRotation(dify/200f, difx/200f);
+                    SDL_WarpMouseInWindow(window.window, midx, midy);
 				break;
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym){

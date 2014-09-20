@@ -22,7 +22,7 @@ class Player{
 
 	float height;
 
-	Camera camera
+	Camera camera;
 
 	this(float x, float y, float z, Camera* camera){
 		this.camera = *camera;
