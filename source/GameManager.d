@@ -41,7 +41,7 @@ class GameManager {
 
 	this(Window* win) {
 		camera = new Camera();
-		camera.setTranslation(0f,0f,0f);
+		camera.setTranslation(4f,0f,2f);
     	renderer = new Renderer(win, &camera);
 
     	window = win;
@@ -115,16 +115,24 @@ class GameManager {
 	}
 
 	void moveBlockLeft(){
-		camera.moveTranslation(-.05f,0f,0f);
+		//camera.moveTranslation(-.05f,0f,0f);
+        camera.moveRotation(0,0.1,0);
+        //camera.lookAt(0,0,-2, 0,1,0);
 	}
 	void moveBlockRight(){
-		camera.moveTranslation(.05f,0f,0f);
+		//camera.moveTranslation(.05f,0f,0f);
+        camera.moveRotation(0,-0.1,0);
+        //camera.lookAt(0,0,-2, 0,1,0);
 	}
 	void moveBlockUp(){
-		camera.moveTranslation(0f,0.05f,0f);
+		//camera.moveTranslation(0f,0.05f,0f);
+		camera.moveTranslation(0f,0,-0.5f);
+        //camera.lookAt(0,0,-2, 0,1,0);
 	}
 	void moveBlockDown(){
-		camera.moveTranslation(0f,-0.05f,0f);
+		//camera.moveTranslation(0f,-0.05f,0f);
+		camera.moveTranslation(0f,0,0.5f);
+        //camera.lookAt(0,0,-2, 0,1,0);
 	}
 	void raiseBlock(){}
 	void lowerBlock(){}

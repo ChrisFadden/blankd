@@ -1,6 +1,8 @@
 import std.math;
 import std.stdio;
 
+import Vector;
+
 class Matrix {
     float matrix[16];
     this() {
@@ -41,7 +43,43 @@ class Matrix {
         matrix[10] = z;
     }
 
-    void setRotation(float x, float y, float z) {
+    void translate(float x, float y, float z) {
+        Matrix trans = new Matrix();
+        trans.setTranslation(x, y, z);
+        matrix[] = (trans * this).matrix[];
+    }
+
+    void rotate(float x, float y, float z) {
+        Matrix rotXMat = new Matrix;
+        Matrix rotYMat = new Matrix;
+        Matrix rotZMat = new Matrix;
+        
+        // The X rotation matrix
+        rotXMat.matrix[] = 0;
+        rotXMat.matrix[0] = 1;
+        rotXMat.matrix[5] = cos(x);
+        rotXMat.matrix[6] = sin(x);
+        rotXMat.matrix[9] = -sin(x);
+        rotXMat.matrix[10] = cos(x);
+        rotXMat.matrix[15] = 1;
+
+        rotYMat.matrix[] = 0;
+        rotYMat.matrix[0] = cos(y);
+        rotYMat.matrix[2] = -sin(y);
+        rotYMat.matrix[5] = 1;
+        rotYMat.matrix[8] = sin(y);
+        rotYMat.matrix[10] = cos(y);
+        rotYMat.matrix[15] = 1;
+
+        rotZMat.matrix[] = 0;
+        rotZMat.matrix[0] = cos(z);
+        rotZMat.matrix[1] = sin(z);
+        rotZMat.matrix[4] = -sin(z);
+        rotZMat.matrix[5] = cos(z);
+        rotZMat.matrix[10] = 1;
+        rotZMat.matrix[15] = 1;
+
+        matrix[] = (rotXMat * rotYMat * rotZMat * this).matrix[];
     
     }
 
@@ -83,6 +121,38 @@ class Matrix {
         matrix[10] = (zFar+zNear)/(zNear-zFar);
         matrix[11] = -1;
         matrix[14] = (2.0*zFar*zNear)/(zNear-zFar);
+    }
+
+    void setLookAtMatrix(float eyeX, float eyeY, float eyeZ,
+                        float centerX, float centerY, float centerZ,
+                        float upX, float upY, float upZ) {
+
+        Vector f = new Vector(centerX-eyeX, centerY-eyeY, centerZ-eyeZ);
+        f = f/f.magnitude();
+        Vector UP = new Vector(upX, upY, upZ);
+        UP = UP/UP.magnitude();
+        Vector s = f*UP;
+        Vector u = (s/s.magnitude()) * f;
+        
+        matrix[0] = s.x;
+        matrix[1] = u.x;
+        matrix[2] = -f.x;
+        matrix[3] = 0;
+
+        matrix[4] = s.y;
+        matrix[5] = u.y;
+        matrix[6] = -f.y;
+        matrix[7] = 0;
+
+        matrix[8] = s.z;
+        matrix[9] = u.z;
+        matrix[10] = -f.z;
+        matrix[11] = 0;
+
+        matrix[12] = 0;
+        matrix[13] = 0;
+        matrix[14] = 0;
+        matrix[15] = 1;
     }
 }
 
