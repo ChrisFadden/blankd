@@ -18,6 +18,7 @@ import derelict.sdl2.sdl;
 import derelict.sdl2.net;
 
 import LoadWav;
+import derelict.sdl2.mixer;
 
 class GameManager {
 
@@ -70,8 +71,14 @@ class GameManager {
     	renderer = new Renderer(win, &camera);
     	this.server = server;
 
-    	char* music = cast(char*)"music.wav";
-    	loadWav(music);
+    	
+    
+    	Mix_Chunk*[1] sounds;
+    	sounds = InitializeSound();
+
+    	PlaySound(sounds[0]);
+    	
+    	
 
     	lrAmnt = 0;
     	fbAmnt = 0;
