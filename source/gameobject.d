@@ -139,6 +139,8 @@ class GameObject {
 
 	this()
 	{
+        debug writeln("THIS CODE SHOULD NEVER BE RUNNING");
+        
         bufferLen = 9;
         vBufferData = [
             -1.0, -1.0, 0.0,
@@ -150,11 +152,12 @@ class GameObject {
             0.0, 0.0, 1.0,
             0.0, 0.0, 1.0,
         ];
+        
         setup();
     }
 
     void setup() {
-        writeln("Beginning constructor", vBufferData.sizeof);
+        writeln("Beginning constructor ", vBufferData.sizeof);
 		x = 0;
 		y = 0;
 		z = 0;
@@ -167,23 +170,21 @@ class GameObject {
         updateMatrix();
         writeln("Done matrix");
 
-        this.shaderProgram = new ShaderProgram;
+        this.shaderProgram = new ShaderProgram();
         writeln("Done ShaderProgram");
 
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Pre buffer error!");
-
+        glGenBuffers(1, &vBuffer);
+        glGenBuffers(1, &nBuffer);
         updateMesh();
 	}
 
     void updateMesh(){
-        glGenBuffers(1, &vBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
         glBufferData(GL_ARRAY_BUFFER, bufferLen*GLfloat.sizeof, cast(void*)vBufferData, GL_STATIC_DRAW);
 
-        
-        glGenBuffers(1, &nBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, nBuffer);
         glBufferData(GL_ARRAY_BUFFER, bufferLen*GLfloat.sizeof, cast(void*)nBufferData, GL_STATIC_DRAW);
         int error;
@@ -200,8 +201,7 @@ class GameObject {
         modelMatrix.setTranslation(x, y, z);
     }
 
-	void draw(Camera camera)
-	{
+	void draw(Camera camera) {
         // Model matrix
         shaderProgram.bind(modelMatrix, camera.getVPMatrix(), r, g, b);
         int mPositionHandle = glGetAttribLocation(shaderProgram.programID, "vertPos_model");   
@@ -235,7 +235,7 @@ class GameObject {
     }
 }
 
-class BlockBuilder : GameObject{
+class BlockBuilder {
     float startx, starty, startz;
     float dx = 2.0;
     float dy = 1.0;
@@ -246,8 +246,10 @@ class BlockBuilder : GameObject{
 
     bool placing;
 
+    GameObject gameObject;
+
     this(float startx, float starty, float startz) {
-        super(startx,starty,startz,startx+dx,starty+dy,startz-dz);
+        gameObject = new GameObject(startx,starty,startz,startx+dx,starty+dy,startz-dz);
         this.startx = startx;
         this.starty = starty;
         this.startz = startz;
@@ -255,7 +257,6 @@ class BlockBuilder : GameObject{
         length = dz;
         height = dy;
         placing = false;
-        updateMesh();
     }
 
     void beginPlace() {
@@ -274,6 +275,10 @@ class BlockBuilder : GameObject{
         height = dy;
         updateMesh();
         return go1;
+    }
+
+    GameObject getGameObject() {
+        return gameObject;
     }
 
     void right() {
@@ -334,14 +339,8 @@ class BlockBuilder : GameObject{
         updateMesh();
     }
 
-    override
-    void draw(Camera c){
-        super.draw(c);
-    }
-
-    override
     void updateMesh() {
-        setVertexBuffer(startx,starty,startz,startx+width,starty+height,startz-length);
-        super.updateMesh();
+        gameObject.setVertexBuffer(startx,starty,startz,startx+width,starty+height,startz-length);
+        gameObject.updateMesh();
     }
 }

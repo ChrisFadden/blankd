@@ -19,24 +19,28 @@ class ShaderProgram {
             writeln("makeShaders error!");
     }
     void bind(Matrix modelMatrix, Matrix viewProjectionMatrix, float r, float g, float b) {
+        glUseProgram(programID);
         //modelMatrix.setIdentity();
         //viewProjectionMatrix.setIdentity();
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Not uniform location error!");
+
         GLint modelMatrixHandle = glGetUniformLocation(programID, "modelMatrix");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 1!");
+
         GLint viewProjectionMatrixHandle = glGetUniformLocation(programID, "viewProjectionMatrix");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 2!");
+
         GLint colorHandle = glGetUniformLocation(programID, "materialColor");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 2!");
+
         glUniform3f(colorHandle, r, g, b);
         glUniformMatrix4fv(modelMatrixHandle, 1, GL_FALSE, cast(float*)modelMatrix.matrix);
         glUniformMatrix4fv(viewProjectionMatrixHandle, 1, GL_FALSE, cast(float*)viewProjectionMatrix.matrix);
-        glUseProgram(programID);
     }
 }
 

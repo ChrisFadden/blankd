@@ -39,25 +39,68 @@ class GameManager {
 
     Stage stage;
 
+    GameObject go3;
+
     BlockBuilder builder;
 
 	this(Window* win) {
 		camera = new Camera();
-		camera.setTranslation(0f,0f,1f);
+		camera.setTranslation(0f,1.5f,1f);
+		//camera.moveRotation(45,0,0);
     	renderer = new Renderer(win, &camera);
 
     	window = win;
 
+    	/*
     	GameObject go1;
-    	go1 = new GameObject(-1.0, -1.0, 1.0, 1.0, 1.0, -1.0);
+
+    	go1 = new GameObject(-1, -1, 1, 1, 1, -1);
 	    go1.visible = true;
-	    go1.x = -2.0;
+	    go1.x = 3.0;
 	    go1.y = 0.0;
 	    go1.z = -3.0;
-        go1.setRGB(1.0, 0.5, 0.5);
+        go1.setRGB(1.0, 0.5, 1.0);
         go1.updateMatrix();
 	    renderer.register(go1);
+    	
+    	GameObject go2 = new GameObject(-1, -1, 1, 1, 1, -1);
+    	//go2.problematic = true;
+    	go2.x = 1;
+    	go2.y = 0;
+    	go2.z = -3;
+    	go2.updateMatrix();
+    	go2.setRGB(0.5, 1.0, 0.5);
+    	renderer.register(go2);
 
+	    
+    	go3 = new GameObject(-1.0, -1.0, 1.0, 1.0, 1.0, -1.0);
+	    go3.visible = true;
+	    go3.x = -1.0;
+	    go3.y = 0.0;
+	    go3.z = -3.0;
+        go3.setRGB(1.0, 0.5, 0.5);
+        go3.updateMatrix();
+	    renderer.register(go3);
+
+	    GameObject go4 = new GameObject(-1, -1, 3, 1, 1, 1);
+	    go4.visible = true;
+	    go4.x = -3.0;
+	    go4.y = 0.0;
+	    go4.z = -3.0;
+        go4.setRGB(0.9, 0.9, 0.9);
+        go4.updateMatrix();
+	    renderer.register(go4);
+	    */
+	    
+
+	    builder = new BlockBuilder(-1.0, -1.0, -4.0);
+	    GameObject b = builder.getGameObject();
+	    b.visible = true;
+	    b.setRGB(1,1,0.9);
+	    renderer.register(b);
+
+
+	    /*
 	    go1 = new GameObject(-1.0, -1.0, 1.0, 1.0, 1.0, -1.0);
 	    go1.visible = true;
 	    go1.x = 0.0;
@@ -66,15 +109,8 @@ class GameManager {
         go1.setRGB(0.5, 1.0, 0.5);
         go1.updateMatrix();
 	    renderer.register(go1);
-
-	    go1 = new GameObject(-1.0, -1.0, 1.0, 1.0, 1.0, -1.0);
-	    go1.visible = true;
-	    go1.x = 2.0;
-	    go1.y = 0.0;
-	    go1.z = -3.0;
-        go1.setRGB(0.5, 0.5, 1.0);
-        go1.updateMatrix();
-	    renderer.register(go1);
+	    */
+	    
 	    
 	    
 	    
@@ -83,13 +119,8 @@ class GameManager {
     	//objloader.open("block.obj", go1);
     	
 
-    	builder = new BlockBuilder(-1.0, -1.0, -4.0);
     	
-    	builder.visible = true;
-    	builder.setRGB(1.0, 0.4, 0.1);
-    	renderer.register(builder);
-    	
-    	
+    	//renderer.register(go1);
     	
     	
 
