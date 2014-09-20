@@ -13,7 +13,8 @@ class GameObject {
 	float y;
 	float z;
     Matrix modelMatrix;
-    float[] verts;
+    GLfloat[] verts;
+    GLfloat[] norms;
     int[] faces;
 
 	bool visible = false;
@@ -35,8 +36,8 @@ class GameObject {
 		x = 0;
 		y = 0;
 		z = 0;
-        verts.length = 24;
-        faces.length = 24;
+        //verts.length = 24;
+        //faces.length = 24;
         modelMatrix = new Matrix();
         updateMatrix();
         writeln("Done matrix");
@@ -80,7 +81,8 @@ class GameObject {
 
     void printVerts()
     {
-        writeln(verts);
-        writeln(faces);
+        writeln("verts: ",verts);
+        writeln("faces: ",faces);
+        writeln("norms: ",norms);
     }
 }
