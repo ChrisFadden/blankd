@@ -1,4 +1,5 @@
 import std.stdio;
+import std.string;
 
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
@@ -13,6 +14,8 @@ class GameObject {
 	float y;
 	float z;
     Matrix modelMatrix;
+    float[] verts;
+    int[] faces;
 
 	bool visible = false;
 
@@ -51,6 +54,8 @@ class GameObject {
 		x = 0;
 		y = 0;
 		z = 0;
+        verts.length = 24;
+        faces.length = 24;
         modelMatrix = new Matrix();
         updateMatrix();
         writeln("Done matrix");
@@ -91,4 +96,10 @@ class GameObject {
         glDrawArrays(GL_TRIANGLES, 0, vBufferLen/3);
         glDisableVertexAttribArray(0);
 	}
+
+    void printVerts()
+    {
+        writeln(verts);
+        writeln(faces);
+    }
 }

@@ -11,7 +11,6 @@ import derelict.sdl2.ttf;
 
 import networking;
 import GameManager;
-
 bool running;
 
 void main() {
