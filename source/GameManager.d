@@ -43,9 +43,10 @@ class GameManager {
 
     	go1 = new GameObject;
 	    go1.visible = true;
-	    go1.x = 0.0;
+	    go1.x = 1.0;
 	    go1.y = 1.0;
-	    go1.z = 2.0;
+	    go1.z = 0.0;
+        go1.updateMatrix();
 	    renderer.register(go1);
 
 	    fpsTime = SDL_GetTicks();
