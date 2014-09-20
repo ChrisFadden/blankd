@@ -22,9 +22,14 @@ class ShaderProgram {
         glUseProgram(programID);
         //modelMatrix.setIdentity();
         //viewProjectionMatrix.setIdentity();
+        glUseProgram(programID);
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
+        {
             writeln("Not uniform location error!");
+            writeln(error);
+        }
+
 
         GLint modelMatrixHandle = glGetUniformLocation(programID, "modelMatrix");
         while ((error = glGetError()) != GL_NO_ERROR)
@@ -37,6 +42,7 @@ class ShaderProgram {
         GLint colorHandle = glGetUniformLocation(programID, "materialColor");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 2!");
+        
 
         glUniform3f(colorHandle, r, g, b);
         glUniformMatrix4fv(modelMatrixHandle, 1, GL_FALSE, cast(float*)modelMatrix.matrix);
@@ -82,7 +88,7 @@ void main() {
     float dist = distance(position_modelSpace, light_pos);  
     //float distance = 0.8;  
     //gl_FragColor =  vec4(cosTheta * light_color, 1);
-    gl_FragColor =  vec4((cosTheta * materialColor * light_color) / (dist * dist), 1);
+    gl_FragColor =  vec4(0.3,0.3,0.3,0) + vec4((cosTheta * materialColor * light_color) / (dist * dist), 1);
     //gl_FragColor =  vec4(light_color / (distance * distance), 1);
     //gl_FragColor = vec4(1,0,0,1);
     //gl_FragColor = position_modelSpace;

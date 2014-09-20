@@ -6,7 +6,7 @@ import std.math;
 import Window;
 import Renderer;
 import gameobject;
-import blankdmod.myo.functions;
+import std.conv;
 import ObjLoader;
 
 import derelict.opengl3.gl3;
@@ -73,7 +73,6 @@ class GameManager {
     	go2.setRGB(0.5, 1.0, 0.5);
     	renderer.register(go2);
 
-	    
     	go3 = new GameObject(-1.0, -1.0, 1.0, 1.0, 1.0, -1.0);
 	    go3.visible = true;
 	    go3.x = -1.0;
@@ -149,7 +148,6 @@ class GameManager {
 	}
 
 	void step(float deltaTime){
-		//moduleFunc();
 		frameTime = SDL_GetTicks();
 		SDL_Event event;
 		if (stage == Stage.MAP_MAKER)
@@ -258,6 +256,7 @@ class GameManager {
 					switch(event.button.button){
 						case SDL_BUTTON_LEFT:
 							writeln("Mouse button!");
+							checkCollisions();
 							break;
 						default:
 						break;
@@ -322,5 +321,34 @@ class GameManager {
 				break;
 			}
 		}
+	}
+
+	void checkCollisions()
+	{
+		//setPerspectiveMatrix(60.0, 1280.0/720.0, 1.0, 100.0)
+		float window_width = 1280.0;
+		float window_height = 720.0;
+		float znear = 1.0;
+		//float zfar = 100.0;
+		
+		int window_y = to!int(window_height/2.0f);
+		double norm_y = double(window_y)/double(window_height/2.0f);
+		int window_x = to!int((window_width)/2.0f);
+		double norm_x = double(window_x)/double(window_width/2.0f);
+
+		float[4] ray_vec = [norm_x, norm_y, -znear, 0.0f];
+		Matrix m = builder.gameObject.modelMatrix;
+		m.matrix[0] = -m.matrix[0];
+        m.matrix[5] = -m.matrix[5];
+        m.matrix[10] = -m.matrix[10];
+		Matrix v = camera.viewMatrix;
+		v.matrix[0] = -v.matrix[0];
+        v.matrix[5] = -v.matrix[5];
+        v.matrix[10] = -v.matrix[10];
+
+        Matrix temp = m*v;
+
+        writeln(ray_vec);
+        writeln(temp*ray_vec);
 	}
 }

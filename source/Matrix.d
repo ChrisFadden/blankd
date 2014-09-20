@@ -31,6 +31,19 @@ class Matrix {
         } else static assert(0, "Operator "~op~" not implemented");
     }
 
+    float[4] opBinary(string op)(float[4] rhs) {
+        static if (op == "*") {
+           float[4] result = 0;
+           for (int j = 0; j < 4; j++) {
+                result[j] =  matrix[j] * rhs[0]
+                                    + matrix[j+4] * rhs[1]
+                                    + matrix[j+8] * rhs[2]
+                                    + matrix[j+12] * rhs[3];
+           }
+           return result;
+        } else static assert(0, "Operator "~op~" not implemented");
+    }
+
     void setTranslation(float x, float y, float z) {
         matrix[12] = x;
         matrix[13] = y;
