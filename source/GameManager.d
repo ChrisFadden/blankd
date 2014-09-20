@@ -10,6 +10,7 @@ import blankdmod.myo.functions;
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 import derelict.sdl2.net;
+import derelict.sdl2.ttf;
 
 class GameManager {
 
@@ -32,6 +33,8 @@ class GameManager {
 
     SDL_Joystick *joystick;
 
+    TTF_Font *font;
+
 	this(Window* win) {
 		camera = new Camera();
     	renderer = new Renderer(win, &camera);
@@ -40,9 +43,9 @@ class GameManager {
 
     	go1 = new GameObject;
 	    go1.visible = true;
-	    go1.coords[0] = 0.0;
-	    go1.coords[1] = 1.0;
-	    go1.coords[2] = 2.0;
+	    go1.x = 0.0;
+	    go1.y = 1.0;
+	    go1.z = 2.0;
 	    renderer.register(go1);
 
 	    fpsTime = SDL_GetTicks();
@@ -52,10 +55,12 @@ class GameManager {
 	    SDL_JoystickEventState(SDL_ENABLE);
 	    joystick = SDL_JoystickOpen(0);
 
+
 	    run();
 	}
 
 	void run(){
+		writeln("Go!");
 		running = true;
 
 		while (running) {
@@ -76,6 +81,8 @@ class GameManager {
 
 	void draw(){
 		renderer.draw();
+
+
 		fpsCounter++;
 		if (SDL_GetTicks() - fpsTime >= 1000){
 			fps = fpsCounter;
