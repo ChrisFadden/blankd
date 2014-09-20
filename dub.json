@@ -2,7 +2,7 @@
     "name": "blankd",
     "description": "HackGT blankd game",
     "authors": ["Preston Turner", "Chris Fadden", "Marcus Godwin", "Nathan Braswell"],
-    "homepage": "http://www.github.com",
+    "homepage": "https://github.com/ChrisFadden/blankd",
     "licence": "MIT",
     "dependencies": {
         "derelict-sdl2":"~>1.0.0",
