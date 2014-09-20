@@ -1,0 +1,15 @@
+{
+	"name": "blankd-myo",
+	"description": "Dynamic bindings to the Thalmic Myo SDK.",
+	"homepage": "https://github.com/ChrisFadden/blankd",
+	"license": "MIT",
+	"authors": [
+		"Marcus Godwin",
+		"Nathan Braswell",
+		"Preston Turner",
+		"Chris Fadden"
+	],
+
+	"targetName": "modules",
+	"targetPath": "lib"
+}
