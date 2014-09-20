@@ -48,16 +48,34 @@ class GameManager {
 
     	window = win;
 
-    	/*
+    	GameObject go1;
     	go1 = new GameObject(-1.0, -1.0, 1.0, 1.0, 1.0, -1.0);
+	    go1.visible = true;
+	    go1.x = -2.0;
+	    go1.y = 0.0;
+	    go1.z = -3.0;
+        go1.setRGB(1.0, 0.5, 0.5);
+        go1.updateMatrix();
+	    renderer.register(go1);
+
+	    go1 = new GameObject(-1.0, -1.0, 1.0, 1.0, 1.0, -1.0);
 	    go1.visible = true;
 	    go1.x = 0.0;
 	    go1.y = 0.0;
 	    go1.z = -3.0;
-        go1.setRGB(0.2, 1.0, 0.4);
+        go1.setRGB(0.5, 1.0, 0.5);
         go1.updateMatrix();
 	    renderer.register(go1);
-	    */
+
+	    go1 = new GameObject(-1.0, -1.0, 1.0, 1.0, 1.0, -1.0);
+	    go1.visible = true;
+	    go1.x = 2.0;
+	    go1.y = 0.0;
+	    go1.z = -3.0;
+        go1.setRGB(0.5, 0.5, 1.0);
+        go1.updateMatrix();
+	    renderer.register(go1);
+	    
 	    
 	    
 
@@ -66,9 +84,11 @@ class GameManager {
     	
 
     	builder = new BlockBuilder(-1.0, -1.0, -4.0);
+    	
     	builder.visible = true;
-    	builder.setRGB(0.6, 1.0, 0.9);
+    	builder.setRGB(1.0, 0.4, 0.1);
     	renderer.register(builder);
+    	
     	
     	
     	
@@ -163,7 +183,14 @@ class GameManager {
 	void lowerBlock(){
 		builder.lower();
 	}
-	void placeBlock(){}
+	void placeBlock(){
+		if (builder.placing){
+			renderer.register(builder.place());
+			//renderer.reregister(builder);
+		}
+		else
+			builder.beginPlace();
+	}
 
 
 	void handleMapMakerInput(SDL_Event *event) {
@@ -282,69 +309,5 @@ class GameManager {
 
         writeln(ray_vec);
         writeln(temp*ray_vec);
-	}
-}
-
-class BlockBuilder : GameObject{
-	float startx, starty, startz;
-	float dx = 2.0;
-	float dy = 1.0;
-	float dz = 2.0;
-	float width;
-	float length;
-	float height;
-
-	this(float startx, float starty, float startz) {
-		super(startx,starty,startz,startx+dx,starty+dy,startz-dz);
-		this.startx = startx;
-		this.starty = starty;
-		this.startz = startz;
-		width = dx;
-		length = dz;
-		height = dy;
-		updateMesh();
-	}
-
-	void right() {
-		width += dx;
-		updateMesh();
-	}
-
-	void left() {
-		if (width > dx)
-			width -= dx;
-		else
-			startx -= dx;
-		updateMesh();
-	}
-
-	void up() {
-		length += dz;
-		updateMesh();
-	}
-
-	void down() {
-		if (length > dz)
-			length -= dz;
-		else
-			startz += dz;
-		updateMesh();
-	}
-
-	void raise() {
-		height += dy;
-		updateMesh();
-	}
-
-	void lower() {
-		if (height > dy)
-			height -= dy;
-		updateMesh();
-	}
-
-	override
-	void updateMesh() {
-		setVertexBuffer(startx,starty,startz,startx+width,starty+height,startz-length);
-		super.updateMesh();
 	}
 }

@@ -86,7 +86,6 @@ class GameObject {
     }
 
     void setVertexBuffer(float x1, float y1, float z1, float x2, float y2, float z2) {
-        debug writeln("Creating vertex buffer");
         vBufferData = [
             // Front face
             x1, y1, z1,
@@ -190,7 +189,7 @@ class GameObject {
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Is buffer error!");
-        writeln("Done buffers, shader");
+        //writeln("Done buffers, shader");
     }
 	
 	~this()
@@ -204,7 +203,7 @@ class GameObject {
 	void draw(Camera camera)
 	{
         // Model matrix
-        shaderProgram.bind(modelMatrix, camera.getVPMatrix(), r, g, b);    
+        shaderProgram.bind(modelMatrix, camera.getVPMatrix(), r, g, b);
         int mPositionHandle = glGetAttribLocation(shaderProgram.programID, "vertPos_model");   
         int mNormalHandle = glGetAttribLocation(shaderProgram.programID, "vertNorm_model");
         
@@ -233,5 +232,116 @@ class GameObject {
     {
         writeln(verts);
         writeln(faces);
+    }
+}
+
+class BlockBuilder : GameObject{
+    float startx, starty, startz;
+    float dx = 2.0;
+    float dy = 1.0;
+    float dz = 2.0;
+    float width;
+    float length;
+    float height;
+
+    bool placing;
+
+    this(float startx, float starty, float startz) {
+        super(startx,starty,startz,startx+dx,starty+dy,startz-dz);
+        this.startx = startx;
+        this.starty = starty;
+        this.startz = startz;
+        width = dx;
+        length = dz;
+        height = dy;
+        placing = false;
+        updateMesh();
+    }
+
+    void beginPlace() {
+        placing = true;
+    }
+
+    GameObject place() {
+        GameObject go1 = new GameObject(startx,starty,startz,startx+width,starty+height,startz-length);
+        go1.visible = true;
+        go1.setRGB(0.2, 1.0, 0.4);
+        go1.updateMatrix();
+        placing = false;
+        startx = startx+width;
+        width = dx;
+        length = dz;
+        height = dy;
+        updateMesh();
+        return go1;
+    }
+
+    void right() {
+        if (placing)
+            width += dx;
+        else
+            startx += dx;
+        updateMesh();
+    }
+
+    void left() {
+        if (placing){
+            if (width > dx)
+                width -= dx;
+            else
+                startx -= dx;
+        } else {
+            startx -= dx;
+        }
+        updateMesh();
+    }
+
+    void up() {
+        if (placing)
+            length += dz;
+        else
+            startz -= dz;
+        updateMesh();
+    }
+
+    void down() {
+        if (placing) {
+            if (length > dz)
+                length -= dz;
+            else
+                startz += dz;
+        } else {
+            startz += dz;
+        }
+        updateMesh();
+    }
+
+    void raise() {
+        if (placing)
+            height += dy;
+        else
+            starty += dy;
+        updateMesh();
+    }
+
+    void lower() {
+        if (placing) {
+            if (height > dy)
+                height -= dy;
+        } else {
+            starty -= dy;
+        }
+        updateMesh();
+    }
+
+    override
+    void draw(Camera c){
+        super.draw(c);
+    }
+
+    override
+    void updateMesh() {
+        setVertexBuffer(startx,starty,startz,startx+width,starty+height,startz-length);
+        super.updateMesh();
     }
 }

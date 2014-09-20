@@ -33,10 +33,10 @@ class ShaderProgram {
         GLint colorHandle = glGetUniformLocation(programID, "materialColor");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 2!");
+        glUniform3f(colorHandle, r, g, b);
         glUniformMatrix4fv(modelMatrixHandle, 1, GL_FALSE, cast(float*)modelMatrix.matrix);
         glUniformMatrix4fv(viewProjectionMatrixHandle, 1, GL_FALSE, cast(float*)viewProjectionMatrix.matrix);
-        glUniform3f(colorHandle, r, g, b);
-        glUseProgram(programID); 
+        glUseProgram(programID);
     }
 }
 
@@ -48,7 +48,7 @@ attribute vec3 vertNorm_model;
 uniform mat4 modelMatrix;
 uniform mat4 viewProjectionMatrix;
 
-uniform vec3 materialColor;
+//uniform vec3 materialColor;
 
 varying vec4 position_modelSpace;
 varying vec4 normal_modelSpace;
@@ -81,6 +81,7 @@ void main() {
     gl_FragColor =  vec4((cosTheta * materialColor * light_color) / (dist * dist), 1);
     //gl_FragColor =  vec4(light_color / (distance * distance), 1);
     //gl_FragColor = vec4(1,0,0,1);
+    //gl_FragColor = position_modelSpace;
 }
 ";
 
