@@ -90,6 +90,7 @@ class GameManager {
         go4.updateMatrix();
 	    renderer.register(go4);
 	    */
+	    
 
 	    builder = new BlockBuilder(-1.0, -1.0, -4.0);
 	    GameObject b = builder.getGameObject();
