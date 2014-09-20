@@ -1,6 +1,7 @@
 import std.stdio;
 import core.thread;
 import std.string;
+import std.math;
 
 import Window;
 import Renderer;
@@ -45,8 +46,8 @@ class GameManager {
 
 	this(Window* win) {
 		camera = new Camera();
-		camera.setTranslation(0f,1.5f,1f);
-		//camera.moveRotation(45,0,0);
+		camera.setTranslation(0f,4f,1f);
+		camera.moveRotation(-.3f,0,0);
     	renderer = new Renderer(win, &camera);
 
     	window = win;
@@ -192,7 +193,9 @@ class GameManager {
 		camera.moveTranslation(0f,-0.1f,0f);
 	}
 
-
+	void quitBlock() {
+		builder.quit();
+	}
 	void moveBlockLeft(){
 		builder.left();
 		//camera.moveTranslation(-.05f,0f,0f);
@@ -261,9 +264,14 @@ class GameManager {
 					}
 				break;
 				case SDL_MOUSEMOTION:
+					int midx = window.width()/2;
+					int midy = window.height()/2;
 					int x = event.motion.x;
 					int y = event.motion.y;
-					SDL_WarpMouseInWindow(window.window, window.width()/2, window.height()/2);
+					int difx = midx-x;
+					int dify = midy-y;
+					camera.moveRotation(dify/200f, difx/200f, 0);
+					SDL_WarpMouseInWindow(window.window, midx, midy);
 				break;
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym){
@@ -290,6 +298,9 @@ class GameManager {
 							break;
 						case SDLK_DOWN:
 							lowerBlock();
+							break;
+						case SDLK_q:
+							quitBlock();
 							break;
 						case SDLK_i:
 							moveCameraUp();

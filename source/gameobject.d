@@ -270,15 +270,24 @@ class BlockBuilder {
         go1.updateMatrix();
         placing = false;
         startx = startx+width;
-        width = dx;
-        length = dz;
-        height = dy;
-        updateMesh();
+        reset();
         return go1;
     }
 
     GameObject getGameObject() {
         return gameObject;
+    }
+
+    void reset() {
+        width = dx;
+        length = dz;
+        height = dy;
+        updateMesh();
+    }
+
+    void quit() {
+        placing = false;
+        reset();
     }
 
     void right() {
