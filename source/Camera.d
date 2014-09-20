@@ -20,7 +20,7 @@ class Camera {
 
     void setLookAt(Vector eye, Vector center, Vector up) {
         //viewMatrix.setLookAtMatrix(eye, center, up);
-        writeln(viewMatrix.matrix);
+        //writeln(viewMatrix.matrix);
         Matrix look = new Matrix();
         //look.setLookAtMatrix(eye.x, eye.y, eye.z,
                     //center.x, center.y, center.z,
@@ -41,7 +41,7 @@ class Camera {
 
     void moveTranslation(float dx, float dy, float dz) {
         float scale = 1;
-        writeln("waafa", position.toString());
+        //writeln("waafa", position.toString());
         position = position +  direction * scale * dz;
         position = position +  right * scale * dx;
         position = position + up * scale * dy;
@@ -54,6 +54,14 @@ class Camera {
     void moveRotation(float dx, float dy) {
         horizontalAngle += dx;
         verticalAngle += dy;
+        writeln("Verticale angle: ", verticalAngle);
+        if (verticalAngle < -0.3)
+            verticalAngle = -0.3;
+        writeln("Verticale angle mod: ", verticalAngle);
+        writeln("Verticale angle: ", verticalAngle);
+        if (verticalAngle > 0.3)
+            verticalAngle = 0.3;
+        writeln("Verticale angle mod: ", verticalAngle);
         direction = new Vector(cos(verticalAngle)*sin(horizontalAngle),
                                 sin(verticalAngle),
                                 cos(verticalAngle)*cos(horizontalAngle));
@@ -66,7 +74,7 @@ class Camera {
 
 
     Matrix getVPMatrix() {
-        writeln("baba", position.toString);
+        //writeln("baba", position.toString);
         setLookAt(position, position+direction, up);
         //setLookAt(position, position+direction, new Vector(0,1,0));
         return  projectionMatrix * viewMatrix;

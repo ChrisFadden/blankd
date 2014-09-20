@@ -189,16 +189,16 @@ class Matrix {
         //matrix[] = (this * trans).matrix[];
     }
     void setLookAtMatrix(Vector eye, Vector center, Vector up) {
-        eye.toString();
-        center.toString();
-        up.toString();
+        //eye.toString();
+        //center.toString();
+        //up.toString();
 
         Vector forward = center - eye;
-        writeln("Z");
-        forward.toString();
-        writeln("Z mag: ", forward.magnitude());
+        //writeln("Z");
+        //forward.toString();
+        //writeln("Z mag: ", forward.magnitude());
         forward = forward/forward.magnitude();
-        forward.toString();
+        //forward.toString();
           
         Vector side = forward*up;
         side = side/side.magnitude();
