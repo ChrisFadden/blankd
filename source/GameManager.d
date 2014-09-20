@@ -326,14 +326,19 @@ class GameManager {
 		double norm_x = double(window_x)/double(window_width/2.0f);
 
 		float[4] ray_vec = [norm_x, norm_y, -znear, 0.0f];
-		Matrix m = builder.gameObject.modelMatrix;
-		m.matrix[0] = -m.matrix[0];
-        m.matrix[5] = -m.matrix[5];
-        m.matrix[10] = -m.matrix[10];
-		Matrix v = camera.viewMatrix;
-		v.matrix[0] = -v.matrix[0];
-        v.matrix[5] = -v.matrix[5];
-        v.matrix[10] = -v.matrix[10];
+		
+		float[16] mat = builder.gameObject.modelMatrix.matrix;
+		Matrix m = new Matrix;
+		m.matrix = mat;
+		m.matrix[0] = -mat[0];
+        m.matrix[5] = -mat[5];
+        m.matrix[10] = -mat[10];
+		
+		float[16] cmat = camera.viewMatrix.matrix;
+		Matrix v = new Matrix;
+		v.matrix[0] = -cmat[0];
+        v.matrix[5] = -cmat[5];
+        v.matrix[10] = -cmat[10];
 
         Matrix temp = m*v;
 
