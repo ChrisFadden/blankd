@@ -203,7 +203,20 @@ class GameObject {
 	void draw(Camera camera)
 	{
         // Model matrix
+        int error;
+        
+        while ((error = glGetError()) != GL_NO_ERROR)
+        {
+            writeln("Error Before Bind!!");
+            writeln(error);
+        }
         shaderProgram.bind(modelMatrix, camera.getVPMatrix(), r, g, b);
+        while ((error = glGetError()) != GL_NO_ERROR)
+        {
+            writeln("Error After Bind!");
+            writeln(error);
+        }
+
         int mPositionHandle = glGetAttribLocation(shaderProgram.programID, "vertPos_model");   
         int mNormalHandle = glGetAttribLocation(shaderProgram.programID, "vertNorm_model");
         

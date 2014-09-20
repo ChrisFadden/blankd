@@ -21,9 +21,13 @@ class ShaderProgram {
     void bind(Matrix modelMatrix, Matrix viewProjectionMatrix, float r, float g, float b) {
         //modelMatrix.setIdentity();
         //viewProjectionMatrix.setIdentity();
+        glUseProgram(programID);
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
+        {
             writeln("Not uniform location error!");
+            writeln(error);
+        }
         GLint modelMatrixHandle = glGetUniformLocation(programID, "modelMatrix");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 1!");
@@ -33,10 +37,27 @@ class ShaderProgram {
         GLint colorHandle = glGetUniformLocation(programID, "materialColor");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 2!");
-        glUniform3f(colorHandle, r, g, b);
+        float[3] farr = [r,g,b];
+        glUniform3fv(colorHandle, 1, farr.ptr);
+        //glUniform3f(colorHandle, r, g, b);
+        while ((error = glGetError()) != GL_NO_ERROR)
+        {
+            writeln("Bad Uniform3f!");
+            writeln(error);
+        }
         glUniformMatrix4fv(modelMatrixHandle, 1, GL_FALSE, cast(float*)modelMatrix.matrix);
+        while ((error = glGetError()) != GL_NO_ERROR)
+        {
+            writeln("UnifromMatrix4fv!");
+            writeln(error);
+        }
         glUniformMatrix4fv(viewProjectionMatrixHandle, 1, GL_FALSE, cast(float*)viewProjectionMatrix.matrix);
-        glUseProgram(programID);
+        while ((error = glGetError()) != GL_NO_ERROR)
+        {
+            writeln("UniformMatrix4fv 2!");
+            writeln(error);
+        }
+
     }
 }
 
