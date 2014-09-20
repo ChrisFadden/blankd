@@ -8,6 +8,8 @@ import derelict.sdl2.net;
 
 import gameobject;
 
+import networking;
+
 immutable char* title = "HackGT - blankd";
 immutable uint windowX = 1280;
 immutable uint windowY = 720;
@@ -15,6 +17,9 @@ immutable uint windowY = 720;
 void main() {
     DerelictGL3.load();
     DerelictSDL2.load();
+    DerelictSDL2Net.load();
+
+    SDLNet_InitServer(1234, 20);
 
     SDL_Window *window;
     SDL_GLContext glcontext;
@@ -72,6 +77,8 @@ void main() {
     //Finish and quit
     SDL_GL_DeleteContext(glcontext);
     SDL_DestroyWindow(window);
+    freesockets();
+    SDLNet_Quit();
     SDL_Quit();
 }
 
