@@ -7,13 +7,20 @@ import Renderer;
 import gameobject;
 import blankd.myo.functions;
 
-import networking;
+import derelict.opengl3.gl3;
+import derelict.sdl2.sdl;
+
+//import networking;
 
 void main() {
-    DerelictSDL2Net.load();
+    DerelictGL3.load();
+    DerelictSDL2.load();
+    //DerelictSDL2Net.load();
 
     Window window = new Window("HackGT - blankd");
     window.init();
+    // Has to reload after we have a context
+    DerelictGL3.reload();
 
     Camera camera = new Camera();
     Renderer renderer = new Renderer(window, camera);
@@ -28,15 +35,14 @@ void main() {
     renderer.register(go1);
     renderer.draw();
     moduleFunc();
+    window.pause(2000);
 
-    SDLNet_InitServer(1234, 20);
+    //SDLNet_InitServer(1234, 20);
 
     //Finish and quit
     window.quit();
-    SDL_GL_DeleteContext(glcontext);
-    SDL_DestroyWindow(window);
-    freesockets();
-    SDLNet_Quit();
+    //freesockets();
+    //SDLNet_Quit();
     SDL_Quit();
 }
 

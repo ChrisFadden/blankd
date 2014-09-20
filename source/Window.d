@@ -7,7 +7,6 @@ import derelict.sdl2.sdl;
 import derelict.sdl2.net;
 
 class Window {
-
     string title; 
     uint windowX = 1280;
     uint windowY = 720;
@@ -19,10 +18,6 @@ class Window {
     }
 
     void init() {
-
-        DerelictGL3.load();
-        DerelictSDL2.load();
-
         if (SDL_Init(SDL_INIT_VIDEO) < 0) {
             writeln("SDL2 failed to init: ", SDL_GetError());
             return;
@@ -54,9 +49,8 @@ class Window {
             printf("SDL Error creating OpenGL context: %s", error);
             return;
         }
+    }
 
-        DerelictGL3.reload();
-}
     void flip() {
         SDL_GL_SwapWindow(window);
     }
@@ -68,6 +62,5 @@ class Window {
     void quit() {
         SDL_GL_DeleteContext(glcontext);
         SDL_DestroyWindow(window);
-        SDL_Quit();
     }
 }
