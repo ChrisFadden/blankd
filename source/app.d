@@ -5,6 +5,7 @@ import std.string;
 import Window;
 import Renderer;
 import gameobject;
+import blankd.myo.functions;
 
 void main() {
     Window window = new Window("HackGT - blankd");
@@ -22,7 +23,7 @@ void main() {
     writeln(go1.coords);
     renderer.register(go1);
     renderer.draw();
-
+    moduleFunc();
     //Finish and quit
     window.pause(2000);
     window.quit();
