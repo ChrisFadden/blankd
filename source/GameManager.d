@@ -137,21 +137,14 @@ class GameManager {
 					writeln("Button ", event.jbutton.button);
 				break;
 				case SDL_JOYHATMOTION:
-					switch(event.jhat.value){
-						case (1):
-							moveBlockUp();
-							break;
-						case (2):
-							moveBlockRight();
-							break;
-						case (4):
-							moveBlockDown();
-							break;
-						case (8):
-							moveBlockLeft();
-							break;
-						default:
-						break;
+					if (event.jhat.value & SDL_HAT_UP) {
+						moveBlockUp();
+					} else if (event.jhat.value & SDL_HAT_RIGHT) {
+						moveBlockRight();
+					} else if (event.jhat.value & SDL_HAT_DOWN) {
+						moveBlockDown();
+					} else if (event.jhat.value & SDL_HAT_LEFT) {
+						moveBlockLeft();
 					}
 				break;
 				case SDL_JOYAXISMOTION:
