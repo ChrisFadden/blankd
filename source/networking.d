@@ -9,11 +9,12 @@ SDLNet_SocketSet socketSet;
 TCPsocket socket;
 
 // Returns whether or not the socket is still connected
-bool readsocket(TCPsocket msocket, (void)(*function)(byte[])) {
+bool readsocket(TCPsocket msocket, void function(byte[]) func) {
 	if (SDLNet_SocketReady(msocket)){
 		int len;
+		byte readBuffer[512];
 		if ((len = SDLNet_TCP_Recv(msocket, &readBuffer, 512)) > 0) {
-			function(readBuffer);
+			func(readBuffer);
 			return true;
 		} else {
 			SDLNet_TCP_DelSocket(socketSet, msocket);
@@ -21,17 +22,18 @@ bool readsocket(TCPsocket msocket, (void)(*function)(byte[])) {
 			return false;
 		}
 	}
+	return true;
 }
 
-byte readbyte(byte[] readBuffer){
+byte readbyte(byte* readBuffer){
 	byte b = readBuffer[0];
-	readBuffer++;
+	readBuffer += 1;
 	return b;
 }
 
 void writebyte(byte b){
 	writeBuffer[bufferIndex] = b;
-	iBuffer++;
+	bufferIndex++;
 }
 
 void clearbuffer(){
@@ -43,9 +45,9 @@ bool sendmessage(TCPsocket msocket) {
 	return sendmessage(msocket, true);
 }
 
-TCPSocket checkForNewClient(){
+TCPsocket checkForNewClient(){
 	if (SDLNet_SocketReady(socket) != 0) {
-		TCPSocket newSocket = SDLNet_TCP_Accept(socket);
+		TCPsocket newSocket = SDLNet_TCP_Accept(socket);
 		SDLNet_TCP_AddSocket(socketSet, newSocket);
 		return newSocket;
 	}
@@ -62,7 +64,7 @@ bool sendmessage(TCPsocket socket, bool clear){
 }
 
 bool checkSockets(){
-	return SDLNet__CheckSockets(socketSet, 0) > 0;
+	return SDLNet_CheckSockets(socketSet, 0) > 0;
 }
 
 TCPsocket getSocket(){
@@ -120,13 +122,12 @@ SDLNet_SocketSet SDLNet_Initialize(uint socketSetSize) {
 	// Initialize SDLNet
 	if (SDLNet_Init() < 0) {
 		// If we fail...
-		writeln("SDLNet Init failure: ", SLDNet_GetError());
-		return false;
+		writeln("SDLNet Init failure: ", SDLNet_GetError());
+		return null;
 	}
-	return true;
 
 	bufferIndex = 0;
 
 	// Create a socket
-	SDLNet_SocketSet socketSet = SDLNet_AllocSocketSet(socketSetSize);
+	return SDLNet_AllocSocketSet(socketSetSize);
 }
