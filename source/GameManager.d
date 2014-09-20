@@ -94,6 +94,20 @@ class GameManager {
 	void handleInput(SDL_Event *event) {
 		while (SDL_PollEvent(event)) {
 			switch(event.type){
+				case SDL_MOUSEBUTTONDOWN:
+					switch(event.button.button){
+						case SDL_BUTTON_LEFT:
+							writeln("Mouse button!");
+							break;
+						default:
+						break;
+					}
+				break;
+				case SDL_MOUSEMOTION:
+					int x = event.motion.x;
+					int y = event.motion.y;
+					SDL_WarpMouseInWindow(window.window, window.width()/2, window.height()/2);
+				break;
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym){
 						case SDLK_ESCAPE:

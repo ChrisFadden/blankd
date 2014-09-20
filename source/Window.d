@@ -7,8 +7,8 @@ import derelict.sdl2.sdl;
 
 class Window {
     string title; 
-    uint windowX = 1280;
-    uint windowY = 720;
+    uint windowWidth = 1280;
+    uint windowHeight = 720;
     SDL_Window *window;
     SDL_GLContext glcontext;
 
@@ -35,7 +35,7 @@ class Window {
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
         window = SDL_CreateWindow(cast(char*)title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                windowX, windowY, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+                windowWidth, windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
         if (!window) {
             writeln("Failed to create SDL window: ", SDL_GetError());
             return;
@@ -48,6 +48,14 @@ class Window {
             printf("SDL Error creating OpenGL context: %s", error);
             return;
         }
+    }
+
+    uint width() {
+        return windowWidth;
+    }
+
+    uint height() {
+        return windowHeight;
     }
 
     void flip() {

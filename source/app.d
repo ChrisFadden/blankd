@@ -3,9 +3,6 @@ import core.thread;
 import std.string;
 
 import Window;
-import Renderer;
-import gameobject;
-import blankdmod.myo.functions;
 
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
