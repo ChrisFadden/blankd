@@ -65,7 +65,7 @@ void main() {
                 TCPsocket tempClient = checkForNewClient();
                 if (tempClient !is null){
                     client = tempClient;
-                    writebyte(1);
+                    writefloat(1.9);
                     sendmessage(client);
                 }
 
@@ -74,7 +74,16 @@ void main() {
             }
         }
     } else if (server == 0){
-
+        if (SDLNet_InitClient("127.0.0.1", 1234)){
+            running = true;
+            writefloat(7.2);
+            sendmessage(getSocket());
+            while (running) {
+                if (checkSockets() > 0){
+                    readsocket(getSocket(), &basic);
+                }
+            }
+        }
     }
 
     //Finish and quit
@@ -85,6 +94,8 @@ void main() {
 }
 
 void basic(byte* array) {
-    byte a = readbyte(array);
+    float a = readfloat(array);
+    writeln("Received ", a);
+    running = false;
 }
 

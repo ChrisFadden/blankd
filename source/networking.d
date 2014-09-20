@@ -31,9 +31,27 @@ byte readbyte(byte* readBuffer){
 	return b;
 }
 
+float readfloat(byte* readBuffer){
+	byte[] outFloatArr = new byte[float.sizeof];
+	for (int i = 0; i < float.sizeof; i++) {
+		outFloatArr[i] = readBuffer[i];
+	}
+	readBuffer += float.sizeof;
+	float* outFloatP = cast(float*)(outFloatArr);
+	return(*outFloatP);
+}
+
 void writebyte(byte b){
 	writeBuffer[bufferIndex] = b;
 	bufferIndex++;
+}
+
+void writefloat(float f){
+	byte* fp = cast(byte*)&f;
+	for (int i = 0; i < float.sizeof; i++) {
+		writeBuffer[bufferIndex] = fp[i];
+		bufferIndex++;
+	}
 }
 
 void clearbuffer(){
