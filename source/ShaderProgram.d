@@ -81,6 +81,7 @@ void main() {
     gl_FragColor =  vec4((cosTheta * materialColor * light_color) / (dist * dist), 1);
     //gl_FragColor =  vec4(light_color / (distance * distance), 1);
     //gl_FragColor = vec4(1,0,0,1);
+    //gl_FragColor = position_modelSpace;
 }
 ";
 

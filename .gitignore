@@ -1,5 +1,6 @@
 .dub
 blankd
 *.swp
+*.swo
 .DS_Store
 
