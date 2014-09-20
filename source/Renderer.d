@@ -16,6 +16,7 @@ class Renderer {
         this.window = *window;
         this.camera = *camera;
         glEnable(GL_DEPTH_TEST);
+        glClearColor(.5f,.5f,1f,1f);
     }
 
     void register(GameObject obj) {

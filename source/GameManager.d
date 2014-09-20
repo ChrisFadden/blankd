@@ -8,6 +8,7 @@ import Renderer;
 import gameobject;
 import std.conv;
 import ObjLoader;
+import Player;
 
 import networking;
 
@@ -53,6 +54,8 @@ class GameManager {
 
     BlockBuilder builder;
 
+    Player player;
+
     static int server;
 
 	this(Window* win, int server) {
@@ -68,11 +71,18 @@ class GameManager {
 
     	window = win;
 
-	    builder = new BlockBuilder(-1.0, -1.0, -4.0);
+    	player = new Player(0, 0, 0, &camera);
+
+	    builder = new BlockBuilder(-1.0, 0.0, -4.0);
 	    GameObject b = builder.getGameObject();
 	    b.visible = true;
 	    b.setRGB(1,1,0.9);
 	    renderer.register(b);
+
+	    GameObject floor = new GameObject(-80,-80,160,160);
+	    floor.visible = true;
+	    floor.setRGB(.2f,.9f,.5f);
+	    renderer.register(floor);
 
 
 	    /*
@@ -136,12 +146,23 @@ class GameManager {
 		frameTime = SDL_GetTicks();
 
 		SDL_Event event;
-		if (stage == Stage.MAP_MAKER)
+		if (stage == Stage.MAP_MAKER){
 			handleMapMakerInput(&event);
+			camera.moveTranslation(lrAmnt,udAmnt,fbAmnt);
+		}
+		else{
+			handleGameplayInput(&event);
+			player.move(lrAmnt, fbAmnt);
+			camera.setTranslation(player.x,player.y+player.height,player.z);
+		}
 
-		camera.moveTranslation(lrAmnt,udAmnt,fbAmnt);
+		networkCalls();
 
 		
+
+	}
+
+	void networkCalls(){
 		if (server == 1){
 			TCPsocket client;
 			if (checkSockets() > 0){
@@ -221,6 +242,13 @@ class GameManager {
 
 	}
 
+	void swapMode(){
+		stage = Stage.GAMEPLAY;
+		player.x = camera.position.x;
+		player.z = camera.position.z;
+		player.y = 0;
+	}
+
 	void moveCameraLeft(){
 		camera.moveTranslation(-.1f,0f,0f);
 	}
@@ -232,6 +260,10 @@ class GameManager {
 	}
 	void moveCameraDown(){
 		camera.moveTranslation(0f,-0.1f,0f);
+	}
+
+	void angleRight() {
+		//camera.moveRotation(0f,(3.14f)/2,0f);
 	}
 
 	void quitBlock() {
@@ -296,6 +328,38 @@ class GameManager {
         renderer.register(got);
 	}
 
+	void handleGameplayInput(SDL_Event *event) {
+		while (SDL_PollEvent(event)) {
+			switch(event.type){
+				case SDL_JOYAXISMOTION:
+				if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)){
+					if (event.jaxis.axis == 0) {
+						lrAmnt = event.jaxis.value/(cast(float)short.max);
+					} if (event.jaxis.axis == 1) {
+						fbAmnt = event.jaxis.value/(cast(float)short.max);
+					}
+				} else {
+					if (event.jaxis.axis == 0){
+						lrAmnt = 0;
+					} else if (event.jaxis.axis == 1) {
+						fbAmnt = 0;
+					}
+				}
+				break;
+				case SDL_KEYDOWN:
+					switch(event.key.keysym.sym){
+						case SDLK_ESCAPE:
+							running = false;
+							break;
+						default:
+						break;
+					}
+					break;
+				default:
+				break;
+			}
+		}
+	}
 
 	void handleMapMakerInput(SDL_Event *event) {
 		while (SDL_PollEvent(event)) {
@@ -304,6 +368,9 @@ class GameManager {
 					switch(event.jbutton.button){
 						case 1:
 						placeBlock();
+							break;
+						case 2:
+						quitBlock();
 							break;
 						case 5:
 						raiseBlock();
@@ -329,6 +396,9 @@ class GameManager {
 							break;
 						case 7:
 						udAmnt = 0f;
+							break;
+						case 3:
+						swapMode();
 							break;
 						default:
 						break;
@@ -406,7 +476,10 @@ class GameManager {
 						case SDLK_DOWN:
 							lowerBlock();
 							break;
-						case SDLK_q:
+						case SDLK_e:
+							angleRight();
+							break;
+						case SDLK_r:
 							quitBlock();
 							break;
 						case SDLK_i:

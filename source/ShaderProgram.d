@@ -79,10 +79,10 @@ varying vec4 position_modelSpace;
 varying vec4 normal_modelSpace;
 
 void main() {
-    vec4 light_pos = vec4(0, 1, 0, 1);
-    vec3 light_color = vec3(1,1,1);
+    vec4 light_pos = vec4(20, 80, 0, 1);
+    vec3 light_color = vec3(8,8,8);
 
-    vec3 matDiffuseColor = vec3(1, 0.5, 0.5);
+    vec3 matDiffuseColor = vec3(0.9, 0.9, 0.9);
 
     float cosTheta = clamp( dot(normal_modelSpace, light_pos), 0, 1);
     float dist = distance(position_modelSpace, light_pos);  
