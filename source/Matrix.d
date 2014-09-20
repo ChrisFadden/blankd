@@ -1,4 +1,5 @@
 import std.math;
+import std.stdio;
 
 class Matrix {
     float matrix[16];
@@ -65,13 +66,23 @@ class Matrix {
 
     }
 
+    //void setPerspectiveMatrix(float fovy, float aspect, float zNear, float zFar) {
+        //float tanHalfFovy = tan(degtorad(fovy/2.0f));
+        //matrix[0] = 1.0/ (tanHalfFovy*aspect);
+        //matrix[5] = 1.0/tanHalfFovy;
+        //matrix[10] = - (zFar+zNear)/(zNear-zFar);
+        //matrix[11] = -1;
+        //matrix[14] = -(2.0*zFar*zNear)/(zNear-zFar);
+    //}
+
     void setPerspectiveMatrix(float fovy, float aspect, float zNear, float zFar) {
-        float f = 1/tan(degtorad(fovy/2));
+        float f = 1.0f/tan(degtorad(fovy/2.0f));
+        writeln("F: ", f);
         matrix[0] = f/aspect;
         matrix[5] = f;
         matrix[10] = (zFar+zNear)/(zNear-zFar);
         matrix[11] = -1;
-        matrix[14] = (2*zFar*zNear)/(zNear-zFar);
+        matrix[14] = (2.0*zFar*zNear)/(zNear-zFar);
     }
 }
 

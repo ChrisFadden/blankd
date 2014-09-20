@@ -6,7 +6,7 @@ class Camera {
     float[3] loc = 0;
     this() {
         projectionMatrix = new Matrix;
-        projectionMatrix.setPerspectiveMatrix(90.0, 1280/720, 1.0, 100.0);
+        projectionMatrix.setPerspectiveMatrix(60.0, 1280.0/720.0, 1.0, 100.0);
         viewMatrix = new Matrix;
     }
 
@@ -26,6 +26,6 @@ class Camera {
 
 
     Matrix getVPMatrix() {
-        return viewMatrix * projectionMatrix;
+        return  projectionMatrix * viewMatrix ;
     }
 }
