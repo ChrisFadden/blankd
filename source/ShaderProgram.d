@@ -18,7 +18,7 @@ class ShaderProgram {
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("makeShaders error!");
     }
-    void bind(Matrix modelMatrix, Matrix viewProjectionMatrix) {
+    void bind(Matrix modelMatrix, Matrix viewProjectionMatrix, float r, float g, float b) {
         //modelMatrix.setIdentity();
         //viewProjectionMatrix.setIdentity();
         int error;
@@ -30,8 +30,12 @@ class ShaderProgram {
         GLint viewProjectionMatrixHandle = glGetUniformLocation(progamID, "viewProjectionMatrix");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 2!");
+        GLint colorHandle = glGetUniformLocation(progamID, "materialColor");
+        while ((error = glGetError()) != GL_NO_ERROR)
+            writeln("Get uniform location error 2!");
         glUniformMatrix4fv(modelMatrixHandle, 1, GL_FALSE, cast(float*)modelMatrix.matrix);
         glUniformMatrix4fv(viewProjectionMatrixHandle, 1, GL_FALSE, cast(float*)viewProjectionMatrix.matrix);
+        glUniform3f(colorHandle, r, g, b);
         glUseProgram(progamID); 
     }
 }
@@ -39,20 +43,44 @@ class ShaderProgram {
 string simpleVertShaderSource = "
 #version 120
 attribute vec3 vertPos_model;
+attribute vec3 vertNorm_model;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewProjectionMatrix;
 
+uniform vec3 materialColor;
+
+varying vec4 position_modelSpace;
+varying vec4 normal_modelSpace;
+
 void main() {
     gl_Position = viewProjectionMatrix * modelMatrix * vec4(vertPos_model, 1);
+    position_modelSpace = modelMatrix * vec4(vertPos_model, 1);
+    normal_modelSpace = normalize(modelMatrix * vec4(vertNorm_model, 1));
 }
 ";
 
 string simpleFragShaderSource = "
 #version 120
 
+uniform vec3 materialColor;
+
+varying vec4 position_modelSpace;
+varying vec4 normal_modelSpace;
+
 void main() {
-    gl_FragColor = vec4(1,0,0,0);
+    vec4 light_pos = vec4(0, 1, 0, 1);
+    vec3 light_color = vec3(5,5,5);
+
+    vec3 matDiffuseColor = vec3(1, 0.5, 0.5);
+
+    float cosTheta = clamp( dot(normal_modelSpace, light_pos), 0, 1);
+    float dist = distance(position_modelSpace, light_pos);  
+    //float distance = 0.8;  
+    //gl_FragColor =  vec4(cosTheta * light_color, 1);
+    gl_FragColor =  vec4((cosTheta * materialColor * light_color) / (dist * dist), 1);
+    //gl_FragColor =  vec4(light_color / (distance * distance), 1);
+    //gl_FragColor = vec4(1,1,1,1);
 }
 ";
 

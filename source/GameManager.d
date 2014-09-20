@@ -51,6 +51,7 @@ class GameManager {
 	    go1.x = 0.0;
 	    go1.y = 0.0;
 	    go1.z = -3.0;
+        go1.setRGB(0.2, 1.0, 0.4);
         go1.updateMatrix();
 	    renderer.register(go1);
 

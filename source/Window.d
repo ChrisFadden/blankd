@@ -37,6 +37,7 @@ class Window {
             return;
         }
 
+
         SDL_ClearError();
         glcontext = SDL_GL_CreateContext(window);
         const char * error = SDL_GetError();

@@ -15,6 +15,7 @@ class Renderer {
     this(Window* window, Camera* camera) {
         this.window = *window;
         this.camera = *camera;
+        glEnable(GL_DEPTH_TEST);
     }
 
     void register(GameObject obj) {
