@@ -14,9 +14,9 @@ class GameObject {
 	float y;
 	float z;
     Matrix modelMatrix;
-    GLfloat[] verts;
-    GLfloat[] norms;
+    float[] verts;
     int[] faces;
+    float[] norms;
 
 	bool visible = false;
 
@@ -28,9 +28,8 @@ class GameObject {
     GLuint vBuffer;
     GLuint shaderProgramID;
 
-	this(float x1, float y1, float z1, float x2, float y2, float z2) 
-	{
-        vBufferLen = 48;
+	this(float x1, float y1, float z1, float x2, float y2, float z2) {
+        vBufferLen = 6*3*6;
         vBufferData = [
             // Front face
             x1, y1, z1,
@@ -80,6 +79,49 @@ class GameObject {
             x2, y1, z2,
             x2, y2, z2,
         ];
+        vNormalData = [
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1,
+
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0,
+
+            0, 0, -1,
+            0, 0, -1,
+            0, 0, -1,
+            0, 0, -1,
+            0, 0, -1,
+            0, 0, -1,
+
+            0, -1, 0,
+            0, -1, 0,
+            0, -1, 0,
+            0, -1, 0,
+            0, -1, 0,
+            0, -1, 0,
+
+            -1, 0, 0,
+            -1, 0, 0,
+            -1, 0, 0,
+            -1, 0, 0,
+            -1, 0, 0,
+            -1, 0, 0,
+
+            1, 0, 0,
+            1, 0, 0,
+            1, 0, 0,
+            1, 0, 0,
+            1, 0, 0,
+            1, 0, 0,
+        ];
         
         setup();
     }
@@ -100,8 +142,8 @@ class GameObject {
 		x = 0;
 		y = 0;
 		z = 0;
-        //verts.length = 24;
-        //faces.length = 24;
+        verts.length = 24;
+        faces.length = 24;
         modelMatrix = new Matrix();
         updateMatrix();
         writeln("Done matrix");
@@ -145,8 +187,7 @@ class GameObject {
 
     void printVerts()
     {
-        writeln("verts: ",verts);
-        writeln("faces: ",faces);
-        writeln("norms: ",norms);
+        writeln(verts);
+        writeln(faces);
     }
 }

@@ -46,7 +46,7 @@ class GameManager {
 
     	window = win;
 
-    	go1 = new GameObject(-1.0, -1.0, -1.0, 1.0, 1.0, -3.0);
+    	go1 = new GameObject(-1.0, -1.0, 1.0, 1.0, 1.0, -1.0);
 	    go1.visible = true;
 	    go1.x = 0.0;
 	    go1.y = 0.0;
