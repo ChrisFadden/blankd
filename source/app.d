@@ -41,18 +41,24 @@ void main() {
     // Has to reload after we have a context
     DerelictGL3.reload();
 
+    writeln("Starting interesting code");
+
     Camera camera = new Camera();
+    writeln("Finished camera");
     Renderer renderer = new Renderer(window, camera);
+    writeln("Finished renderer");
 
     GameObject go1 = new GameObject;
+    writeln("Finished making game object");
     go1.visible = true;
     writeln(go1.visible);
-    go1.coords[0] = 0.0;
-    go1.coords[1] = 1.0;
-    go1.coords[2] = 2.0;
-    writeln(go1.coords);
+    go1.x = 0.0;
+    go1.y = 0.0;
+    go1.z = 0.0;
     renderer.register(go1);
+    writeln("Bout to draw");
     renderer.draw();
+    writeln("Done drawing");
     moduleFunc();
     window.pause(2000);
 
