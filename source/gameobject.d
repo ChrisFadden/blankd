@@ -29,12 +29,57 @@ class GameObject {
 
 	this(float x1, float y1, float z1, float x2, float y2, float z2) 
 	{
-        vBufferLen = 9;
+        vBufferLen = 48;
         vBufferData = [
+            // Front face
             x1, y1, z1,
+            x2, y2, z1,
+            x1, y2, z1,
+            x1, y1, z1,
+            x2, y1, z1,
+            x2, y2, z1,
+
+            // Top face
+            x1, y2, z1,
             x2, y2, z2,
-            0.0, 1.0, 0.0,
+            x1, y2, z2,
+            x1, y2, z1,
+            x2, y2, z1,
+            x2, y2, z2,
+
+            // Back face
+            x2, y1, z2,
+            x1, y2, z2,
+            x2, y2, z2,
+            x2, y1, z2,
+            x1, y1, z2,
+            x1, y2, z2,
+
+            // Bottom face
+            x1, y1, z2,
+            x2, y1, z1,
+            x1, y1, z1,
+            x1, y1, z2,
+            x2, y1, z2,
+            x2, y1, z1,
+
+            // Left face
+            x1, y1, z2,
+            x1, y2, z1,
+            x1, y2, z2,
+            x1, y1, z2,
+            x1, y1, z1,
+            x1, y2, z1,
+
+            // Right face
+            x2, y1, z1,
+            x2, y2, z2,
+            x2, y2, z1,
+            x2, y1, z1,
+            x2, y1, z2,
+            x2, y2, z2,
         ];
+        
         setup();
     }
 

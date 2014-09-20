@@ -41,20 +41,21 @@ class GameManager {
 
 	this(Window* win) {
 		camera = new Camera();
+		camera.setTranslation(0f,0f,0f);
     	renderer = new Renderer(win, &camera);
 
     	window = win;
 
-    	go1 = new GameObject(1.0, 1.0, 1.0, -1.0, -1.0, -1.0);
+    	go1 = new GameObject(-1.0, -1.0, -1.0, 1.0, 1.0, -3.0);
 	    go1.visible = true;
 	    go1.x = 0.0;
 	    go1.y = 0.0;
-	    go1.z = -2.0;
+	    go1.z = -3.0;
         go1.updateMatrix();
 	    renderer.register(go1);
 
-	    ObjLoader objloader = new ObjLoader();
-    	objloader.open("block.obj", go1);
+	    //ObjLoader objloader = new ObjLoader();
+    	//objloader.open("block.obj", go1);
     	go1.printVerts();
 
 	    fpsTime = SDL_GetTicks();
@@ -112,10 +113,18 @@ class GameManager {
 
 	}
 
-	void moveBlockLeft(){}
-	void moveBlockRight(){}
-	void moveBlockUp(){}
-	void moveBlockDown(){}
+	void moveBlockLeft(){
+		camera.moveTranslation(-.05f,0f,0f);
+	}
+	void moveBlockRight(){
+		camera.moveTranslation(.05f,0f,0f);
+	}
+	void moveBlockUp(){
+		camera.moveTranslation(0f,0.05f,0f);
+	}
+	void moveBlockDown(){
+		camera.moveTranslation(0f,-0.05f,0f);
+	}
 	void raiseBlock(){}
 	void lowerBlock(){}
 	void placeBlock(){}
