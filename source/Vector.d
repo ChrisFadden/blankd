@@ -1,4 +1,5 @@
 import std.math;
+import std.stdio;
 
 class Vector {
     float x;
@@ -10,12 +11,19 @@ class Vector {
         this.z = z;
     }
 
+    string toString() {
+        writeln("Vector(",x,",",y,",",z,")");
+        return "Vector("~x.stringof~","~y.stringof~","~z.stringof~")";
+    }
+
     float magnitude() {
         return sqrt(x*x + y*y + z*z);
     }
     Vector opBinary(string op)(Vector rhs) {
         static if (op == "+") { 
            return new Vector(x+rhs.x, y+rhs.y, z+rhs.z);
+        } else static if (op == "-") {
+           return new Vector(x-rhs.x, y-rhs.y, z-rhs.z);
         } else static if (op == "*") {
            return new Vector(y*rhs.z - rhs.y*z, -(x*rhs.z - rhs.x*z), x*rhs.y - rhs.z*y);
         } else static if (op == "=") {
@@ -24,6 +32,10 @@ class Vector {
             z = rhs.z;
             return this;
         } else static assert(0, "Operator "~op~" not implemented");
+    }
+
+    float Dot(Vector rhs) {
+        return x*rhs.x + y*rhs.y + z*rhs.z;
     }
     
     Vector opBinary(string op)(float rhs) {

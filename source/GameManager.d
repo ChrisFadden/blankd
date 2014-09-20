@@ -47,7 +47,7 @@ class GameManager {
 	this(Window* win) {
 		camera = new Camera();
 		camera.setTranslation(0f,4f,1f);
-		camera.moveRotation(-.3f,0,0);
+		camera.moveRotation(-.3f,0);
     	renderer = new Renderer(win, &camera);
 
     	window = win;
@@ -269,7 +269,7 @@ class GameManager {
 					int y = event.motion.y;
 					int difx = midx-x;
 					int dify = midy-y;
-					camera.moveRotation(dify/200f, difx/200f, 0);
+					camera.moveRotation(dify/200f, difx/200f);
 					SDL_WarpMouseInWindow(window.window, midx, midy);
 				break;
 				case SDL_KEYDOWN:

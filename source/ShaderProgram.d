@@ -80,7 +80,7 @@ varying vec4 normal_modelSpace;
 
 void main() {
     vec4 light_pos = vec4(0, 1, 0, 1);
-    vec3 light_color = vec3(5,5,5);
+    vec3 light_color = vec3(1,1,1);
 
     vec3 matDiffuseColor = vec3(1, 0.5, 0.5);
 
@@ -88,7 +88,7 @@ void main() {
     float dist = distance(position_modelSpace, light_pos);  
     //float distance = 0.8;  
     //gl_FragColor =  vec4(cosTheta * light_color, 1);
-    gl_FragColor =  vec4(0.3,0.3,0.3,0) + vec4((cosTheta * materialColor * light_color) / (dist * dist), 1);
+    gl_FragColor =   vec4(materialColor * vec3(0.3,0.3,0.3) + (cosTheta * materialColor * light_color)/ 1.5/* / (dist)*/, 1);
     //gl_FragColor =  vec4(light_color / (distance * distance), 1);
     //gl_FragColor = vec4(1,0,0,1);
     //gl_FragColor = position_modelSpace;
