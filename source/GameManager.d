@@ -16,7 +16,10 @@ import derelict.sdl2.net;
 class GameManager {
 
 	Camera camera;
+	float[] targetCamera = {0, 4, 1};
     Renderer renderer;
+    float lrAmnt;
+    float fbAmnt;
 
     int frameDelay = 1000/61;
 
@@ -149,9 +152,13 @@ class GameManager {
 
 	void step(float deltaTime){
 		frameTime = SDL_GetTicks();
+
 		SDL_Event event;
 		if (stage == Stage.MAP_MAKER)
 			handleMapMakerInput(&event);
+
+		camera.moveTranslation(lrAmnt,0,0);
+		camera.moveTranslation(0,0,fbAmnt);
 		
 	}
 
@@ -230,6 +237,19 @@ class GameManager {
 		while (SDL_PollEvent(event)) {
 			switch(event.type){
 				case SDL_JOYBUTTONDOWN:
+					switch(event.jbutton.button){
+						case 1:
+						placeBlock();
+							break;
+						case 5:
+						raiseBlock();
+							break;
+						case 4:
+						lowerBlock();
+							break;
+						default:
+						break;
+					}
 					debug writeln("Button ", event.jbutton.button);
 				break;
 				case SDL_JOYHATMOTION:
@@ -246,9 +266,15 @@ class GameManager {
 				case SDL_JOYAXISMOTION:
 				if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)){
 					if (event.jaxis.axis == 0) {
-						// Left-Right
+						lrAmnt = event.jaxis.value/(cast(float)short.max);
 					} if (event.jaxis.axis == 1) {
-						// Up-down
+						fbAmnt = event.jaxis.value/(cast(float)short.max);
+					}
+				} else {
+					if (event.jaxis.axis == 0){
+						lrAmnt = 0;
+					} else if (event.jaxis.axis == 1) {
+						fbAmnt = 0;
 					}
 				}
 				break;
@@ -302,16 +328,16 @@ class GameManager {
 							quitBlock();
 							break;
 						case SDLK_i:
-							moveCameraUp();
+							fbAmnt = -1f;
 							break;
 						case SDLK_j:
-							moveCameraLeft();
+							lrAmnt = 1f;
 							break;
 						case SDLK_k:
-							moveCameraDown();
+							fbAmnt = 1f;
 							break;
 						case SDLK_l:
-							moveCameraRight();
+							lrAmnt = -1f;
 							break;
 						default:
 						break;
