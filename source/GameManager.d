@@ -606,7 +606,7 @@ class GameManager {
 						}
 					}
 				}
-				return 1+2;
+				return 1+1;
 			case 9: // Pickup flag
 				byte flagNum = readbyte(array);
 				byte pId = readbyte(array);
@@ -797,6 +797,7 @@ class GameManager {
 		foreach (Player p; players){
 			if (p.getGameObject() == shot){
 				writeln("You shot player ", p.playerID, "!");
+				PlaySound(sounds[1]);
 				if (server == 1){
 					clearbuffer();
 					writebyte(6);
@@ -1179,7 +1180,6 @@ class GameManager {
 
     GameObject checkCollisions()
     {
-        PlaySound(sounds[1]);
 
         GameObject closestCol = null;
         Vector direction = camera.direction;
