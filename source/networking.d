@@ -38,7 +38,6 @@ float readfloat(byte** readBuffer){
 	byte[float.sizeof] outFloatArr = new byte[float.sizeof];
 	for (int i = 0; i < float.sizeof; i++) {
 		outFloatArr[i] = *readBuffer[0];
-		writeln("byte ",*readBuffer[0]);
 		*readBuffer += 1;
 	}
 	//*readBuffer += float.sizeof;
@@ -55,7 +54,6 @@ void writefloat(float f){
 	byte* fp = cast(byte*)&f;
 	for (int i = 0; i < float.sizeof; i++) {
 		writeBuffer[bufferIndex] = fp[i];
-		writeln("byte ",fp[i]);
 		bufferIndex++;
 	}
 }

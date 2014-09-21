@@ -23,11 +23,11 @@ void main() {
         return;
     }
 
-    /*
+    int server = -1;
+    
     writeln("Server or client or no networking? s/c/n");
     char[] buf;
     stdin.readln(buf);
-    int server;
     switch (buf[0]){
         case 's':
         server = 1;
@@ -39,8 +39,6 @@ void main() {
         server = -1;
         break;
     }
-    */
-    int server = -1;
 
     Window window = new Window("HackGT - blankd");
     window.init();

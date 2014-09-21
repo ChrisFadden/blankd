@@ -297,7 +297,7 @@ class BlockBuilder {
 
     this(float startx, float starty, float startz) {
         gameObject = new GameObject(startx,starty,startz,startx+dx,starty+dy,startz-dz);
-        gameObject.setRGB(.9,0.0,0);
+        gameObject.setRGB(.7,.7,.6);
         gameObject.updateMatrix();
         this.startx = startx;
         this.starty = starty;
@@ -322,7 +322,6 @@ class BlockBuilder {
     }
 
     GameObject getGameObject() {
-        gameObject.setRGB(.9,0.0,0);
         return gameObject;
     }
 
@@ -331,6 +330,7 @@ class BlockBuilder {
         width = dx;
         length = dz;
         height = dy;
+        gameObject.updateMatrix();
         updateMesh();
     }
 

@@ -2,19 +2,22 @@ import std.stdio;
 import core.thread;
 import std.string;
 import std.math;
+import std.conv;
 
 import Window;
 import Renderer;
 import gameobject;
-import std.conv;
 import ObjLoader;
 import Player;
+import Vector;
 
 import networking;
 
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 import derelict.sdl2.net;
+
+import LoadWav;
 
 class GameManager {
 
@@ -27,8 +30,8 @@ class GameManager {
     float scanHoriz;
     float scanVert;
 
-    static TCPsocket[] sockets;
-    static int socketNum;
+    static Player[] players;
+    static byte playerNum;
 
     int frameDelay = 1000/61;
 
@@ -67,6 +70,9 @@ class GameManager {
     	renderer = new Renderer(win, &camera);
     	this.server = server;
 
+    	char* music = cast(char*)"music	.wav";
+    	//loadWav(music);
+
     	lrAmnt = 0;
     	fbAmnt = 0;
     	udAmnt = 0;
@@ -76,6 +82,7 @@ class GameManager {
     	window = win;
 
     	player = new Player(0, 0, 0, &camera);
+    	renderer.register(player.getGameObject());
 
 	    builder = new BlockBuilder(-1.0, 0.0, -4.0);
 	    GameObject b = builder.getGameObject();
@@ -99,10 +106,10 @@ class GameManager {
 
 	    if (server == 1) {
 	    	SDLNet_InitServer(1234, 20);
-	    	sockets = new TCPsocket[20];
-	    	socketNum = 0;
+	    	players = new Player[20];
+	    	playerNum = 0;
 	    } else if (server == 0) {
-	    	if (!SDLNet_InitClient("127.0.0.1", 1234)){
+	    	if (!SDLNet_InitClient("128.61.126.83", 1234)){
 	    		return;
 	    	}
 	    }
@@ -133,7 +140,23 @@ class GameManager {
 	}
 
 	void jump() {
-		player.jump();
+		player.y -= .1f;
+		bool canJump = false;
+		if (player.y <= 0f)
+			canJump = true;
+		if (canJump == false) {
+			foreach (GameObject o ; renderer.objects) {
+				if (o.solid) {
+					if (checkCollision(player, o)){
+						canJump = true;
+						break;
+					}
+				}
+			}
+		}
+		player.y += .1f;
+		if (canJump)
+			player.jump();
 	}
 
 	void step(float deltaTime){
@@ -154,6 +177,7 @@ class GameManager {
 			camera.moveTranslation(lrAmnt*player.speed, 0, -fbAmnt*player.speed);
 
 			float movex = camera.position.x - player.x;
+			player.dx = movex;
 			player.x = camera.position.x;
 			foreach (GameObject o ; renderer.objects) {
 				if (o.solid) {
@@ -165,6 +189,7 @@ class GameManager {
 			}
 
 			float movez = camera.position.z - player.z;
+			player.dz = movez;
 			player.z = camera.position.z;
 			foreach (GameObject o ; renderer.objects) {
 				if (o.solid) {
@@ -194,8 +219,52 @@ class GameManager {
 					}
 				}
 			}
+
+			if (server > -1){
+				player.sendTimer--;
+				if (player.sendTimer <= 0){
+					if (server == 1){
+						for (int i = 0; i < playerNum; i++) {
+							clearbuffer();
+							writebyte(5);
+							writebyte(cast(byte)players.length);
+							writefloat(player.x);
+							writefloat(player.y);
+							writefloat(player.z);
+							writefloat(player.dx);
+							writefloat(player.dz);
+							sendmessage(players[i].mySocket);
+						}
+					} else {
+						clearbuffer();
+						writebyte(5);
+						writefloat(player.x);
+						writefloat(player.y);
+						writefloat(player.z);
+						writefloat(player.dx);
+						writefloat(player.dz);
+						sendmessage(getSocket());
+					}
+					player.sendTimer = 4;
+				}
+			}
+
 			camera.setTranslation(player.x,player.y+player.height,player.z);
 			camera.moveRotation(-scanHoriz/20f, -scanVert/20f);
+		}
+		if (server > -1){
+			for (int i = 0; i < playerNum; i++) {
+				players[i].x += players[i].dx;
+				players[i].z += players[i].dz;
+				players[i].update();
+			}
+			if (server == 0) {
+				if (players.length > 0) {
+					players[players.length-1].x += players[players.length-1].dx;
+					players[players.length-1].z += players[players.length-1].dz;
+					players[players.length-1].update();
+				}
+			}
 		}
 
 		networkCalls();
@@ -211,22 +280,25 @@ class GameManager {
 				TCPsocket tempClient = checkForNewClient();
 				if (tempClient !is null) {
 					writeln("New client.");
-					sockets[socketNum] = tempClient;
-					socketNum++;
-					writebyte(2);
-					writefloat(117f);
-					sendmessage(tempClient);
+					players[playerNum] = new Player(0, 0, 0, &camera);
+					renderer.register(players[playerNum].getGameObject());
+					players[playerNum].mySocket = tempClient;
+					playerNum++;
+					clearbuffer();
+					writebyte(3);
+					writebyte(cast(byte)players.length);
+					writebyte(playerNum);
+					sendmessage(players[playerNum-1].mySocket);
 				}
-				for (int i = 0; i < socketNum; i++) {
-					if (!readsocket(sockets[i], &userDefined )){
-						removeSocket(sockets[i]);
-						SDLNet_TCP_Close(sockets[i]);
-						sockets[i] = null;
-						for (int j = i; j < sockets.length-1; j++){
-							sockets[j] = sockets[j+1];
+				for (int i = 0; i < playerNum; i++) {
+					if (!readsocket(players[i].mySocket, &userDefined )){
+						players[i].getGameObject().visible = false;
+						players[i] = null;
+						for (int j = i; j < players.length-1; j++){
+							players[j] = players[j+1];
 						}
-						sockets[sockets.length-1] = null;
-						socketNum--;
+						players[players.length-1] = null;
+						playerNum--;
 					}
 				}
 			}
@@ -239,7 +311,6 @@ class GameManager {
 	}
 
 	static void userDefined(byte** array, TCPsocket socket){
-		writeln("USER DEFINED");
 		byte MSG_ID = readbyte(array);
 		switch(MSG_ID) {
 			case 1:
@@ -249,13 +320,13 @@ class GameManager {
 				writeln(xyz);
 				if (server == 1) {
 					writeln("Sending block to other clients.");
-					for (int c = 0; c < socketNum; c++){
-						if (socket != sockets[c]){
+					for (int c = 0; c < playerNum; c++){
+						if (socket != players[c].mySocket){
 							clearbuffer();
 							writebyte(1);
 							for (int i = 0; i < 6; i++)
 								writefloat(xyz[i]);
-							sendmessage(sockets[c]);
+							sendmessage(players[c].mySocket);
 						}
 					}
 				}
@@ -263,6 +334,62 @@ class GameManager {
 				break;
 			case 2:
 				writeln(readfloat(array));
+				break;
+			case 3:
+				int len = readbyte(array);
+				int num = readbyte(array);
+				players = new Player[len+1];
+				writeln("Array length: ", players.length);
+				for (int i = 0; i < num; i++){
+					players[i] = new Player(0,0,0,&camera);
+					renderer.register(players[playerNum].getGameObject());
+				}
+				players[len] = new Player(0,0,0,&camera);
+				renderer.register(players[len].getGameObject());
+				break;
+			case 5:
+				Player p;
+				byte index;
+				if (server == 0){
+					index = readbyte(array);
+					p = players[index];
+				} else if (server == 1) {
+					for (int i = 0; i < playerNum; i++){
+						if (players[i].mySocket == socket){
+							p = players[i];
+							index = cast(byte)i;
+							break;
+						}
+					}
+				}
+				float newx = readfloat(array);
+				float newy = readfloat(array);
+				float newz = readfloat(array);
+				float newdx = readfloat(array);
+				float newdz = readfloat(array);
+				if (p !is null) {
+					p.getGameObject().visible = true;
+					p.x = newx;
+					p.y = newy;
+					p.z = newz;
+					p.dx = newdx;
+					p.dz = newdz;
+				}
+				if (server == 1) {
+					for (int i = 0; i < playerNum; i++){
+						if (players[i].mySocket != socket){
+							clearbuffer();
+							writebyte(5);
+							writebyte(index);
+							writefloat(newx);
+							writefloat(newy);
+							writefloat(newz);
+							writefloat(newdx);
+							writefloat(newdz);
+							sendmessage(players[i].mySocket);
+						}
+					}
+				}
 				break;
 			default:
 				writeln("Unsupported message.");
@@ -360,12 +487,12 @@ class GameManager {
 					coords[4],coords[5],.5f,1f,.5f);
 				if (server == 1){
 					writeln("Sending block to clients.");
-					for (int c = 0; c < socketNum; c++){
+					for (int c = 0; c < playerNum; c++){
 						clearbuffer();
 						writebyte(1);
 						for (int i = 0; i < 6; i++)
 							writefloat(coords[i]);
-						sendmessage(sockets[c]);
+						sendmessage(players[c].mySocket);
 					}
 				} else if (server == 0){
 					writeln("Sending block to server.");
@@ -580,6 +707,9 @@ class GameManager {
 							//lrAmnt = -1f;
 							moveCameraRight();
 							break;
+                        case SDLK_g:
+                            swapMode();
+                            break;
 						default:
 						break;
 					}
@@ -590,37 +720,49 @@ class GameManager {
 		}
 	}
 
-	void checkCollisions()
-	{
-		//setPerspectiveMatrix(60.0, 1280.0/720.0, 1.0, 100.0)
-		float window_width = 1280.0;
-		float window_height = 720.0;
-		float znear = 1.0;
-		//float zfar = 100.0;
-		
-		int window_y = to!int(window_height/2.0f);
-		double norm_y = double(window_y)/double(window_height/2.0f);
-		int window_x = to!int((window_width)/2.0f);
-		double norm_x = double(window_x)/double(window_width/2.0f);
+    GameObject checkCollisions()
+    {
+        GameObject closestCol = null;
+        Vector direction = camera.direction;
+        Vector position = camera.position;
+        uint closestIndex = 100;
 
-		float[4] ray_vec = [norm_x, norm_y, -znear, 0.0f];
-		
-		float[16] mat = builder.gameObject.modelMatrix.matrix;
-		Matrix m = new Matrix;
-		m.matrix = mat;
-		m.matrix[0] = -mat[0];
-        m.matrix[5] = -mat[5];
-        m.matrix[10] = -mat[10];
-		
-		float[16] cmat = camera.viewMatrix.matrix;
-		Matrix v = new Matrix;
-		v.matrix[0] = -cmat[0];
-        v.matrix[5] = -cmat[5];
-        v.matrix[10] = -cmat[10];
+        int num = 0;
+        foreach (GameObject obj; renderer.objects) {
+            // This should be cleaner, but you know, hackathon. Time.
+            //writeln("Checking object  ", num);
+            for (int i = 0; i < closestIndex; i ++) {
+                float x = position.x + direction.x * i; 
+                float y = position.y + direction.y * i; 
+                float z = position.z + direction.z * i; 
 
-        Matrix temp = m*v;
+                //writeln(obj.vBufferData.length);
+                if (obj.vBufferData.length < 94) // Not a box (it's the floor at 18)
+                    break;
 
-        writeln(ray_vec);
-        writeln(temp*ray_vec);
+                float x1 = obj.vBufferData[75]; // Left face x
+                float x2 = obj.vBufferData[93]; // Right face x
+                float y1 = obj.vBufferData[19]; // Top face y
+                float y2 = obj.vBufferData[55]; // Bottom face y
+                float z1 = obj.vBufferData[2]; // Front face z
+                float z2 = obj.vBufferData[38]; // Back face z
+                
+                if (    abs(x - ((x1+x2)/2) ) < abs( (x1-x2)/2)
+                        &&  abs(y - ((y1+y2)/2) ) < abs( (y1-y2)/2)
+                        &&  abs(z - ((z1+z2)/2) ) < abs( (x1-z2)/2) ) {
+                    writeln("A collision with object ", num);
+                    if (i < closestIndex) {
+                        closestIndex = i;
+                        closestCol = obj;
+                        writeln("Closer!");
+                    }
+                    break;
+                }
+            }
+            num++;
+        }
+
+        return closestCol;
+
 	}
 }
