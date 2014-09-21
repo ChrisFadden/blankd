@@ -69,8 +69,8 @@ class GameManager {
     	renderer = new Renderer(win, &camera);
     	this.server = server;
 
-    	char* music = cast(char*)"music	.wav";
-    	//loadWav(music);
+    	char* music = cast(char*)"music.wav";
+    	loadWav(music);
 
     	lrAmnt = 0;
     	fbAmnt = 0;

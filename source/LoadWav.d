@@ -1,17 +1,43 @@
 import std.file, std.stdio, std.string, std.conv;
-import blankdmod.alut.functions;
+//import blankdmod.alut.functions;
+import derelict.sdl2.mixer;
 
 void loadWav(char* name)
 {
-	ALenum format; 
+	/*ALenum format; 
 	ALvoid* data; 
 	ALsizei sz; 
 	ALsizei freq;
-	ALboolean loop = false;
+	ALboolean loop = false;*/
+	DerelictSDL2Mixer.load();
 	writeln("ALOHA alut!!!");
-	alutLoadWAVFile(name,&format,&data,&sz,&freq,&loop);
-	writeln("ALOHA 2 alut!!!");
-	writeln(data);
+	int audio_rate = 44100;
+	ushort audio_format = 0;
+	int audio_channels = 2;
+	int audio_buffers = 8192;
+
+	int flags = Mix_Init(0);
+	writeln(flags);
+	flags = Mix_Init(~0);
+	writeln(flags);
+	writeln("Error on init");
+	if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers) < 0)
+	{
+		writeln("ERROR WITH SDL AUDIO AGOJAOPREJPQPGFNAG");
+	}
+	
+	writeln("We are almost there....");
+	//alutLoadWAVFile(name,&format,&data,&sz,&freq,&loop);
+	//writeln(data);
+	Mix_Chunk *sound = null;
+	sound = Mix_LoadWAV(name);
+
+	int channel;
+
+	channel = Mix_PlayChannel(-1, sound, -1);
+	if(channel == -1)
+		writeln("ANOTHER ERROR WITH AUDIO EOAPEFAJPEAJPFJAG");
+
 }
 
 

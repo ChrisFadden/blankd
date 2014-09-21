@@ -18,7 +18,7 @@ void main() {
     DerelictSDL2.load();
     DerelictSDL2Net.load();
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
+    if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
         writeln("SDL2 failed to init: ", SDL_GetError());
         return;
     }
