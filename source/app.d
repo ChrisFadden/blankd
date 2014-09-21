@@ -42,7 +42,7 @@ void main() {
         ip_addr = chompPrefix(chompPrefix(buf, "c"), " ").idup;
         break;
         default:
-        ip_addr = "";
+        ip_addr = "128.61.126.83";
         server = -1;
         break;
     }
