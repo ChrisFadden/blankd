@@ -210,13 +210,15 @@ class GameManager {
 			if (camera.position.y < 1)
 				camera.position.y = 1f;
 			camera.position.z += fbAmnt*scale;
-			if (buildTime < 1) {
-				foreach(Player p; players) {
-					clearbuffer();
-					writebyte(12);
-					sendmessage(p.mySocket);
+			if (server == 1){
+				if (buildTime < 1) {
+					foreach(Player p; players) {
+						clearbuffer();
+						writebyte(12);
+						sendmessage(p.mySocket);
+					}
+					beginGameplay();
 				}
-				beginGameplay();
 			}
 		}
 		else{
