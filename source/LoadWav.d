@@ -55,19 +55,22 @@ Mix_Chunk* loadWav(char* name)
 
 ******************************************************/
 
-Mix_Chunk*[1] InitializeSound()
+Mix_Chunk*[3] InitializeSound()
 {
 		char* musicName1 = cast(char*)"bullet.wav";
-    	//char* musicName2 = cast(char*)"back.wav";
+    	char* musicName2 = cast(char*)"Teleport.wav";
+    	char* musicName3 = cast(char*)"Power_Up.wav";
 
     	Mix_Chunk* music1 = null;
-    	//Mix_Chunk* music2 = null;
+    	Mix_Chunk* music2 = null;
+    	Mix_Chunk* music3 = null;
 
 
     	music1 = loadWav(musicName1);
-    	//music2 = loadWav(musicName2);
+    	music2 = loadWav(musicName2);
+    	music3 = loadWav(musicName3);
 
-    	return [music1];
+    	return [music2];
 }
 
 
