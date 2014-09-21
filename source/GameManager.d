@@ -587,6 +587,20 @@ class GameManager {
 						case SDLK_ESCAPE:
 							running = false;
 							break;
+						case SDLK_w:
+							fbAmnt = -0.5;
+						break;
+						case SDLK_s:
+							fbAmnt = 0.5;
+						break;
+						case SDLK_a:
+							lrAmnt = -0.5;
+						break;
+						case SDLK_d:
+							lrAmnt = 0.5;
+						break;
+						case SDLK_q:
+							break;
 						default:
 						break;
 					}
