@@ -67,6 +67,7 @@ class GameManager {
     ObjLoader objloader;
     GameObject g0;
     static int server;
+    Mix_Chunk*[3] sounds;
 
 	this(Window* win, int server, string ip_addr) {
 		camera = new Camera();
@@ -76,10 +77,9 @@ class GameManager {
     	this.server = server;
     	
     
-    	Mix_Chunk*[3] sounds;
     	sounds = InitializeSound();
 
-    	PlaySound(sounds[0]);
+        PlaySound(sounds[0]);
     	
     	
 
@@ -938,6 +938,8 @@ class GameManager {
 
     GameObject checkCollisions()
     {
+        PlaySound(sounds[1]);
+
         GameObject closestCol = null;
         Vector direction = camera.direction;
         Vector position = camera.position;
