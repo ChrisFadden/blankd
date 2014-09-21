@@ -123,7 +123,7 @@ class GameManager {
 
 	void run(){
 		running = true;
-		
+
 		while (running) {
 			step(0);
 			draw();
