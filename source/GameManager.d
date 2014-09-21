@@ -68,8 +68,8 @@ class GameManager {
 
 	this(Window* win, int server) {
 		camera = new Camera();
-		camera.setTranslation(0f,4f,1f);
-		camera.moveRotation(0f,-.5f);
+		camera.setTranslation(0f,10f,1f);
+		camera.moveRotation(0f,-.2f);
     	renderer = new Renderer(win, &camera);
     	this.server = server;
 
@@ -90,7 +90,7 @@ class GameManager {
 
     	window = win;
 
-    	player = new Player(0, 0, 0, &camera);
+    	player = new Player(0, 5, 0, &camera);
     	player.playerID = 0;
     	renderer.register(player.getGameObject());
     	//players ~= player;
