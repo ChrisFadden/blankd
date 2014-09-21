@@ -142,7 +142,7 @@ class GameManager {
 	    	playerNum = 1;
 	    	buildTime = 60*60;
 	    } else if (server == 0) {
-            if (ip_addr == "")
+            if (ip_addr.length < 4)
                 ip_addr = "128.61.126.83";
 	    	if (!SDLNet_InitClient(ip_addr.toStringz, 1234)){
 	    		return;
@@ -920,7 +920,7 @@ class GameManager {
 				case SDL_MOUSEBUTTONDOWN:
 					switch(event.button.button){
 						case SDL_BUTTON_LEFT:
-							checkCollisions();
+							shoot();
 							break;
 						default:
 						break;
