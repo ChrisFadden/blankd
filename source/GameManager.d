@@ -63,7 +63,8 @@ class GameManager {
     BlockBuilder builder;
 
     static Player player;
-
+    ObjLoader objloader;
+    GameObject g0;
     static int server;
 
 	this(Window* win, int server) {
@@ -93,6 +94,13 @@ class GameManager {
     	player = new Player(0, 5, 0, &camera);
     	player.playerID = 0;
     	renderer.register(player.getGameObject());
+
+    	objloader = new ObjLoader();
+    	g0 = new GameObject(0.0,0.0,0.0,0.0);
+    	objloader.open("block.obj", g0);
+    	//g0.printVerts();
+
+    	renderer.register(g0);
     	//players ~= player;
 
 	    builder = new BlockBuilder(-1.0, 0.0, -4.0);

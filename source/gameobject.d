@@ -19,11 +19,12 @@ class GameObject {
     float b;
     Matrix modelMatrix;
     float[] verts;
-    int[] faces;
     float[] norms;
+    int[] ind;
 
 	bool visible = false;
     bool solid = false;
+    bool hasModel = false;
 
     ShaderProgram shaderProgram;
 
@@ -34,6 +35,7 @@ class GameObject {
     uint bufferLen;
     GLuint vBuffer;
     GLuint nBuffer;
+    GLuint iBuffer;
     GLuint shaderProgramID;
 
     float leftx, rightx;
@@ -198,8 +200,6 @@ class GameObject {
         r = 0;
         g = 0;
         b = 0;
-        verts.length = 24;
-        faces.length = 24;
         modelMatrix = new Matrix();
         updateMatrix();
         //writeln("Done matrix");
@@ -212,6 +212,7 @@ class GameObject {
             writeln("Pre buffer error!");
         glGenBuffers(1, &vBuffer);
         glGenBuffers(1, &nBuffer);
+        glGenBuffers(1, &iBuffer);
         updateMesh();
 	}
 
@@ -254,19 +255,41 @@ class GameObject {
         int mPositionHandle = glGetAttribLocation(shaderProgram.programID, "vertPos_model");   
         int mNormalHandle = glGetAttribLocation(shaderProgram.programID, "vertNorm_model");
         
-        // attribute 0?, size, type, normalized, stride, array buffer offset
-        glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
-        glVertexAttribPointer(mPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
-        glEnableVertexAttribArray(mPositionHandle);
+        if(!hasModel)
+        {
+            //Object doesn't have a model/vertices are placed
+            // attribute 0?, size, type, normalized, stride, array buffer offset
+            glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
+            glVertexAttribPointer(mPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
+            glEnableVertexAttribArray(mPositionHandle);
         
-        glBindBuffer(GL_ARRAY_BUFFER, nBuffer);
-        glVertexAttribPointer(mNormalHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
-        glEnableVertexAttribArray(mNormalHandle);
+            glBindBuffer(GL_ARRAY_BUFFER, nBuffer);
+            glVertexAttribPointer(mNormalHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
+            glEnableVertexAttribArray(mNormalHandle);
 
-        // start from vertex 0, bufferLen/3 total
-        glDrawArrays(GL_TRIANGLES, 0, bufferLen/3);
-        glDisableVertexAttribArray(mPositionHandle);
-        glDisableVertexAttribArray(mNormalHandle);
+            // start from vertex 0, bufferLen/3 total
+            glDrawArrays(GL_TRIANGLES, 0, bufferLen/3);
+            glDisableVertexAttribArray(mPositionHandle);
+            glDisableVertexAttribArray(mNormalHandle);
+        }
+        else
+        {                
+            //Object has a model thus an index buffer.
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, int.sizeof*ind.length, &ind[0], GL_STATIC_DRAW);
+            
+            //Get VertexAttribPointer to Vertices and Normals
+            glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
+            glVertexAttribPointer(mPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
+            glEnableVertexAttribArray(mPositionHandle);
+            
+            glBindBuffer(GL_ARRAY_BUFFER, nBuffer);
+            glVertexAttribPointer(mNormalHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
+            glEnableVertexAttribArray(mNormalHandle);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
+            glDrawElements(GL_TRIANGLES, cast(int)ind.length, GL_UNSIGNED_INT, cast(void *)0);
+        }
 	}
 
     void setRGB(float r, float g, float b) {
@@ -277,8 +300,18 @@ class GameObject {
 
     void printVerts()
     {
-        writeln(verts);
-        writeln(faces);
+        writeln("verts: ",verts.length);
+        for(int i = 0; i < verts.length/3; i++)
+        {
+            writeln(ind[i]);
+            writeln(verts[i*3]," ",verts[i*3+1]," ",verts[i*3+2]);
+            writeln(norms[i*3]," ",norms[i*3+1]," ",norms[i*3+2]);
+            writeln("");
+        }
+        /*writeln("norms: ",norms.length);
+        writeln(norms);
+        writeln("ind: ",ind.length);
+        writeln(ind);*/
     }
 }
 

@@ -17,7 +17,18 @@ class ObjLoader
 		string[] f;
 		string[] n;
 		string temp;
+
+		//Hold the data read in from the .obj file
+		float[] verts;
+		float[] normals;
+		int[] find;
+		int[] nind;
 		
+		//Hold the final values and index
+		//float[] varr;
+		//float[] narr;
+		//int[] indarr;
+		writeln("Starting to read file");
 		while(!file.eof())
 		{
 			temp = file.readln();
@@ -39,7 +50,9 @@ class ObjLoader
 				n ~= temp;
 			}
 		}
-		
+
+		//writeln(verts);
+		writeln("Beginning to parse string!!!");
 		if(v[0] != "")
 		{
 			//Write values to given object;
@@ -50,11 +63,14 @@ class ObjLoader
 			{
 				string[] splitted = split(v[count]);
 				t = 1;
+				//writeln(splitted);
 				while(t < splitted.length)
 				{
-					g.verts ~= to!float(splitted[t]);
+					//writeln(splitted[t]);
+					verts ~= to!float(splitted[t]);
 					t++;
 				}
+				//writeln(verts);
 				count++;
 			}
 
@@ -70,8 +86,8 @@ class ObjLoader
 					string face = fnormed[0..ind];
 					ptrdiff_t ind2 = fnormed.lastIndexOf("/");
 					string norm = fnormed[ind2+1..$];
-					g.faces ~= to!int(face);
-					g.faces ~= to!int(norm);
+					find ~= to!int(face);
+					nind ~= to!int(norm);
 					t++;
 				}
 				count++;
@@ -84,13 +100,82 @@ class ObjLoader
 				t = 1;
 				while(t < splitted.length)
 				{
-					g.norms ~= to!float(splitted[t]);
+					normals ~= to!float(splitted[t]);
 					t++;
 				}
 				count++;
 			}
+
+			int len = 0;
+			int oglIndex = 0;
+			int normalIndex;
+			int faceIndex;
+			float[3] tempVert;
+			float[3] tempNorm;
+			float[3] temp2Vert;
+			float[3] temp2Norm;
+			writeln("Writing obj!!!");
+			while(len < find.length)
+			{
+				//writeln(verts.length);
+				normalIndex = nind[len];
+				faceIndex = find[len];
+				//writeln("Getting Verts and norms");
+				//writeln(verts);
+				//writeln(faceIndex);
+				//writeln(normalIndex);
+				tempVert[0] = verts[faceIndex*3-3];
+				tempVert[1] = verts[faceIndex*3-2];
+				tempVert[2] = verts[faceIndex*3-1];
+				tempNorm[0] = normals[normalIndex*3-3];
+				tempNorm[1] = normals[normalIndex*3-2];
+				tempNorm[2] = normals[normalIndex*3-1];
+				//writeln(tempVert);
+				//writeln(tempNorm);
+				bool added = false;
+				//writeln("The length of g's ind[] is...",g.ind.length);
+				//writeln(len);
+				for(int j = 0; j < g.ind.length; j++)
+				{
+					/*writeln("\nGetting Verts and norms already in list");
+					writeln("g's vert length...",g.verts.length);
+					writeln("g's norms length...",g.norms.length);
+					writeln(g.ind[j]);*/
+					temp2Vert[0..2] = g.verts[(g.ind[j]+1)*3-3..(g.ind[j]+1)*3-1];
+					temp2Norm[0..2] = g.norms[(g.ind[j]+1)*3-3..(g.ind[j]+1)*3-1];
+					if(temp2Vert[0] == tempVert[0] && temp2Vert[1] == tempVert[1] && temp2Vert[2] == tempVert[2])
+					{
+						writeln("temp2Vert: ",temp2Vert);
+						writeln("tempVert:  ",tempVert);
+						writeln("equal");
+						if(temp2Norm[0] == tempNorm[0] && temp2Norm[1] == tempNorm[1] && temp2Norm[2] == tempNorm[2])
+						{
+							writeln("temp2Norm: ",temp2Norm);
+							writeln("tempNorm:  ",tempNorm);
+							writeln("equal");
+							//Arrays are equal so just add the repeated index to the end of the array.
+							g.ind ~= g.ind[j];
+							added = true;
+							break;
+						}
+					}
+				}
+
+				if(!added)
+				{
+					g.verts ~= tempVert;
+					g.norms ~= tempNorm;
+					g.ind ~= oglIndex;
+					oglIndex++;
+				}
+
+				len++;
+			}
+			g.hasModel = true;
+			g.visible = true;
+
 		}
-		//writeln(file);
+		writeln("Done!!!! Object is indexed!!!");
 
 
 		file.close();
