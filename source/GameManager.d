@@ -320,7 +320,7 @@ class GameManager {
 						flag.getGameObject().updateMatrix();
 					}
 				}
-				if (abs(flagObj.x-player.x) < 1){
+				if (stage == Stage.GAMEPLAY && abs(flagObj.x-player.x) < 1){
 					if (abs(flagObj.y-player.y) < 5){
 						if (abs(flagObj.z-player.z) < 1){
 
