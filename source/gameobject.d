@@ -154,12 +154,12 @@ class GameObject {
     this(float x, float z, float width, float length){
         bufferLen = 18;
         vBufferData = [
-        x, 0, z,
-        x + width, 0, z + length,
-        x, 0, z + length,
-        x, 0, z,
-        x + width, 0, z,
-        x + width, 0, z + length,
+            x, 0, z,
+            x + width, 0, z + length,
+            x, 0, z + length,
+            x, 0, z,
+            x + width, 0, z,
+            x + width, 0, z + length,
         ];
         nBufferData = [
             0,1,0,
