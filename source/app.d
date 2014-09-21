@@ -28,16 +28,21 @@ void main() {
     int server = -1;
     
     writeln("Server or client or no networking? s/c/n");
+    writeln("If client, optional server IP parameter (c 127.0.0.1)");
     char[] buf;
     stdin.readln(buf);
+    string ip_addr;
     switch (buf[0]){
         case 's':
+        ip_addr = "";
         server = 1;
         break;
         case 'c':
         server = 0;
+        ip_addr = chompPrefix(chompPrefix(buf, "c"), " ").idup;
         break;
         default:
+        ip_addr = "";
         server = -1;
         break;
     }
@@ -47,7 +52,7 @@ void main() {
     // Has to reload after we have a context
     DerelictGL3.reload();
 
-    new GameManager(&window, server);
+    new GameManager(&window, server, ip_addr);
 
     //Finish and quit
     window.quit();

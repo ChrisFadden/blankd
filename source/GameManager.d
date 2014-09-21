@@ -68,7 +68,7 @@ class GameManager {
     GameObject g0;
     static int server;
 
-	this(Window* win, int server) {
+	this(Window* win, int server, string ip_addr) {
 		camera = new Camera();
 		camera.setTranslation(0f,9f,11f);
 		camera.moveRotation(0f,-.3f);
@@ -141,7 +141,9 @@ class GameManager {
 	    	SDLNet_InitServer(1234, 20);
 	    	playerNum = 1;
 	    } else if (server == 0) {
-	    	if (!SDLNet_InitClient("128.61.126.83", 1234)){
+            if (ip_addr == "")
+                ip_addr = "128.61.126.83";
+	    	if (!SDLNet_InitClient(ip_addr.toStringz, 1234)){
 	    		return;
 	    	}
 	    }
