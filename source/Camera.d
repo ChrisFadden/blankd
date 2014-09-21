@@ -18,6 +18,11 @@ class Camera {
         viewMatrix = new Matrix;
     }
 
+    void resetRotation(){
+        horizontalAngle = 3.14;
+        verticalAngle = 0;
+    }
+
     void setLookAt(Vector eye, Vector center, Vector up) {
         //viewMatrix.setLookAtMatrix(eye, center, up);
         //writeln(viewMatrix.matrix);

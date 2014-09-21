@@ -305,6 +305,7 @@ class GameManager {
 			stage = Stage.MAP_MAKER;
 			builder.getGameObject().visible = true;
 			camera.setTranslation(0f,4f,1f);
+			camera.resetRotation();
 			camera.moveRotation(0f,0);
 		}
 	}
