@@ -218,10 +218,20 @@ class GameObject {
 
     void updateMesh(){
         glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
-        glBufferData(GL_ARRAY_BUFFER, bufferLen*GLfloat.sizeof, cast(void*)vBufferData, GL_STATIC_DRAW);
+        if(!hasModel)
+            glBufferData(GL_ARRAY_BUFFER, bufferLen*GLfloat.sizeof, cast(void*)vBufferData, GL_STATIC_DRAW);
+        else
+            glBufferData(GL_ARRAY_BUFFER, verts.length*GLfloat.sizeof, cast(void*)verts, GL_STATIC_DRAW);
 
         glBindBuffer(GL_ARRAY_BUFFER, nBuffer);
-        glBufferData(GL_ARRAY_BUFFER, bufferLen*GLfloat.sizeof, cast(void*)nBufferData, GL_STATIC_DRAW);
+        if(!hasModel)
+            glBufferData(GL_ARRAY_BUFFER, bufferLen*GLfloat.sizeof, cast(void*)nBufferData, GL_STATIC_DRAW);
+        else
+        {
+            writeln("Usining Indexed Norms!!!");
+            glBufferData(GL_ARRAY_BUFFER, norms.length*GLfloat.sizeof, cast(void*)norms, GL_STATIC_DRAW);
+        }
+
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Is buffer error!");
@@ -274,6 +284,7 @@ class GameObject {
         }
         else
         {                
+            //writeln("Rendering .obj GameObject!!!");
             //Object has a model thus an index buffer.
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, int.sizeof*ind.length, &ind[0], GL_STATIC_DRAW);
@@ -281,14 +292,19 @@ class GameObject {
             //Get VertexAttribPointer to Vertices and Normals
             glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
             glVertexAttribPointer(mPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
-            glEnableVertexAttribArray(mPositionHandle);
+            
             
             glBindBuffer(GL_ARRAY_BUFFER, nBuffer);
             glVertexAttribPointer(mNormalHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
-            glEnableVertexAttribArray(mNormalHandle);
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
+            
+            glEnableVertexAttribArray(mPositionHandle);
+            glEnableVertexAttribArray(mNormalHandle);
+
             glDrawElements(GL_TRIANGLES, cast(int)ind.length, GL_UNSIGNED_INT, cast(void *)0);
+            glDisableVertexAttribArray(mPositionHandle);
+            glDisableVertexAttribArray(mNormalHandle);
         }
 	}
 
@@ -308,10 +324,6 @@ class GameObject {
             writeln(norms[i*3]," ",norms[i*3+1]," ",norms[i*3+2]);
             writeln("");
         }
-        /*writeln("norms: ",norms.length);
-        writeln(norms);
-        writeln("ind: ",ind.length);
-        writeln(ind);*/
     }
 }
 

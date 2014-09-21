@@ -24,10 +24,6 @@ class ObjLoader
 		int[] find;
 		int[] nind;
 		
-		//Hold the final values and index
-		//float[] varr;
-		//float[] narr;
-		//int[] indarr;
 		writeln("Starting to read file");
 		while(!file.eof())
 		{
@@ -117,30 +113,20 @@ class ObjLoader
 			writeln("Writing obj!!!");
 			while(len < find.length)
 			{
-				//writeln(verts.length);
 				normalIndex = nind[len];
 				faceIndex = find[len];
-				//writeln("Getting Verts and norms");
-				//writeln(verts);
-				//writeln(faceIndex);
-				//writeln(normalIndex);
+
 				tempVert[0] = verts[faceIndex*3-3];
 				tempVert[1] = verts[faceIndex*3-2];
 				tempVert[2] = verts[faceIndex*3-1];
 				tempNorm[0] = normals[normalIndex*3-3];
 				tempNorm[1] = normals[normalIndex*3-2];
 				tempNorm[2] = normals[normalIndex*3-1];
-				//writeln(tempVert);
-				//writeln(tempNorm);
+				
 				bool added = false;
-				//writeln("The length of g's ind[] is...",g.ind.length);
-				//writeln(len);
+				
 				for(int j = 0; j < g.ind.length; j++)
 				{
-					/*writeln("\nGetting Verts and norms already in list");
-					writeln("g's vert length...",g.verts.length);
-					writeln("g's norms length...",g.norms.length);
-					writeln(g.ind[j]);*/
 					temp2Vert[0..2] = g.verts[(g.ind[j]+1)*3-3..(g.ind[j]+1)*3-1];
 					temp2Norm[0..2] = g.norms[(g.ind[j]+1)*3-3..(g.ind[j]+1)*3-1];
 					if(temp2Vert[0] == tempVert[0] && temp2Vert[1] == tempVert[1] && temp2Vert[2] == tempVert[2])
@@ -172,8 +158,6 @@ class ObjLoader
 				len++;
 			}
 			g.hasModel = true;
-			g.visible = true;
-
 		}
 		writeln("Done!!!! Object is indexed!!!");
 

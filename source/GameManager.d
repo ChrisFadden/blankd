@@ -98,11 +98,23 @@ class GameManager {
     	renderer.register(player.getGameObject());
 
     	objloader = new ObjLoader();
-    	g0 = new GameObject(0.0,0.0,0.0,0.0);
-    	objloader.open("block.obj", g0);
-    	//g0.printVerts();
+    	/*g0 = new GameObject(0.0,0.0,0.0,0.0);
+    	g0.visible = true;
+    	objloader.open("block2.obj", g0);
+    	g0.setup();
+    	g0.setRGB(0.0,1.0,1.0);
+    	renderer.register(g0);*/
 
-    	renderer.register(g0);
+    	GameObject flag1, flag2;
+    	flag1 = new GameObject(0.0,0.0,0.0,0.0);
+    	flag1.visible = true;
+    	objloader.open("flag.obj", flag1);
+    	flag1.setup();
+    	flag1.setRGB(1.0,0.0,0.0);
+    	renderer.register(flag1);
+
+
+
     	//players ~= player;
 
 	    builder = new BlockBuilder(-1.0, 0.0, -4.0);
