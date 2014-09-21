@@ -324,7 +324,7 @@ class GameManager {
 		byte MSG_ID = readbyte(array);
 		switch(MSG_ID) {
 			case 1:
-				writeln("Adding block.");
+				writeln("\n\nAdding block.\n\n");
 				float[] xyz = [readfloat(array), readfloat(array), readfloat(array),
 					readfloat(array), readfloat(array), readfloat(array)];
 				writeln(xyz);

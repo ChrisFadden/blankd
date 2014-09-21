@@ -110,7 +110,7 @@ GLuint makeShaders(string vertSource, string fragSource) {
             writeln("Prein makeShaders error!");
 
     // Compile the vertex shader
-    debug writeln("Compiling vertex shader");
+    //debug writeln("Compiling vertex shader");
     const GLchar* vertCStr = vertSource.toStringz();
     glShaderSource(vertID, 1, &vertCStr, cast(GLint*)null);
     glCompileShader(vertID);
@@ -120,13 +120,13 @@ GLuint makeShaders(string vertSource, string fragSource) {
         glGetShaderiv(vertID, GL_INFO_LOG_LENGTH, &logLength);
         char[] vertLog = new char[logLength];
         glGetShaderInfoLog(vertID, logLength, cast(GLsizei*)null, vertLog.ptr);
-        debug writeln("Vertex shader compilation info log: ", vertLog);
+        //debug writeln("Vertex shader compilation info log: ", vertLog);
     }
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Vertex makeShaders error!");
 
     // Compile the fragment shader
-    debug writeln("Compiling fragment shader");
+    //debug writeln("Compiling fragment shader");
     const GLchar* fragCStr = fragSource.toStringz();
     glShaderSource(fragID, 1, &fragCStr, cast(GLint*)null);
     glCompileShader(fragID);
@@ -136,13 +136,13 @@ GLuint makeShaders(string vertSource, string fragSource) {
         glGetShaderiv(fragID, GL_INFO_LOG_LENGTH, &logLength);
         char[] fragLog = new char[logLength];
         glGetShaderInfoLog(fragID, logLength, cast(GLsizei*)null, fragLog.ptr);
-        debug writeln("Fragment shader compilation info log: ", fragLog);
+        //debug writeln("Fragment shader compilation info log: ", fragLog);
     }
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Frag makeShaders error!");
 
     // linking
-    debug writeln("Linking shader program");
+    //debug writeln("Linking shader program");
     glAttachShader(progID, vertID);
     glAttachShader(progID, fragID);
     glLinkProgram(progID);

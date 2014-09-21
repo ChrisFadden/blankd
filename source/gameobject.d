@@ -191,7 +191,7 @@ class GameObject {
     }
 
     void setup() {
-        writeln("Beginning constructor ", vBufferData.sizeof);
+        //writeln("Beginning constructor ", vBufferData.sizeof);
 		x = 0;
 		y = 0;
 		z = 0;
@@ -202,10 +202,10 @@ class GameObject {
         faces.length = 24;
         modelMatrix = new Matrix();
         updateMatrix();
-        writeln("Done matrix");
+        //writeln("Done matrix");
 
         this.shaderProgram = new ShaderProgram();
-        writeln("Done ShaderProgram");
+        //writeln("Done ShaderProgram");
 
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
