@@ -38,6 +38,10 @@ class Camera {
     void moveRotation(float dx, float dy) {
         horizontalAngle += dx;
         verticalAngle += dy;
+        if (verticalAngle > PI/2)
+            verticalAngle = PI/2;
+        else if (verticalAngle < -PI/2)
+            verticalAngle = -PI/2;
 
         direction = new Vector(cos(verticalAngle)*sin(horizontalAngle),
                                 sin(verticalAngle),

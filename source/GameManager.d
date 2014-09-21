@@ -620,7 +620,6 @@ class GameManager {
 				case SDL_MOUSEBUTTONDOWN:
 					switch(event.button.button){
 						case SDL_BUTTON_LEFT:
-							writeln("Mouse button!");
 							checkCollisions();
 							break;
 						default:
@@ -634,7 +633,7 @@ class GameManager {
                     int y = event.motion.y;
                     int difx = midx-x;
                     int dify = midy-y;
-                    camera.moveRotation(difx/200f, dify/200f);
+                    camera.moveRotation(difx/400f, dify/400f);
                     SDL_WarpMouseInWindow(window.window, midx, midy);
                     break;
 				case SDL_KEYDOWN:
@@ -848,7 +847,7 @@ class GameManager {
         foreach (GameObject obj; renderer.objects) {
             // This should be cleaner, but you know, hackathon. Time.
             //writeln("Checking object  ", num);
-            for (int i = 0; i < closestIndex; i++) {
+            for (float i = 0; i > -100; i-=.1) {
                 float x = position.x + direction.x * i; 
                 float y = position.y + direction.y * i; 
                 float z = position.z + direction.z * i; 
@@ -869,17 +868,14 @@ class GameManager {
                         &&  abs(z - ((z1+z2)/2) ) < abs( (x1-z2)/2) ) {
                     writeln("A collision with object ", num);
                     if (i < closestIndex) {
-                        closestIndex = i;
+                        closestIndex = to!int(i);
                         closestCol = obj;
-                        writeln("Closer!");
                     }
                     break;
                 }
             }
             num++;
         }
-
         return closestCol;
-
 	}
 }

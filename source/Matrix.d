@@ -132,7 +132,6 @@ class Matrix {
 
     void setPerspectiveMatrix(float fovy, float aspect, float zNear, float zFar) {
         float f = 1.0f/tan(degtorad(fovy/2.0f));
-        writeln("F: ", f);
         matrix[0] = f/aspect;
         matrix[5] = f;
         matrix[10] = (zFar+zNear)/(zNear-zFar);
