@@ -349,7 +349,7 @@ class GameManager {
 				writeln("Array length: ", players.length);
 				for (int i = 0; i < num; i++){
 					players[i] = new Player(0,0,0,&camera);
-					renderer.register(players[playerNum].getGameObject());
+					renderer.register(players[i].getGameObject());
 				}
 				players[len] = new Player(0,0,0,&camera);
 				renderer.register(players[len].getGameObject());
