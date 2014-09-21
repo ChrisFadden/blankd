@@ -41,6 +41,8 @@ class GameManager {
 
     Window* window;
 
+    int buildTime;
+
     //GameObject go1;
 
     bool running;
@@ -138,6 +140,7 @@ class GameManager {
 	    if (server == 1) {
 	    	SDLNet_InitServer(1234, 20);
 	    	playerNum = 1;
+	    	buildTime = 60*60;
 	    } else if (server == 0) {
             if (ip_addr == "")
                 ip_addr = "128.61.126.83";
@@ -198,6 +201,8 @@ class GameManager {
 		if (stage == Stage.WAITING) {
 			handleWaitingInput(&event);
 		} else if (stage == Stage.MAP_MAKER){
+			if (server == 1)
+				buildTime--;
 			handleMapMakerInput(&event);
 			float scale = 0.6f;
 			camera.position.x += lrAmnt*scale;
@@ -205,6 +210,14 @@ class GameManager {
 			if (camera.position.y < 1)
 				camera.position.y = 1f;
 			camera.position.z += fbAmnt*scale;
+			if (buildTime < 1) {
+				foreach(Player p; players) {
+					clearbuffer();
+					writebyte(12);
+					sendmessage(p.mySocket);
+				}
+				beginGameplay();
+			}
 		}
 		else{
 			handleGameplayInput(&event);
@@ -635,6 +648,9 @@ class GameManager {
 					}
 				}
 				return 2;
+			case 12:
+				beginGameplay();
+				return 1;
 			default:
 				writeln("Unsupported message.");
 				return 1;
@@ -692,19 +708,23 @@ class GameManager {
 
 	}
 
+	static void beginGameplay(){
+		stage = Stage.GAMEPLAY;
+		Flag myFlag = ctfFlags[player.team];
+		player.x = myFlag.lockx;
+		player.z = myFlag.lockz;
+		player.y = myFlag.locky;
+		player.startx = player.x;
+		player.starty = player.y;
+		player.startz = player.z;
+		camera.setTranslation(player.x,player.y+player.height,player.z);
+		player.update();
+		builder.getGameObject().visible = false;
+	}
+
 	void swapMode(){
 		if (stage == Stage.MAP_MAKER){
-			stage = Stage.GAMEPLAY;
-			Flag myFlag = ctfFlags[player.team];
-			player.x = myFlag.lockx;
-			player.z = myFlag.lockz;
-			player.y = myFlag.locky;
-			player.startx = player.x;
-			player.starty = player.y;
-			player.startz = player.z;
-			camera.setTranslation(player.x,player.y+player.height,player.z);
-			player.update();
-			builder.getGameObject().visible = false;
+			beginGameplay();
 		} else {
 			stage = Stage.MAP_MAKER;
 			builder.getGameObject().visible = true;
@@ -887,7 +907,7 @@ class GameManager {
 				case SDL_JOYBUTTONUP:
 					switch(event.jbutton.button){
 						case 3:
-						swapMode();
+						//swapMode();
 						break;
 
 						default:
@@ -937,7 +957,7 @@ class GameManager {
 						case SDLK_e: 
 							scanHoriz = 0.5;
 						break;
-						case SDLK_n:
+						case SDLK_SPACE:
 							jump();
 						break;
 						default:
@@ -966,7 +986,7 @@ class GameManager {
 							scanHoriz = 0;
 							break;
 						case SDLK_g:
-							swapMode();
+							//swapMode();
 						break;
 						default:
 						break;
@@ -1043,7 +1063,7 @@ class GameManager {
 						udAmnt = 0f;
 							break;
 						case 3:
-						swapMode();
+						//swapMode();
 							break;
 						default:
 						break;
@@ -1130,7 +1150,7 @@ class GameManager {
 				case SDL_KEYUP:
 					switch(event.key.keysym.sym){
 						case SDLK_g:
-                            swapMode();
+                            //swapMode();
                         break;
                         default:
                         break;
