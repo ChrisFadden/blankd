@@ -20,6 +20,11 @@ class Player{
 	float dx, dy, dz;
 	float gravity;
 
+	float speed;
+	float xpan, ypan;
+
+	float width, length;
+
 	float height;
 
 	Camera camera;
@@ -30,13 +35,23 @@ class Player{
 		this.y = y;
 		this.z = z;
 
+		speed = 0.3f;
+		xpan = 1.4f;
+		ypan = 1f;
+
+		dy = 0;
+
+		this.width = 1f;
+		this.length = 1f;
+
+		gravity = .02f;
+
 		this.height = 3;
 	}
 
-	void move(float dx, float dz){
-		this.dx = dx;
-		this.dz = dz;
-		x += dx;
-		z += dz;
+	void jump(){
+		dy = .4f;
 	}
+
+	
 }

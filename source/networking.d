@@ -95,6 +95,10 @@ TCPsocket getSocket(){
 	return socket;
 }
 
+void removeSocket(TCPsocket s){
+	SDLNet_TCP_DelSocket(socketSet, s);
+}
+
 bool SDLNet_InitServer(ushort port, uint clients) {
 	socketSet = SDLNet_Initialize(clients);
 

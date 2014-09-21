@@ -63,7 +63,7 @@ class GameManager {
 	this(Window* win, int server) {
 		camera = new Camera();
 		camera.setTranslation(0f,4f,1f);
-		camera.moveRotation(0f,0);
+		camera.moveRotation(0f,-.5f);
     	renderer = new Renderer(win, &camera);
     	this.server = server;
 
@@ -80,37 +80,12 @@ class GameManager {
 	    builder = new BlockBuilder(-1.0, 0.0, -4.0);
 	    GameObject b = builder.getGameObject();
 	    b.visible = true;
-	    b.setRGB(1,1,0.9);
 	    renderer.register(b);
 
 	    GameObject floor = new GameObject(-80,-80,160,160);
 	    floor.visible = true;
 	    floor.setRGB(.2f,.9f,.5f);
 	    renderer.register(floor);
-
-
-	    /*
-	    go1 = new GameObject(-1.0, -1.0, 1.0, 1.0, 1.0, -1.0);
-	    go1.visible = true;
-	    go1.x = 0.0;
-	    go1.y = 0.0;
-	    go1.z = -3.0;
-        go1.setRGB(0.5, 1.0, 0.5);
-        go1.updateMatrix();
-	    renderer.register(go1);
-	    */
-	    
-	    
-	    
-	    
-
-	    //ObjLoader objloader = new ObjLoader();
-    	//objloader.open("block.obj", go1);
-    	
-
-    	
-    	//renderer.register(go1);
-    	
     	
 
 	    fpsTime = SDL_GetTicks();
@@ -146,20 +121,80 @@ class GameManager {
 		clean();
 	}
 
+	bool checkCollision(Player player, GameObject o) {
+		if (player.x+player.width > o.leftx && player.x < o.rightx) {
+			if (player.z > o.backz && player.z-player.length < o.frontz) {
+				if (player.y < o.topy && player.y+player.height > o.bottomy) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	void jump() {
+		player.jump();
+	}
+
 	void step(float deltaTime){
 		frameTime = SDL_GetTicks();
 
 		SDL_Event event;
 		if (stage == Stage.MAP_MAKER){
 			handleMapMakerInput(&event);
-			camera.moveTranslation(lrAmnt,udAmnt,-fbAmnt);
+			float scale = 0.6f;
+			camera.position.x += lrAmnt*scale;
+			camera.position.y += udAmnt*scale;
+			if (camera.position.y < 1)
+				camera.position.y = 1f;
+			camera.position.z += fbAmnt*scale;
 		}
 		else{
 			handleGameplayInput(&event);
-			camera.moveTranslation(lrAmnt, 0, -fbAmnt);
+			camera.moveTranslation(lrAmnt*player.speed, 0, -fbAmnt*player.speed);
+
+			float movex = camera.position.x - player.x;
 			player.x = camera.position.x;
+			foreach (GameObject o ; renderer.objects) {
+				if (o.solid) {
+					if (checkCollision(player, o)){
+						player.x -= movex;
+						break;
+					}
+				}
+			}
+
+			float movez = camera.position.z - player.z;
 			player.z = camera.position.z;
-			camera.position.y = player.y + player.height;
+			foreach (GameObject o ; renderer.objects) {
+				if (o.solid) {
+					if (checkCollision(player, o)){
+						player.z -= movez;
+						break;
+					}
+				}
+			}
+
+			player.dy -= player.gravity;
+			player.y += player.dy;
+			if (player.y <= 0f){
+				player.y = 0f;
+				player.dy = 0;
+			} else {
+				foreach (GameObject o ; renderer.objects) {
+					if (o.solid) {
+						if (checkCollision(player, o)){
+							if (player.dy > 0){
+								player.y = o.bottomy - player.height;
+							} else if (player.dy < 0){
+								player.y = o.topy;
+							}
+							player.dy = 0;
+						}
+					}
+				}
+			}
+			camera.setTranslation(player.x,player.y+player.height,player.z);
 			camera.moveRotation(-scanHoriz/20f, -scanVert/20f);
 		}
 
@@ -183,12 +218,22 @@ class GameManager {
 					sendmessage(tempClient);
 				}
 				for (int i = 0; i < socketNum; i++) {
-					readsocket(sockets[i], &userDefined );
+					if (!readsocket(sockets[i], &userDefined )){
+						removeSocket(sockets[i]);
+						SDLNet_TCP_Close(sockets[i]);
+						sockets[i] = null;
+						for (int j = i; j < sockets.length-1; j++){
+							sockets[j] = sockets[j+1];
+						}
+						sockets[sockets.length-1] = null;
+						socketNum--;
+					}
 				}
 			}
 		} else if (server == 0){
 			if (checkSockets() > 0){
-				readsocket(getSocket(), &userDefined);
+				if (!readsocket(getSocket(), &userDefined))
+					running = false;
 			}
 		}
 	}
@@ -250,10 +295,18 @@ class GameManager {
 	}
 
 	void swapMode(){
-		stage = Stage.GAMEPLAY;
-		player.x = camera.position.x;
-		player.z = camera.position.z;
-		player.y = 0;
+		if (stage == Stage.MAP_MAKER){
+			stage = Stage.GAMEPLAY;
+			player.x = camera.position.x;
+			player.z = camera.position.z;
+			player.y = 0;
+			builder.getGameObject().visible = false;
+		} else {
+			stage = Stage.MAP_MAKER;
+			builder.getGameObject().visible = true;
+			camera.setTranslation(0f,4f,1f);
+			camera.moveRotation(0f,0);
+		}
 	}
 
 	void moveCameraLeft(){
@@ -330,6 +383,7 @@ class GameManager {
 	static void addBlock(float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b){
 		GameObject got = new GameObject(x1,y1,z1,x2,y2,z2);
         got.visible = true;
+        got.solid = true;
         got.setRGB(r, g, b);
         got.updateMatrix();
         renderer.register(got);
@@ -339,7 +393,6 @@ class GameManager {
 		while (SDL_PollEvent(event)) {
 			switch(event.type){
 				case SDL_JOYAXISMOTION:
-				writeln(event.jaxis.axis);
 				if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)){
 					if (event.jaxis.axis == 0) {
 						lrAmnt = event.jaxis.value/(cast(float)short.max);
@@ -361,6 +414,28 @@ class GameManager {
 						scanVert = 0;
 					}
 				}
+				break;
+				case SDL_JOYBUTTONDOWN:
+					switch(event.jbutton.button){
+						case 1:
+						jump();
+						break;
+
+						default:
+						break;
+					}
+					debug writeln("Button ", event.jbutton.button);
+				break;
+				case SDL_JOYBUTTONUP:
+					switch(event.jbutton.button){
+						case 3:
+						swapMode();
+						break;
+
+						default:
+						break;
+					}
+					debug writeln("Button ", event.jbutton.button);
 				break;
 				case SDL_MOUSEBUTTONDOWN:
 					switch(event.button.button){

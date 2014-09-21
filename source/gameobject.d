@@ -23,6 +23,7 @@ class GameObject {
     float[] norms;
 
 	bool visible = false;
+    bool solid = false;
 
     ShaderProgram shaderProgram;
 
@@ -35,7 +36,18 @@ class GameObject {
     GLuint nBuffer;
     GLuint shaderProgramID;
 
+    float leftx, rightx;
+    float frontz, backz;
+    float topy, bottomy;
+
 	this(float x1, float y1, float z1, float x2, float y2, float z2) {
+        leftx = x1;
+        rightx = x2;
+        frontz = z1;
+        backz = z2;
+        topy = y2;
+        bottomy = y1;
+
         bufferLen = 6*3*6;
         setVertexBuffer(x1, y1, z1, x2, y2, z2);
         nBufferData = [
@@ -285,6 +297,8 @@ class BlockBuilder {
 
     this(float startx, float starty, float startz) {
         gameObject = new GameObject(startx,starty,startz,startx+dx,starty+dy,startz-dz);
+        gameObject.setRGB(.9,0.0,0);
+        gameObject.updateMatrix();
         this.startx = startx;
         this.starty = starty;
         this.startz = startz;
@@ -296,6 +310,7 @@ class BlockBuilder {
 
     void beginPlace() {
         placing = true;
+        gameObject.setRGB(1,1,0.9);
     }
 
     float[6] place() {
@@ -307,10 +322,12 @@ class BlockBuilder {
     }
 
     GameObject getGameObject() {
+        gameObject.setRGB(.9,0.0,0);
         return gameObject;
     }
 
     void reset() {
+        gameObject.setRGB(.7,.7,0.6);
         width = dx;
         length = dz;
         height = dy;
