@@ -70,7 +70,7 @@ Mix_Chunk*[3] InitializeSound()
     	music2 = loadWav(musicName2);
     	music3 = loadWav(musicName3);
 
-    	return [music2];
+    	return [music2, music1, music3];
 }
 
 

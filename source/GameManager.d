@@ -75,7 +75,7 @@ class GameManager {
 
     	
     
-    	Mix_Chunk*[1] sounds;
+    	Mix_Chunk*[3] sounds;
     	sounds = InitializeSound();
 
     	PlaySound(sounds[0]);
