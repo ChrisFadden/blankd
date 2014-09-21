@@ -81,7 +81,7 @@ Mix_Chunk*[1] InitializeSound()
 void PlaySound(Mix_Chunk *sound)
 {
 	int channel;
-	channel = Mix_PlayChannel(-1, sound, -1);
+	channel = Mix_PlayChannel(-1, sound, 0);
 }
 
 
