@@ -343,8 +343,8 @@ class GameManager {
 				writeln(readfloat(array));
 				break;
 			case 3:
-				int len = readbyte(array);
-				int num = readbyte(array);
+				byte len = readbyte(array);
+				byte num = readbyte(array);
 				playerNum = num;
 				players = new Player[len+1];
 				writeln("Array length: ", players.length);
