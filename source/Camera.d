@@ -19,7 +19,7 @@ class Camera {
     }
 
     void resetRotation(){
-        horizontalAngle = 3.14;
+        horizontalAngle = 0;
         verticalAngle = 0;
     }
 

@@ -16,6 +16,7 @@ class Renderer {
         this.window = *window;
         this.camera = *camera;
         glEnable(GL_DEPTH_TEST);
+        //glEnable(GL_CULL_FACE);
         glClearColor(.5f,.5f,1f,1f);
     }
 
@@ -23,17 +24,7 @@ class Renderer {
         objects ~= obj;
     }
 
-    /*
-    void reregister(GameObject obj) {
-        objects -= obj;
-        objects ~= obj;
-    }
-    */
-
     void draw(GameObject o = null) {
-        //foreach (GameObject toAddObj; toAddObjects)
-        //    objects ~= toAddObj;
-        //toAddObjects.clear();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         foreach (GameObject obj; objects)
             if (obj.visible)

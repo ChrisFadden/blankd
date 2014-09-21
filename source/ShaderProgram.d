@@ -79,7 +79,7 @@ varying vec4 position_modelSpace;
 varying vec4 normal_modelSpace;
 
 void main() {
-    vec4 light_pos = vec4(10, 40, 0, 1);
+    vec4 light_pos = vec4(0, 40, 0, 1);
     vec3 light_color = vec3(30,30,30);
 
     vec3 matDiffuseColor = vec3(0.9, 0.9, 0.9);

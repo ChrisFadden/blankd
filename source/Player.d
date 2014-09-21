@@ -20,6 +20,8 @@ class Player {
 	float dx, dy, dz;
 	float gravity;
 
+	byte HP;
+
 	float speed;
 	float xpan, ypan;
 
@@ -36,16 +38,17 @@ class Player {
 	int sendTimer;
 
 	byte playerID;
+	byte team;
 
 	bool active = true;
 
-	this(float x, float y, float z, Camera* camera) {
+	this(float x, float y, float z, Camera* camera, byte team) {
 		this.width = 1.2f;
 		this.length = 1.2f;
-		this.height = 3;
+		this.height = 3.1f;
         gameObj = new GameObject(-width/2, 0, length/2, width/2, height, -length/2);
         gameObj.visible = false;
-        gameObj.setRGB(1,0,0.2);
+        setTeam(team);
 		this.camera = *camera;
 		this.x = x;
 		this.y = y;
@@ -62,6 +65,14 @@ class Player {
 		dy = 0;
 
 		gravity = .02f;
+	}
+
+	void setTeam(byte team){
+		this.team = team;
+		if (team == 1)
+        	gameObj.setRGB(1,0,0.2);
+        else if (team == 2)
+        	gameObj.setRGB(.2,0,1);
 	}
 
 	GameObject getGameObject(){
