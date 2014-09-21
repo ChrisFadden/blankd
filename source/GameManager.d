@@ -951,7 +951,7 @@ class GameManager {
             //writeln("Checking object  ", num);
             for (float i = 0; i > -100; i-=.1) {
                 float x = position.x + direction.x * i; 
-                float y = position.y + direction.y * i; 
+                float y = position.y + direction.y * -i; 
                 float z = position.z + direction.z * i; 
 
                 //writeln(obj.vBufferData.length);
@@ -967,7 +967,7 @@ class GameManager {
                 
                 if (    abs(x - ((x1+x2)/2) ) < abs( (x1-x2)/2)
                         &&  abs(y - ((y1+y2)/2) ) < abs( (y1-y2)/2)
-                        &&  abs(z - ((z1+z2)/2) ) < abs( (x1-z2)/2) ) {
+                        &&  abs(z - ((z1+z2)/2) ) < abs( (z1-z2)/2) ) {
                     writeln("A collision with object ", num);
                     if (i > closestIndex) {
                         closestIndex = to!int(i);
@@ -978,6 +978,14 @@ class GameManager {
             }
             num++;
         }
+        float x = position.x + direction.x * closestIndex; 
+        float y = position.y + direction.y * -closestIndex; 
+        float z = position.z + direction.z * closestIndex; 
+        position.toString();
+        direction.toString();
+        GameObject hitObj = new GameObject(x-.1,y-.1,z-.1,x+.1,y+.1,z+.1);
+        hitObj.visible = true;
+        renderer.register(hitObj);
         return closestCol;
 	}
 }
