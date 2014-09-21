@@ -8,6 +8,7 @@ import Renderer;
 import gameobject;
 import std.conv;
 import ObjLoader;
+import Player;
 
 import networking;
 
@@ -23,6 +24,8 @@ class GameManager {
     float lrAmnt;
     float fbAmnt;
     float udAmnt;
+    float scanHoriz;
+    float scanVert;
 
     static TCPsocket[] sockets;
     static int socketNum;
@@ -53,26 +56,37 @@ class GameManager {
 
     BlockBuilder builder;
 
+    Player player;
+
     static int server;
 
 	this(Window* win, int server) {
 		camera = new Camera();
 		camera.setTranslation(0f,4f,1f);
-		camera.moveRotation(-.3f,0,0);
+		camera.moveRotation(0f,0);
     	renderer = new Renderer(win, &camera);
     	this.server = server;
 
     	lrAmnt = 0;
     	fbAmnt = 0;
     	udAmnt = 0;
+    	scanHoriz = 0;
+    	scanVert = 0;
 
     	window = win;
 
-	    builder = new BlockBuilder(-1.0, -1.0, -4.0);
+    	player = new Player(0, 0, 0, &camera);
+
+	    builder = new BlockBuilder(-1.0, 0.0, -4.0);
 	    GameObject b = builder.getGameObject();
 	    b.visible = true;
 	    b.setRGB(1,1,0.9);
 	    renderer.register(b);
+
+	    GameObject floor = new GameObject(-80,-80,160,160);
+	    floor.visible = true;
+	    floor.setRGB(.2f,.9f,.5f);
+	    renderer.register(floor);
 
 
 	    /*
@@ -136,12 +150,26 @@ class GameManager {
 		frameTime = SDL_GetTicks();
 
 		SDL_Event event;
-		if (stage == Stage.MAP_MAKER)
+		if (stage == Stage.MAP_MAKER){
 			handleMapMakerInput(&event);
+			camera.moveTranslation(lrAmnt,udAmnt,-fbAmnt);
+		}
+		else{
+			handleGameplayInput(&event);
+			camera.moveTranslation(lrAmnt, 0, -fbAmnt);
+			player.x = camera.position.x;
+			player.z = camera.position.z;
+			camera.position.y = player.y + player.height;
+			camera.moveRotation(-scanHoriz/20f, -scanVert/20f);
+		}
 
-		camera.moveTranslation(lrAmnt,udAmnt,fbAmnt);
+		networkCalls();
 
 		
+
+	}
+
+	void networkCalls(){
 		if (server == 1){
 			TCPsocket client;
 			if (checkSockets() > 0){
@@ -221,6 +249,13 @@ class GameManager {
 
 	}
 
+	void swapMode(){
+		stage = Stage.GAMEPLAY;
+		player.x = camera.position.x;
+		player.z = camera.position.z;
+		player.y = 0;
+	}
+
 	void moveCameraLeft(){
 		camera.moveTranslation(-.1f,0f,0f);
 	}
@@ -232,6 +267,10 @@ class GameManager {
 	}
 	void moveCameraDown(){
 		camera.moveTranslation(0f,-0.1f,0f);
+	}
+
+	void angleRight() {
+		//camera.moveRotation(0f,(3.14f)/2,0f);
 	}
 
 	void quitBlock() {
@@ -296,6 +335,57 @@ class GameManager {
         renderer.register(got);
 	}
 
+	void handleGameplayInput(SDL_Event *event) {
+		while (SDL_PollEvent(event)) {
+			switch(event.type){
+				case SDL_JOYAXISMOTION:
+				writeln(event.jaxis.axis);
+				if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)){
+					if (event.jaxis.axis == 0) {
+						lrAmnt = event.jaxis.value/(cast(float)short.max);
+					} if (event.jaxis.axis == 1) {
+						fbAmnt = event.jaxis.value/(cast(float)short.max);
+					} else if (event.jaxis.axis == 2) {
+						scanHoriz = event.jaxis.value/(cast(float)short.max);
+					} else if (event.jaxis.axis == 5) {
+						scanVert = event.jaxis.value/(cast(float)short.max);
+					}
+				} else {
+					if (event.jaxis.axis == 0){
+						lrAmnt = 0;
+					} else if (event.jaxis.axis == 1) {
+						fbAmnt = 0;
+					} else if (event.jaxis.axis == 2) {
+						scanHoriz = 0;
+					} else if (event.jaxis.axis == 5) {
+						scanVert = 0;
+					}
+				}
+				break;
+				case SDL_MOUSEBUTTONDOWN:
+					switch(event.button.button){
+						case SDL_BUTTON_LEFT:
+							writeln("Mouse button!");
+							checkCollisions();
+							break;
+						default:
+						break;
+					}
+				break;
+				case SDL_KEYDOWN:
+					switch(event.key.keysym.sym){
+						case SDLK_ESCAPE:
+							running = false;
+							break;
+						default:
+						break;
+					}
+					break;
+				default:
+				break;
+			}
+		}
+	}
 
 	void handleMapMakerInput(SDL_Event *event) {
 		while (SDL_PollEvent(event)) {
@@ -304,6 +394,9 @@ class GameManager {
 					switch(event.jbutton.button){
 						case 1:
 						placeBlock();
+							break;
+						case 2:
+						quitBlock();
 							break;
 						case 5:
 						raiseBlock();
@@ -330,6 +423,9 @@ class GameManager {
 						case 7:
 						udAmnt = 0f;
 							break;
+						case 3:
+						swapMode();
+							break;
 						default:
 						break;
 					}
@@ -349,7 +445,7 @@ class GameManager {
 				if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)){
 					if (event.jaxis.axis == 0) {
 						lrAmnt = event.jaxis.value/(cast(float)short.max);
-					} if (event.jaxis.axis == 1) {
+					} else if (event.jaxis.axis == 1) {
 						fbAmnt = event.jaxis.value/(cast(float)short.max);
 					}
 				} else {
@@ -357,30 +453,8 @@ class GameManager {
 						lrAmnt = 0;
 					} else if (event.jaxis.axis == 1) {
 						fbAmnt = 0;
-					}
+					} 
 				}
-				break;
-				case SDL_MOUSEBUTTONDOWN:
-					switch(event.button.button){
-						case SDL_BUTTON_LEFT:
-							writeln("Mouse button!");
-							checkCollisions();
-							break;
-						default:
-						break;
-					}
-				break;
-				case SDL_MOUSEMOTION:
-					int midx = window.width()/2;
-					int midy = window.height()/2;
-					int x = event.motion.x;
-					int y = event.motion.y;
-					int difx = midx-x;
-					int dify = midy-y;
-					/*
-					camera.moveRotation(dify/200f, difx/200f, 0);
-					SDL_WarpMouseInWindow(window.window, midx, midy);
-					*/
 				break;
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym){
@@ -408,7 +482,10 @@ class GameManager {
 						case SDLK_DOWN:
 							lowerBlock();
 							break;
-						case SDLK_q:
+						case SDLK_e:
+							angleRight();
+							break;
+						case SDLK_r:
 							quitBlock();
 							break;
 						case SDLK_i:

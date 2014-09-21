@@ -137,6 +137,28 @@ class GameObject {
         ];
     }
 
+    this(float x, float z, float width, float length){
+        bufferLen = 18;
+        vBufferData = [
+        x, 0, z,
+        x + width, 0, z + length,
+        x, 0, z + length,
+        x, 0, z,
+        x + width, 0, z,
+        x + width, 0, z + length,
+        ];
+        nBufferData = [
+            0,1,0,
+            0,1,0,
+            0,1,0,
+            0,1,0,
+            0,1,0,
+            0,1,0,
+        ];
+
+        setup();
+    }
+
 	this()
 	{
         debug writeln("THIS CODE SHOULD NEVER BE RUNNING");
@@ -352,7 +374,7 @@ class BlockBuilder {
         if (placing) {
             if (height > dy)
                 height -= dy;
-        } else {
+        } else if (starty > 0f){
             starty -= dy;
         }
         updateMesh();
