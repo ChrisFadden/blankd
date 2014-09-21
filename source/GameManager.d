@@ -939,7 +939,7 @@ class GameManager {
         GameObject closestCol = null;
         Vector direction = camera.direction;
         Vector position = camera.position;
-        uint closestIndex = 100;
+        int closestIndex = -100;
 
         int num = 0;
         foreach (GameObject obj; renderer.objects) {
@@ -965,7 +965,7 @@ class GameManager {
                         &&  abs(y - ((y1+y2)/2) ) < abs( (y1-y2)/2)
                         &&  abs(z - ((z1+z2)/2) ) < abs( (x1-z2)/2) ) {
                     writeln("A collision with object ", num);
-                    if (i < closestIndex) {
+                    if (i > closestIndex) {
                         closestIndex = to!int(i);
                         closestCol = obj;
                     }
