@@ -594,8 +594,10 @@ class GameManager {
 				return 1;
 			case 8: // Reset flag to home
 				byte flagNum = readbyte(array);
+				if (flagnum != 1 && flagNum != 2)
+					flagNum = 0;
 				
-				if (ctfFlags[flagNum].playerCarrying < 0){
+				if (flagNum != 0 && ctfFlags[flagNum].playerCarrying < 0){
 					ctfFlags[flagNum].reset();
 					if (server == 1){
 						foreach(Player p; players){
