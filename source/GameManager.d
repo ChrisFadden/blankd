@@ -16,6 +16,8 @@ import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 import derelict.sdl2.net;
 
+import LoadWav;
+
 class GameManager {
 
 	static Camera camera;
@@ -66,6 +68,9 @@ class GameManager {
 		camera.moveRotation(0f,0);
     	renderer = new Renderer(win, &camera);
     	this.server = server;
+
+    	char* music = cast(char*)"music	.wav";
+    	//loadWav(music);
 
     	lrAmnt = 0;
     	fbAmnt = 0;
@@ -127,7 +132,7 @@ class GameManager {
 	    	sockets = new TCPsocket[20];
 	    	socketNum = 0;
 	    } else if (server == 0) {
-	    	if (!SDLNet_InitClient("127.0.0.1", 1234)){
+	    	if (!SDLNet_InitClient("128.61.126.83", 1234)){
 	    		return;
 	    	}
 	    }

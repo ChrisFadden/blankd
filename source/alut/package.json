@@ -1,0 +1,15 @@
+{
+	"name": "blankd-alut",
+	"description": "Dynamic bindings to ALUT.",
+	"homepage": "https://github.com/ChrisFadden/blankd",
+	"license": "MIT",
+	"authors": [
+		"Marcus Godwin",
+		"Nathan Braswell",
+		"Preston Turner",
+		"Chris Fadden"
+	],
+
+	"targetName": "alut",
+	"targetPath": "lib"
+}
