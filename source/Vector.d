@@ -21,6 +21,11 @@ class Vector {
         //writeln(x*x+y*y+z*z);
         return sqrt(x*x + y*y + z*z);
     }
+    
+    Vector normalize() {
+        return this / magnitude;
+    }
+
     Vector opBinary(string op)(Vector rhs) {
         static if (op == "+") { 
            return new Vector(x+rhs.x, y+rhs.y, z+rhs.z);

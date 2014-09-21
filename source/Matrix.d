@@ -156,12 +156,11 @@ class Matrix {
         writeln("Center: ", centerX, centerY, centerZ);
         writeln("Up: ", upX, upY, upZ);
 
-        Vector f = new Vector(centerX-eyeX, centerY-eyeY, centerZ-eyeZ);
-        f = f/f.magnitude();
-        Vector UP = new Vector(upX, upY, upZ);
-        UP = UP/UP.magnitude();
+        Vector f = new Vector(centerX-eyeX, centerY-eyeY, centerZ-eyeZ).normalize();
+        Vector UP = new Vector(upX, upY, upZ).normalize();
         Vector s = f*UP;
-        Vector u = (s/s.magnitude()) * f;
+        Vector u = (s.normalize()) * f;
+        s = s.normalize();
         
         matrix[0] = s.x;
         matrix[1] = u.x;
