@@ -4,6 +4,8 @@ import std.string;
 import std.math;
 import std.conv;
 
+import std.container;
+
 import Window;
 import Renderer;
 import gameobject;
@@ -31,7 +33,7 @@ class GameManager {
     float scanHoriz;
     float scanVert;
 
-    static Player[] players;
+    static Array!(Player) players;
     static byte playerNum;
 
     int frameDelay = 1000/61;
@@ -89,7 +91,9 @@ class GameManager {
     	window = win;
 
     	player = new Player(0, 0, 0, &camera);
+    	player.playerID = 0;
     	renderer.register(player.getGameObject());
+    	//players ~= player;
 
 	    builder = new BlockBuilder(-1.0, 0.0, -4.0);
 	    GameObject b = builder.getGameObject();
@@ -113,8 +117,7 @@ class GameManager {
 
 	    if (server == 1) {
 	    	SDLNet_InitServer(1234, 20);
-	    	players = new Player[20];
-	    	playerNum = 0;
+	    	playerNum = 1;
 	    } else if (server == 0) {
 	    	if (!SDLNet_InitClient("128.61.126.83", 1234)){
 	    		return;
@@ -231,16 +234,16 @@ class GameManager {
 				player.sendTimer--;
 				if (player.sendTimer <= 0){
 					if (server == 1){
-						for (int i = 0; i < playerNum; i++) {
+						foreach (Player p; players) {
 							clearbuffer();
 							writebyte(5);
-							writebyte(cast(byte)players.length);
+							writebyte(player.playerID);
 							writefloat(player.x);
 							writefloat(player.y);
 							writefloat(player.z);
 							writefloat(player.dx);
 							writefloat(player.dz);
-							sendmessage(players[i].mySocket);
+							sendmessage(p.mySocket);
 						}
 					} else {
 						clearbuffer();
@@ -260,24 +263,14 @@ class GameManager {
 			camera.moveRotation(-scanHoriz/20f, -scanVert/20f);
 		}
 		if (server > -1){
-			for (int i = 0; i < playerNum; i++) {
-				players[i].x += players[i].dx;
-				players[i].z += players[i].dz;
-				players[i].update();
-			}
-			if (server == 0) {
-				if (players.length > 0) {
-					players[players.length-1].x += players[players.length-1].dx;
-					players[players.length-1].z += players[players.length-1].dz;
-					players[players.length-1].update();
-				}
+			foreach (Player p; players){
+				p.x += p.dx;
+				p.z += p.dz;
+				p.update();
 			}
 		}
 
 		networkCalls();
-
-		
-
 	}
 
 	void networkCalls(){
@@ -287,25 +280,35 @@ class GameManager {
 				TCPsocket tempClient = checkForNewClient();
 				if (tempClient !is null) {
 					writeln("New client.");
-					players[playerNum] = new Player(0, 0, 0, &camera);
-					renderer.register(players[playerNum].getGameObject());
-					players[playerNum].mySocket = tempClient;
+					Player tempPlayer = new Player(0, 0, 0, &camera);
+					tempPlayer.playerID = playerNum;
+					renderer.register(tempPlayer.getGameObject());
+					tempPlayer.mySocket = tempClient;
 					playerNum++;
+
+					foreach(Player p ; players){
+						clearbuffer();
+						writebyte(3);
+						writebyte(p.playerID);
+						sendmessage(tempPlayer.mySocket);
+
+						clearbuffer();
+						writebyte(3);
+						writebyte(tempPlayer.playerID);
+						sendmessage(p.mySocket);
+					}
 					clearbuffer();
 					writebyte(3);
-					writebyte(cast(byte)players.length);
-					writebyte(playerNum);
-					sendmessage(players[playerNum-1].mySocket);
+					writebyte(player.playerID);
+					sendmessage(tempPlayer.mySocket);
+
+					players ~= tempPlayer;
 				}
-				for (int i = 0; i < playerNum; i++) {
-					if (!readsocket(players[i].mySocket, &userDefined )){
-						players[i].getGameObject().visible = false;
-						players[i] = null;
-						for (int j = i; j < players.length-1; j++){
-							players[j] = players[j+1];
-						}
-						players[players.length-1] = null;
-						playerNum--;
+				foreach (Player p; players) {
+					if (!readsocket(p.mySocket, &userDefined )){
+						p.getGameObject().visible = false;
+						p.active = false;
+						p = null;
 					}
 				}
 			}
@@ -327,13 +330,13 @@ class GameManager {
 				writeln(xyz);
 				if (server == 1) {
 					writeln("Sending block to other clients.");
-					for (int c = 0; c < playerNum; c++){
-						if (socket != players[c].mySocket){
+					foreach(Player p; players){
+						if (socket != p.mySocket){
 							clearbuffer();
 							writebyte(1);
 							for (int i = 0; i < 6; i++)
 								writefloat(xyz[i]);
-							sendmessage(players[c].mySocket);
+							sendmessage(p.mySocket);
 						}
 					}
 				}
@@ -343,29 +346,27 @@ class GameManager {
 				writeln(readfloat(array));
 				break;
 			case 3:
-				byte len = readbyte(array);
-				byte num = readbyte(array);
-				playerNum = num;
-				players = new Player[len+1];
-				writeln("Array length: ", players.length);
-				for (int i = 0; i < num; i++){
-					players[i] = new Player(0,0,0,&camera);
-					renderer.register(players[i].getGameObject());
-				}
-				players[len] = new Player(0,0,0,&camera);
-				renderer.register(players[len].getGameObject());
+				byte pId;
+				Player temp = new Player(0,0,0,&camera);
+				temp.playerID = pId;
+				renderer.register(temp.getGameObject());
+				players ~= temp;
 				break;
 			case 5:
-				Player p;
-				byte index;
+				Player plyr;
+				byte pId;
 				if (server == 0){
-					index = readbyte(array);
-					p = players[index];
+					pId = readbyte(array);
+					foreach (Player p; players){
+						if (p.playerID == pId){
+							plyr = p;
+							break;
+						}
+					}
 				} else if (server == 1) {
-					for (int i = 0; i < playerNum; i++){
-						if (players[i].mySocket == socket){
-							p = players[i];
-							index = cast(byte)i;
+					foreach (Player p; players){
+						if (p.mySocket == socket){
+							plyr = p;
 							break;
 						}
 					}
@@ -375,26 +376,26 @@ class GameManager {
 				float newz = readfloat(array);
 				float newdx = readfloat(array);
 				float newdz = readfloat(array);
-				if (p !is null) {
-					p.getGameObject().visible = true;
-					p.x = newx;
-					p.y = newy;
-					p.z = newz;
-					p.dx = newdx;
-					p.dz = newdz;
+				if (plyr !is null) {
+					plyr.getGameObject().visible = true;
+					plyr.x = newx;
+					plyr.y = newy;
+					plyr.z = newz;
+					plyr.dx = newdx;
+					plyr.dz = newdz;
 				}
 				if (server == 1) {
-					for (int i = 0; i < playerNum; i++){
-						if (players[i].mySocket != socket){
+					foreach (Player p; players){
+						if (p.mySocket != socket){
 							clearbuffer();
 							writebyte(5);
-							writebyte(index);
+							writebyte(plyr.playerID);
 							writefloat(newx);
 							writefloat(newy);
 							writefloat(newz);
 							writefloat(newdx);
 							writefloat(newdz);
-							sendmessage(players[i].mySocket);
+							sendmessage(p.mySocket);
 						}
 					}
 				}
@@ -495,12 +496,12 @@ class GameManager {
 					coords[4],coords[5],.5f,1f,.5f);
 				if (server == 1){
 					writeln("Sending block to clients.");
-					for (int c = 0; c < playerNum; c++){
+					foreach(Player p; players){
 						clearbuffer();
 						writebyte(1);
 						for (int i = 0; i < 6; i++)
 							writefloat(coords[i]);
-						sendmessage(players[c].mySocket);
+						sendmessage(p.mySocket);
 					}
 				} else if (server == 0){
 					writeln("Sending block to server.");
