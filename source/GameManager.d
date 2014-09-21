@@ -320,7 +320,7 @@ class GameManager {
 		}
 	}
 
-	static void userDefined(byte** array, TCPsocket socket){
+	static int userDefined(byte** array, TCPsocket socket){
 		byte MSG_ID = readbyte(array);
 		switch(MSG_ID) {
 			case 1:
@@ -341,17 +341,18 @@ class GameManager {
 					}
 				}
 				addBlock(xyz[0], xyz[1], xyz[2], xyz[3], xyz[4], xyz[5], 1f, .5f, .5f);
-				break;
+				return 6*4+1;
 			case 2:
 				writeln(readfloat(array));
-				break;
+				return 1;
 			case 3:
 				byte pId = readbyte(array);
+				writeln("New player: ", pId);
 				Player temp = new Player(0,0,0,&camera);
 				temp.playerID = pId;
 				renderer.register(temp.getGameObject());
 				players ~= temp;
-				break;
+				return 1+1;
 			case 5:
 				Player plyr;
 				byte pId;
@@ -399,10 +400,10 @@ class GameManager {
 						}
 					}
 				}
-				break;
+				return 1+(server == 0 ? 1 : 0)+(4*5);
 			default:
 				writeln("Unsupported message.");
-				break;
+				return 1;
 		}
 	}
 
