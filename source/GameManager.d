@@ -27,6 +27,7 @@ class GameManager {
 	static Camera camera;
 	float[] targetCamera = [0, 4, 1];
 	static byte[3] teams = [0, 0, 0];
+	static int[3] score = [0, 0, 0];
     static Renderer renderer;
     float lrAmnt;
     float fbAmnt;
@@ -140,7 +141,7 @@ class GameManager {
 	    if (server == 1) {
 	    	SDLNet_InitServer(1234, 20);
 	    	playerNum = 1;
-	    	buildTime = 60*60;
+	    	buildTime = 60*60*3;
 	    } else if (server == 0) {
             if (ip_addr.length < 4)
                 ip_addr = "128.61.126.83";
@@ -322,9 +323,9 @@ class GameManager {
 						flag.getGameObject().updateMatrix();
 					}
 				}
-				if (stage == Stage.GAMEPLAY && abs(flagObj.x-player.x) < 1){
-					if (abs(flagObj.y-player.y) < 5){
-						if (abs(flagObj.z-player.z) < 1){
+				if (stage == Stage.GAMEPLAY && abs(flagObj.x-player.x) < 2){
+					if (abs(flagObj.y-player.y) < 7){
+						if (abs(flagObj.z-player.z) < 2){
 
 							if (flag.team == player.team){
 								if (!flag.isHome() && flag.playerCarrying < 0){
@@ -640,6 +641,9 @@ class GameManager {
 			case 11: // Score
 				byte flagNum = readbyte(array);
 				writeln("Score from team ", flagNum == 2 ? "red": "blue");
+				writeln("Score is RED ",score[1],", BLUE ",score[2]);
+				int teamScore = flagNum == 1 ? 2 : 1;
+				score[teamScore]++
 				ctfFlags[flagNum].reset();
 				if (server == 1){
 					foreach (Player p ; players){
@@ -1206,14 +1210,12 @@ class GameManager {
             }
             num++;
         }
-        float x = position.x + direction.x * closestIndex; 
-        float y = position.y + direction.y * -closestIndex; 
-        float z = position.z + direction.z * closestIndex; 
-        position.toString();
-        direction.toString();
-        GameObject hitObj = new GameObject(x-.1,y-.1,z-.1,x+.1,y+.1,z+.1);
-        hitObj.visible = true;
-        renderer.register(hitObj);
+        //float x = position.x + direction.x * closestIndex; 
+        //float y = position.y + direction.y * -closestIndex; 
+        //float z = position.z + direction.z * closestIndex; 
+        //GameObject hitObj = new GameObject(x-.1,y-.1,z-.1,x+.1,y+.1,z+.1);
+        //hitObj.visible = true;
+        //renderer.register(hitObj);
         return closestCol;
 	}
 }
