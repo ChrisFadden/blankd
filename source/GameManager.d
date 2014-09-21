@@ -1206,14 +1206,12 @@ class GameManager {
             }
             num++;
         }
-        float x = position.x + direction.x * closestIndex; 
-        float y = position.y + direction.y * -closestIndex; 
-        float z = position.z + direction.z * closestIndex; 
-        position.toString();
-        direction.toString();
-        GameObject hitObj = new GameObject(x-.1,y-.1,z-.1,x+.1,y+.1,z+.1);
-        hitObj.visible = true;
-        renderer.register(hitObj);
+        //float x = position.x + direction.x * closestIndex; 
+        //float y = position.y + direction.y * -closestIndex; 
+        //float z = position.z + direction.z * closestIndex; 
+        //GameObject hitObj = new GameObject(x-.1,y-.1,z-.1,x+.1,y+.1,z+.1);
+        //hitObj.visible = true;
+        //renderer.register(hitObj);
         return closestCol;
 	}
 }
