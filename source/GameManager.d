@@ -345,6 +345,7 @@ class GameManager {
 			case 3:
 				int len = readbyte(array);
 				int num = readbyte(array);
+				playerNum = num;
 				players = new Player[len+1];
 				writeln("Array length: ", players.length);
 				for (int i = 0; i < num; i++){
