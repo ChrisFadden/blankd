@@ -24,6 +24,8 @@ class GameManager {
     float lrAmnt;
     float fbAmnt;
     float udAmnt;
+    float scanHoriz;
+    float scanVert;
 
     static TCPsocket[] sockets;
     static int socketNum;
@@ -61,13 +63,15 @@ class GameManager {
 	this(Window* win, int server) {
 		camera = new Camera();
 		camera.setTranslation(0f,4f,1f);
-		camera.moveRotation(-.3f,0);
+		camera.moveRotation(0f,0);
     	renderer = new Renderer(win, &camera);
     	this.server = server;
 
     	lrAmnt = 0;
     	fbAmnt = 0;
     	udAmnt = 0;
+    	scanHoriz = 0;
+    	scanVert = 0;
 
     	window = win;
 
@@ -148,12 +152,15 @@ class GameManager {
 		SDL_Event event;
 		if (stage == Stage.MAP_MAKER){
 			handleMapMakerInput(&event);
-			camera.moveTranslation(lrAmnt,udAmnt,fbAmnt);
+			camera.moveTranslation(lrAmnt,udAmnt,-fbAmnt);
 		}
 		else{
 			handleGameplayInput(&event);
-			player.move(lrAmnt, fbAmnt);
-			camera.setTranslation(player.x,player.y+player.height,player.z);
+			camera.moveTranslation(lrAmnt, 0, -fbAmnt);
+			player.x = camera.position.x;
+			player.z = camera.position.z;
+			camera.position.y = player.y + player.height;
+			camera.moveRotation(-scanHoriz/20f, -scanVert/20f);
 		}
 
 		networkCalls();
@@ -332,19 +339,38 @@ class GameManager {
 		while (SDL_PollEvent(event)) {
 			switch(event.type){
 				case SDL_JOYAXISMOTION:
+				writeln(event.jaxis.axis);
 				if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)){
 					if (event.jaxis.axis == 0) {
 						lrAmnt = event.jaxis.value/(cast(float)short.max);
 					} if (event.jaxis.axis == 1) {
 						fbAmnt = event.jaxis.value/(cast(float)short.max);
+					} else if (event.jaxis.axis == 2) {
+						scanHoriz = event.jaxis.value/(cast(float)short.max);
+					} else if (event.jaxis.axis == 5) {
+						scanVert = event.jaxis.value/(cast(float)short.max);
 					}
 				} else {
 					if (event.jaxis.axis == 0){
 						lrAmnt = 0;
 					} else if (event.jaxis.axis == 1) {
 						fbAmnt = 0;
+					} else if (event.jaxis.axis == 2) {
+						scanHoriz = 0;
+					} else if (event.jaxis.axis == 5) {
+						scanVert = 0;
 					}
 				}
+				break;
+				case SDL_MOUSEBUTTONDOWN:
+					switch(event.button.button){
+						case SDL_BUTTON_LEFT:
+							writeln("Mouse button!");
+							checkCollisions();
+							break;
+						default:
+						break;
+					}
 				break;
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym){
@@ -419,7 +445,7 @@ class GameManager {
 				if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)){
 					if (event.jaxis.axis == 0) {
 						lrAmnt = event.jaxis.value/(cast(float)short.max);
-					} if (event.jaxis.axis == 1) {
+					} else if (event.jaxis.axis == 1) {
 						fbAmnt = event.jaxis.value/(cast(float)short.max);
 					}
 				} else {
@@ -427,28 +453,8 @@ class GameManager {
 						lrAmnt = 0;
 					} else if (event.jaxis.axis == 1) {
 						fbAmnt = 0;
-					}
+					} 
 				}
-				break;
-				case SDL_MOUSEBUTTONDOWN:
-					switch(event.button.button){
-						case SDL_BUTTON_LEFT:
-							writeln("Mouse button!");
-							checkCollisions();
-							break;
-						default:
-						break;
-					}
-				break;
-				case SDL_MOUSEMOTION:
-					int midx = window.width()/2;
-					int midy = window.height()/2;
-					int x = event.motion.x;
-					int y = event.motion.y;
-					int difx = midx-x;
-					int dify = midy-y;
-					camera.moveRotation(difx/200f, dify/200f);
-                    SDL_WarpMouseInWindow(window.window, midx, midy);
 				break;
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym){

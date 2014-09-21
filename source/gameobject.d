@@ -374,7 +374,7 @@ class BlockBuilder {
         if (placing) {
             if (height > dy)
                 height -= dy;
-        } else {
+        } else if (starty > 0f){
             starty -= dy;
         }
         updateMesh();

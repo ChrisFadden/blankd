@@ -54,14 +54,14 @@ class Camera {
     void moveRotation(float dx, float dy) {
         horizontalAngle += dx;
         verticalAngle += dy;
-        writeln("Verticale angle: ", verticalAngle);
+        //writeln("Verticale angle: ", verticalAngle);
         if (verticalAngle < -0.3)
             verticalAngle = -0.3;
-        writeln("Verticale angle mod: ", verticalAngle);
-        writeln("Verticale angle: ", verticalAngle);
+        //writeln("Verticale angle mod: ", verticalAngle);
+        //writeln("Verticale angle: ", verticalAngle);
         if (verticalAngle > 0.3)
             verticalAngle = 0.3;
-        writeln("Verticale angle mod: ", verticalAngle);
+        //writeln("Verticale angle mod: ", verticalAngle);
         direction = new Vector(cos(verticalAngle)*sin(horizontalAngle),
                                 sin(verticalAngle),
                                 cos(verticalAngle)*cos(horizontalAngle));
