@@ -346,7 +346,7 @@ class GameManager {
 				writeln(readfloat(array));
 				break;
 			case 3:
-				byte pId;
+				byte pId = readbyte(array);
 				Player temp = new Player(0,0,0,&camera);
 				temp.playerID = pId;
 				renderer.register(temp.getGameObject());
