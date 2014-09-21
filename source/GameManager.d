@@ -2,13 +2,14 @@ import std.stdio;
 import core.thread;
 import std.string;
 import std.math;
+import std.conv;
 
 import Window;
 import Renderer;
 import gameobject;
-import std.conv;
 import ObjLoader;
 import Player;
+import Vector;
 
 import networking;
 
@@ -75,7 +76,7 @@ class GameManager {
 
     	window = win;
 
-    	player = new Player(0, 0, 0, &camera);
+    	player = new Player(0, 0, 0, &camera, renderer);
 
 	    builder = new BlockBuilder(-1.0, 0.0, -4.0);
 	    GameObject b = builder.getGameObject();
@@ -127,7 +128,7 @@ class GameManager {
 	    	sockets = new TCPsocket[20];
 	    	socketNum = 0;
 	    } else if (server == 0) {
-	    	if (!SDLNet_InitClient("127.0.0.1", 1234)){
+	    	if (!SDLNet_InitClient("128.61.126.83", 1234)){
 	    		return;
 	    	}
 	    }
@@ -339,7 +340,6 @@ class GameManager {
 		while (SDL_PollEvent(event)) {
 			switch(event.type){
 				case SDL_JOYAXISMOTION:
-				writeln(event.jaxis.axis);
 				if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)){
 					if (event.jaxis.axis == 0) {
 						lrAmnt = event.jaxis.value/(cast(float)short.max);
@@ -504,6 +504,9 @@ class GameManager {
 							//lrAmnt = -1f;
 							moveCameraRight();
 							break;
+                        case SDLK_g:
+                            swapMode();
+                            break;
 						default:
 						break;
 					}
@@ -514,37 +517,49 @@ class GameManager {
 		}
 	}
 
-	void checkCollisions()
-	{
-		//setPerspectiveMatrix(60.0, 1280.0/720.0, 1.0, 100.0)
-		float window_width = 1280.0;
-		float window_height = 720.0;
-		float znear = 1.0;
-		//float zfar = 100.0;
-		
-		int window_y = to!int(window_height/2.0f);
-		double norm_y = double(window_y)/double(window_height/2.0f);
-		int window_x = to!int((window_width)/2.0f);
-		double norm_x = double(window_x)/double(window_width/2.0f);
+    GameObject checkCollisions()
+    {
+        GameObject closestCol = null;
+        Vector direction = camera.direction;
+        Vector position = camera.position;
+        uint closestIndex = 100;
 
-		float[4] ray_vec = [norm_x, norm_y, -znear, 0.0f];
-		
-		float[16] mat = builder.gameObject.modelMatrix.matrix;
-		Matrix m = new Matrix;
-		m.matrix = mat;
-		m.matrix[0] = -mat[0];
-        m.matrix[5] = -mat[5];
-        m.matrix[10] = -mat[10];
-		
-		float[16] cmat = camera.viewMatrix.matrix;
-		Matrix v = new Matrix;
-		v.matrix[0] = -cmat[0];
-        v.matrix[5] = -cmat[5];
-        v.matrix[10] = -cmat[10];
+        int num = 0;
+        foreach (GameObject obj; renderer.objects) {
+            // This should be cleaner, but you know, hackathon. Time.
+            //writeln("Checking object  ", num);
+            for (int i = 0; i < closestIndex; i ++) {
+                float x = position.x + direction.x * i; 
+                float y = position.y + direction.y * i; 
+                float z = position.z + direction.z * i; 
 
-        Matrix temp = m*v;
+                //writeln(obj.vBufferData.length);
+                if (obj.vBufferData.length < 94) // Not a box (it's the floor at 18)
+                    break;
 
-        writeln(ray_vec);
-        writeln(temp*ray_vec);
+                float x1 = obj.vBufferData[75]; // Left face x
+                float x2 = obj.vBufferData[93]; // Right face x
+                float y1 = obj.vBufferData[19]; // Top face y
+                float y2 = obj.vBufferData[55]; // Bottom face y
+                float z1 = obj.vBufferData[2]; // Front face z
+                float z2 = obj.vBufferData[38]; // Back face z
+                
+                if (    abs(x - ((x1+x2)/2) ) < abs( (x1-x2)/2)
+                        &&  abs(y - ((y1+y2)/2) ) < abs( (y1-y2)/2)
+                        &&  abs(z - ((z1+z2)/2) ) < abs( (x1-z2)/2) ) {
+                    writeln("A collision with object ", num);
+                    if (i < closestIndex) {
+                        closestIndex = i;
+                        closestCol = obj;
+                        writeln("Closer!");
+                    }
+                    break;
+                }
+            }
+            num++;
+        }
+
+        return closestCol;
+
 	}
 }
