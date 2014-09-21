@@ -35,6 +35,10 @@ class Player {
 
 	int sendTimer;
 
+	byte playerID;
+
+	bool active = true;
+
 	this(float x, float y, float z, Camera* camera) {
 		this.width = 1f;
 		this.length = 1f;
