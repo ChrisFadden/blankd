@@ -601,7 +601,42 @@ class GameManager {
 							lrAmnt = 0.5;
 						break;
 						case SDLK_q:
+							scanHoriz = -0.5;
 							break;
+						case SDLK_e: 
+							scanHoriz = 0.5;
+						break;
+						case SDLK_n:
+							jump();
+						break;
+						default:
+						break;
+					}
+					break;
+
+				case SDL_KEYUP:
+					switch(event.key.keysym.sym){
+						case SDLK_w:
+							fbAmnt = 0;
+						break;
+						case SDLK_s:
+							fbAmnt = 0;
+						break;
+						case SDLK_a:
+							lrAmnt = 0;
+						break;
+						case SDLK_d:
+							lrAmnt = 0;
+						break;
+						case SDLK_q:
+							scanHoriz = 0;
+							break;
+						case SDLK_e: 
+							scanHoriz = 0;
+							break;
+						case SDLK_g:
+							swapMode();
+						break;
 						default:
 						break;
 					}
@@ -729,11 +764,17 @@ class GameManager {
 							//lrAmnt = -1f;
 							moveCameraRight();
 							break;
-                        case SDLK_g:
-                            swapMode();
-                            break;
 						default:
 						break;
+					}
+				break;
+				case SDL_KEYUP:
+					switch(event.key.keysym.sym){
+						case SDLK_g:
+                            swapMode();
+                        break;
+                        default:
+                        break;
 					}
 				break;
 				default:
