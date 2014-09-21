@@ -8,6 +8,7 @@ import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 import derelict.sdl2.net;
 import derelict.sdl2.ttf;
+import derelict.sdl2.mixer;
 
 import networking;
 import GameManager;
@@ -17,8 +18,9 @@ void main() {
     DerelictGL3.load();
     DerelictSDL2.load();
     DerelictSDL2Net.load();
+    DerelictSDL2Mixer.load();
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
+    if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
         writeln("SDL2 failed to init: ", SDL_GetError());
         return;
     }
