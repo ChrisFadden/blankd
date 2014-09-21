@@ -69,8 +69,9 @@ class GameManager {
     ObjLoader objloader;
     GameObject g0;
     static int server;
+    Mix_Chunk*[3] sounds;
 
-	this(Window* win, int server) {
+	this(Window* win, int server, string ip_addr) {
 		camera = new Camera();
 		camera.setTranslation(0f,9f,11f);
 		camera.moveRotation(0f,-.3f);
@@ -78,10 +79,9 @@ class GameManager {
     	this.server = server;
     	
     
-    	Mix_Chunk*[3] sounds;
     	sounds = InitializeSound();
 
-    	PlaySound(sounds[0]);
+        PlaySound(sounds[0]);
     	
     	
 
@@ -139,7 +139,9 @@ class GameManager {
 	    	SDLNet_InitServer(1234, 20);
 	    	playerNum = 1;
 	    } else if (server == 0) {
-	    	if (!SDLNet_InitClient("128.61.126.83", 1234)){
+            if (ip_addr == "")
+                ip_addr = "128.61.126.83";
+	    	if (!SDLNet_InitClient(ip_addr.toStringz, 1234)){
 	    		return;
 	    	}
 	    }
@@ -1142,10 +1144,12 @@ class GameManager {
 
     GameObject checkCollisions()
     {
+        PlaySound(sounds[1]);
+
         GameObject closestCol = null;
         Vector direction = camera.direction;
         Vector position = camera.position;
-        uint closestIndex = 100;
+        int closestIndex = -100;
 
         int num = 0;
         foreach (GameObject obj; renderer.objects) {
@@ -1171,7 +1175,7 @@ class GameManager {
                         &&  abs(y - ((y1+y2)/2) ) < abs( (y1-y2)/2)
                         &&  abs(z - ((z1+z2)/2) ) < abs( (x1-z2)/2) ) {
                     writeln("A collision with object ", num);
-                    if (i < closestIndex) {
+                    if (i > closestIndex) {
                         closestIndex = to!int(i);
                         closestCol = obj;
                     }
