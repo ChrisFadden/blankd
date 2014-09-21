@@ -10,11 +10,19 @@ import Camera;
 class Renderer {
     Window window;
     Camera camera;
+    Camera guiCam;
     Array!(GameObject) objects;
+    GameObject reticle;
 
     this(Window* window, Camera* camera) {
         this.window = *window;
         this.camera = *camera;
+        guiCam = new Camera();
+        guiCam.setTranslation(0,0,2);
+        reticle = new GameObject(-.01,-.01,-.01, .01,.01,.01);
+        reticle.z = 1;
+        reticle.visible = true;
+        reticle.updateMatrix();
         glEnable(GL_DEPTH_TEST);
         //glEnable(GL_CULL_FACE);
         glClearColor(.5f,.5f,1f,1f);
@@ -33,6 +41,7 @@ class Renderer {
         if (o !is null){
             o.draw(camera);
         }
+        reticle.draw(guiCam);
         window.flip();
     }
 }

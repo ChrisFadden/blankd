@@ -45,6 +45,8 @@ class Window {
             printf("SDL Error creating OpenGL context: %s", error);
             return;
         }
+
+        SDL_ShowCursor(0);
     }
 
     uint width() {
