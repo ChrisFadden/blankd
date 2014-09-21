@@ -20,7 +20,9 @@ class Player {
 	float dx, dy, dz;
 	float gravity;
 
-	byte HP;
+	float startx, starty, startz;
+
+	byte hp;
 
 	float speed;
 	float xpan, ypan;
@@ -54,6 +56,8 @@ class Player {
 		this.y = y;
 		this.z = z;
 
+		hp = 4;
+
 		sendTimer = 2;
 
 		mySocket = null;
@@ -65,6 +69,14 @@ class Player {
 		dy = 0;
 
 		gravity = .02f;
+	}
+
+	void spawn(){
+		x = startx;
+		y = starty;
+		z = startz;
+		hp = 4;
+		update();
 	}
 
 	void setTeam(byte team){
@@ -88,6 +100,52 @@ class Player {
         gameObj.y = y;
         gameObj.z = z;
         gameObj.updateMatrix();
+	}
+}
+
+class Flag {
+	byte team;
+	byte playerCarrying;
+
+	GameObject gameObject;
+
+	float lockx, locky, lockz;
+
+	this(byte team){
+		this.team = team;
+		gameObject = new GameObject(0,0,0,0);
+		playerCarrying = -1;
+		setColor();
+	}
+
+	void lock() {
+		this.lockx = gameObject.x;
+		this.locky = gameObject.y;
+		this.lockz = gameObject.z;
+	}
+
+	bool isHome(){
+		return (gameObject.x == lockx && gameObject.y == locky && gameObject.z == lockz);
+	}
+
+	void reset(){
+		playerCarrying = -1;
+		gameObject.x = lockx;
+		gameObject.y = locky;
+		gameObject.z = lockz;
+		gameObject.updateMatrix();
+	}
+
+	GameObject getGameObject(){
+		return gameObject;
+	}
+
+	void setColor(){
+		if (team == 1) {
+			gameObject.setRGB(1,.4,.4);
+		} else if (team == 2) {
+			gameObject.setRGB(.4,.4,1);
+		}
 	}
 }
 
