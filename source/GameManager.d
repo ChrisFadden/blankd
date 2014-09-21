@@ -627,6 +627,16 @@ class GameManager {
 						break;
 					}
 				break;
+                case SDL_MOUSEMOTION:
+                    int midx = window.width()/2;
+                    int midy = window.height()/2;
+                    int x = event.motion.x;
+                    int y = event.motion.y;
+                    int difx = midx-x;
+                    int dify = midy-y;
+                    camera.moveRotation(difx/200f, dify/200f);
+                    SDL_WarpMouseInWindow(window.window, midx, midy);
+                    break;
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym){
 						case SDLK_ESCAPE:
