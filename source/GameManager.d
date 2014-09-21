@@ -72,7 +72,7 @@ class GameManager {
     ObjLoader objloader;
     GameObject g0;
     static int server;
-    Mix_Chunk*[3] sounds;
+    static Mix_Chunk*[4] sounds;
 
 	this(Window* win, int server, string ip_addr) {
 		camera = new Camera();
@@ -349,7 +349,8 @@ class GameManager {
 									if (otherFlag.playerCarrying == player.playerID){
 										otherFlag.reset();
 										if (server == 1){
-											writeln("Score from team ", otherFlagInd == 2 ? "red": "blue");
+											byte teamScore = player.team;
+											scoreForTeam(teamScore);
 											foreach(Player p ; players){
 												clearbuffer();
 												writebyte(11);
@@ -369,6 +370,7 @@ class GameManager {
 							else {
 								if (flag.playerCarrying < 0){
 									writeln("Pickup!");
+									PlaySound(sounds[2]);
 									if (server == 1) {
 										flag.playerCarrying = player.playerID;
 										foreach(Player p; players){
@@ -640,10 +642,9 @@ class GameManager {
 				return 2;
 			case 11: // Score
 				byte flagNum = readbyte(array);
-				writeln("Score from team ", flagNum == 2 ? "red": "blue");
-				writeln("Score is RED ",score[1],", BLUE ",score[2]);
+				
 				int teamScore = flagNum == 1 ? 2 : 1;
-				score[teamScore]++
+				scoreForTeam(teamScore);
 				ctfFlags[flagNum].reset();
 				if (server == 1){
 					foreach (Player p ; players){
@@ -661,6 +662,13 @@ class GameManager {
 				writeln("Unsupported message.");
 				return 1;
 		}
+	}
+
+	static void scoreForTeam(int team){
+		PlaySound(sounds[0]);
+		writeln("Score from team ", team == 1 ? "red": "blue");
+		score[team]++;
+		writeln("Score is RED ",score[1],", BLUE ",score[2]);
 	}
 
 	static void beginBuildPhase(){
@@ -755,6 +763,7 @@ class GameManager {
 
 	static void getShot() {
 		player.hp--;
+		PlaySound(sounds[3]);
 		if (player.hp<1){
 			player.spawn();
 			camera.setTranslation(player.x,player.y+player.height,player.z);
