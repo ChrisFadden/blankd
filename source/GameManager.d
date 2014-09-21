@@ -594,8 +594,10 @@ class GameManager {
 				return 1;
 			case 8: // Reset flag to home
 				byte flagNum = readbyte(array);
+				if (flagNum != 1 && flagNum != 2)
+					flagNum = 0;
 				
-				if (ctfFlags[flagNum].playerCarrying < 0){
+				if (flagNum != 0 && ctfFlags[flagNum].playerCarrying < 0){
 					ctfFlags[flagNum].reset();
 					if (server == 1){
 						foreach(Player p; players){
@@ -755,10 +757,16 @@ class GameManager {
 		camera.moveTranslation(1f,0f,0f);
 	}
 	void moveCameraUp(){
-		camera.moveTranslation(0f,1f,0f);
+		camera.position.y += 1f;
+	}
+	void moveCameraForward(){
+		camera.position.z -= 1f;
 	}
 	void moveCameraDown(){
-		camera.moveTranslation(0f,-1f,0f);
+		camera.position.y -= 1f;
+	}
+	void moveCameraBack(){
+		camera.position.z += 1f;
 	}
 
 	static void getShot() {
@@ -1144,7 +1152,7 @@ class GameManager {
 							quitBlock();
 							break;
 						case SDLK_i:
-							moveCameraUp();
+							moveCameraForward();
 							//fbAmnt = -1f;
 							break;
 						case SDLK_j:
@@ -1153,11 +1161,17 @@ class GameManager {
 							break;
 						case SDLK_k:
 							//fbAmnt = 1f;
-							moveCameraDown();
+							moveCameraBack();
 							break;
 						case SDLK_l:
 							//lrAmnt = -1f;
 							moveCameraRight();
+							break;
+						case SDLK_u:
+							moveCameraDown();
+							break;
+						case SDLK_o:
+							moveCameraUp();
 							break;
 						default:
 						break;
