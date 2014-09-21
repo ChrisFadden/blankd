@@ -40,8 +40,8 @@ class Player {
 	bool active = true;
 
 	this(float x, float y, float z, Camera* camera) {
-		this.width = 1f;
-		this.length = 1f;
+		this.width = 1.2f;
+		this.length = 1.2f;
 		this.height = 3;
         gameObj = new GameObject(-width/2, 0, length/2, width/2, height, -length/2);
         gameObj.visible = false;

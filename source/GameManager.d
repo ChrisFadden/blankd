@@ -604,7 +604,7 @@ class GameManager {
 						default:
 						break;
 					}
-					debug writeln("Button ", event.jbutton.button);
+					//debug writeln("Button ", event.jbutton.button);
 				break;
 				case SDL_JOYBUTTONUP:
 					switch(event.jbutton.button){
@@ -615,7 +615,7 @@ class GameManager {
 						default:
 						break;
 					}
-					debug writeln("Button ", event.jbutton.button);
+					//debug writeln("Button ", event.jbutton.button);
 				break;
 				case SDL_MOUSEBUTTONDOWN:
 					switch(event.button.button){
@@ -838,7 +838,7 @@ class GameManager {
         foreach (GameObject obj; renderer.objects) {
             // This should be cleaner, but you know, hackathon. Time.
             //writeln("Checking object  ", num);
-            for (int i = 0; i < closestIndex; i ++) {
+            for (int i = 0; i < closestIndex; i++) {
                 float x = position.x + direction.x * i; 
                 float y = position.y + direction.y * i; 
                 float z = position.z + direction.z * i; 
@@ -847,12 +847,12 @@ class GameManager {
                 if (obj.vBufferData.length < 94) // Not a box (it's the floor at 18)
                     break;
 
-                float x1 = obj.vBufferData[75]; // Left face x
-                float x2 = obj.vBufferData[93]; // Right face x
-                float y1 = obj.vBufferData[19]; // Top face y
-                float y2 = obj.vBufferData[55]; // Bottom face y
-                float z1 = obj.vBufferData[2]; // Front face z
-                float z2 = obj.vBufferData[38]; // Back face z
+                float x1 = obj.vBufferData[75]+obj.x; // Left face x
+                float x2 = obj.vBufferData[93]+obj.x; // Right face x
+                float y1 = obj.vBufferData[19]+obj.y; // Top face y
+                float y2 = obj.vBufferData[55]+obj.y; // Bottom face y
+                float z1 = obj.vBufferData[2]+obj.z; // Front face z
+                float z2 = obj.vBufferData[38]+obj.z; // Back face z
                 
                 if (    abs(x - ((x1+x2)/2) ) < abs( (x1-x2)/2)
                         &&  abs(y - ((y1+y2)/2) ) < abs( (y1-y2)/2)
