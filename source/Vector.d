@@ -11,7 +11,7 @@ class Vector {
         this.z = z;
     }
 
-    string toString() {
+    override string toString() {
         writeln("Vector(",x,",",y,",",z,")");
         return "Vector("~x.stringof~","~y.stringof~","~z.stringof~")";
     }
