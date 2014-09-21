@@ -62,7 +62,7 @@ class GameManager {
 
     BlockBuilder builder;
 
-    Player player;
+    static Player player;
 
     static int server;
 
@@ -353,6 +353,26 @@ class GameManager {
 				renderer.register(temp.getGameObject());
 				players ~= temp;
 				return 1+1;
+			case 6:
+				if (server == 1){
+					byte pId = readbyte(array);
+					if (pId == player.playerID)
+						writeln("YOU GOT SHOT!!");
+					else {
+						foreach (Player p; players){
+							if (p.playerID == pId){
+								clearbuffer();
+								writebyte(6);
+								sendmessage(p.mySocket);
+								break;
+							}
+						}
+					}
+					return 1+1;
+				} else {
+					writeln("YOU GOT SHOT!!");
+					return 1;
+				}
 			case 5:
 				Player plyr;
 				byte pId;
@@ -464,6 +484,26 @@ class GameManager {
 		//camera.moveRotation(0f,(3.14f)/2,0f);
 	}
 
+	void shoot(){
+		GameObject shot = checkCollisions();
+		foreach (Player p; players){
+			if (p.getGameObject() == shot){
+				writeln("You shot player ", p.playerID, "!");
+				if (server == 1){
+					clearbuffer();
+					writebyte(6);
+					sendmessage(p.mySocket);
+				} else if (server == 0) {
+					clearbuffer();
+					writebyte(6);
+					writebyte(p.playerID);
+					sendmessage(getSocket());
+				}
+				break;
+			}
+		}
+	}
+
 	void quitBlock() {
 		builder.quit();
 	}
@@ -558,7 +598,9 @@ class GameManager {
 						case 1:
 						jump();
 						break;
-
+						case 7:
+						shoot();
+						break;
 						default:
 						break;
 					}
