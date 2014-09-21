@@ -62,7 +62,7 @@ class GameManager {
 
     BlockBuilder builder;
 
-    Player player;
+    static Player player;
 
     static int server;
 
@@ -75,7 +75,7 @@ class GameManager {
 
     	
     
-    	Mix_Chunk*[1] sounds;
+    	Mix_Chunk*[3] sounds;
     	sounds = InitializeSound();
 
     	PlaySound(sounds[0]);
@@ -320,11 +320,11 @@ class GameManager {
 		}
 	}
 
-	static void userDefined(byte** array, TCPsocket socket){
+	static int userDefined(byte** array, TCPsocket socket){
 		byte MSG_ID = readbyte(array);
 		switch(MSG_ID) {
 			case 1:
-				writeln("Adding block.");
+				writeln("\n\nAdding block.\n\n");
 				float[] xyz = [readfloat(array), readfloat(array), readfloat(array),
 					readfloat(array), readfloat(array), readfloat(array)];
 				writeln(xyz);
@@ -341,17 +341,38 @@ class GameManager {
 					}
 				}
 				addBlock(xyz[0], xyz[1], xyz[2], xyz[3], xyz[4], xyz[5], 1f, .5f, .5f);
-				break;
+				return 6*4+1;
 			case 2:
 				writeln(readfloat(array));
-				break;
+				return 1;
 			case 3:
-				byte pId;
+				byte pId = readbyte(array);
+				writeln("New player: ", pId);
 				Player temp = new Player(0,0,0,&camera);
 				temp.playerID = pId;
 				renderer.register(temp.getGameObject());
 				players ~= temp;
-				break;
+				return 1+1;
+			case 6:
+				if (server == 1){
+					byte pId = readbyte(array);
+					if (pId == player.playerID)
+						writeln("YOU GOT SHOT!!");
+					else {
+						foreach (Player p; players){
+							if (p.playerID == pId){
+								clearbuffer();
+								writebyte(6);
+								sendmessage(p.mySocket);
+								break;
+							}
+						}
+					}
+					return 1+1;
+				} else {
+					writeln("YOU GOT SHOT!!");
+					return 1;
+				}
 			case 5:
 				Player plyr;
 				byte pId;
@@ -399,10 +420,10 @@ class GameManager {
 						}
 					}
 				}
-				break;
+				return 1+(server == 0 ? 1 : 0)+(4*5);
 			default:
 				writeln("Unsupported message.");
-				break;
+				return 1;
 		}
 	}
 
@@ -461,6 +482,26 @@ class GameManager {
 
 	void angleRight() {
 		//camera.moveRotation(0f,(3.14f)/2,0f);
+	}
+
+	void shoot(){
+		GameObject shot = checkCollisions();
+		foreach (Player p; players){
+			if (p.getGameObject() == shot){
+				writeln("You shot player ", p.playerID, "!");
+				if (server == 1){
+					clearbuffer();
+					writebyte(6);
+					sendmessage(p.mySocket);
+				} else if (server == 0) {
+					clearbuffer();
+					writebyte(6);
+					writebyte(p.playerID);
+					sendmessage(getSocket());
+				}
+				break;
+			}
+		}
 	}
 
 	void quitBlock() {
@@ -557,7 +598,9 @@ class GameManager {
 						case 1:
 						jump();
 						break;
-
+						case 7:
+						shoot();
+						break;
 						default:
 						break;
 					}
