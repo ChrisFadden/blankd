@@ -350,10 +350,10 @@ class GameManager {
 										writebyte(cast(byte)i);
 										sendmessage(getSocket());
 									}
-								} else {
+								} else if (flag.isHome()){
 									byte otherFlagInd = i == 1 ? 2 : 1;
 									Flag otherFlag = ctfFlags[otherFlagInd];
-									if (flag.isHome() && otherFlag.playerCarrying == player.playerID){
+									if (otherFlag.playerCarrying == player.playerID){
 										otherFlag.reset();
 										if (server == 1){
 											byte teamScore = player.team;
