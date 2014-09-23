@@ -1,11 +1,12 @@
 --------------------
 BLANKD
+Build a Fortress; Fight a Fortress
 --------------------
 
 blankd is a build a level - play a level FPS created by Preston Turner, Chris Fadden, Marcus Godwin, and Nathan Braswell for HackGT.
 
-It is written in D, OpenGL, and SDL.
+It is written in D, and uses OpenGL, SDL2, SDLNet, and SDL2Mixer.
 
-Use dub to build and run.
+Use 'dub' to build and run.
 
 

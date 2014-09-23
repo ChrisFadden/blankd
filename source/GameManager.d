@@ -151,7 +151,14 @@ class GameManager {
 	    if (server == 1) {
 	    	SDLNet_InitServer(1234, 20);
 	    	playerNum = 1;
-	    	buildTime = 60*60*3;
+	    	/*
+	    	writeln("Please enter the build time, in minutes.");
+	    	char[] buf;
+    		stdin.readln(buf);
+    		string s = buf;
+    		*/
+	    	buildTime = 60*60*4;
+	    	writeln("Build time: ", buildTime);
 	    } else if (server == 0) {
             if (ip_addr.length < 4)
                 ip_addr = "128.61.126.83";
@@ -334,8 +341,8 @@ class GameManager {
 					}
 				}
 				if (stage == Stage.GAMEPLAY && abs(flagObj.x-player.x) < 2){
-					if (abs(flagObj.y-player.y) < 7){
-						if (abs(flagObj.z-player.z) < 2){
+					if (abs(flagObj.z-player.z) < 2){
+						if (abs(flagObj.y-player.y) < 7){
 
 							if (flag.team == player.team){
 								if (!flag.isHome() && flag.playerCarrying < 0){
@@ -353,7 +360,7 @@ class GameManager {
 										writebyte(cast(byte)i);
 										sendmessage(getSocket());
 									}
-								} else {
+								} else if (flag.isHome()){
 									byte otherFlagInd = i == 1 ? 2 : 1;
 									Flag otherFlag = ctfFlags[otherFlagInd];
 									if (otherFlag.playerCarrying == player.playerID){
@@ -482,13 +489,10 @@ class GameManager {
 		byte MSG_ID = readbyte(array);
 		switch(MSG_ID) {
 			case 1:
-				writeln("\n\nAdding block.\n\n");
 				byte pId = readbyte(array);
 				float[] xyz = [readfloat(array), readfloat(array), readfloat(array),
 					readfloat(array), readfloat(array), readfloat(array)];
-				writeln(xyz);
 				if (server == 1) {
-					writeln("Sending block to other clients.");
 					foreach(Player p; players){
 						if (socket != p.mySocket){
 							clearbuffer();

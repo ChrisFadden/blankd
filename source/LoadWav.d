@@ -57,7 +57,7 @@ Mix_Chunk* loadWav(char* name)
 
 Mix_Chunk*[4] InitializeSound()
 {
-		char* musicName1 = cast(char*)"bullet.wav";
+	char* musicName1 = cast(char*)"bullet.wav";
     	char* musicName2 = cast(char*)"Teleport.wav";
     	char* musicName3 = cast(char*)"Power_Up.wav";
 	char* musicName4 = cast(char*)"hitByBullet.wav";	
