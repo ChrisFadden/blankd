@@ -124,7 +124,6 @@ class ObjLoader
 				tempNorm[2] = normals[normalIndex*3-1];
 				
 				bool added = false;
-				
 				for(int j = 0; j < g.ind.length; j++)
 				{
 					temp2Vert[0..2] = g.verts[(g.ind[j]+1)*3-3..(g.ind[j]+1)*3-1];

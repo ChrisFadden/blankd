@@ -12,6 +12,7 @@ import gameobject;
 import ObjLoader;
 import Player;
 import Vector;
+import ResourceManager;
 
 import networking;
 
@@ -29,6 +30,7 @@ class GameManager {
 	static byte[3] teams = [0, 0, 0];
 	static int[3] score = [0, 0, 0];
     static Renderer renderer;
+    static ResourceManager resman;
     float lrAmnt;
     float fbAmnt;
     float udAmnt;
@@ -79,11 +81,19 @@ class GameManager {
 		camera.setTranslation(0f,9f,11f);
 		camera.moveRotation(0f,-.3f);
     	renderer = new Renderer(win, &camera);
+    	resman = new ResourceManager();
     	this.server = server;
     	
-    
-    	sounds = InitializeSound();
+    	char[] musicName1 = cast(char[])"bullet.wav";
+    	char[] musicName2 = cast(char[])"Teleport.wav";
+    	char[] musicName3 = cast(char[])"Power_Up.wav";
+		char[] musicName4 = cast(char[])"hitByBullet.wav";
 
+		resman.loadSound(musicName2);
+		resman.loadSound(musicName1);
+		resman.loadSound(musicName3);
+		resman.loadSound(musicName4);
+		sounds = resman.getSound();
         PlaySound(sounds[0]);
     	
     	
@@ -1010,7 +1020,8 @@ class GameManager {
 							scanHoriz = 0;
 							break;
 						case SDLK_g:
-							//swapMode();
+							if(server == -1)
+								swapMode();
 						break;
 						default:
 						break;
@@ -1087,7 +1098,8 @@ class GameManager {
 						udAmnt = 0f;
 							break;
 						case 3:
-						//swapMode();
+						if(server == -1)
+							swapMode();
 							break;
 						default:
 						break;
@@ -1180,7 +1192,8 @@ class GameManager {
 				case SDL_KEYUP:
 					switch(event.key.keysym.sym){
 						case SDLK_g:
-                            //swapMode();
+                        if(server == -1)
+                            swapMode();
                         break;
                         default:
                         break;
