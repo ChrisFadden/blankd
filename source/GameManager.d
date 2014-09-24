@@ -183,8 +183,8 @@ class GameManager {
 	}
 
 	bool checkCollision(Player player, GameObject o) {
-		if (player.x+player.width > o.leftx && player.x < o.rightx) {
-			if (player.z > o.backz && player.z-player.length < o.frontz) {
+		if (player.x+player.width/2 > o.leftx && player.x-player.width/2 < o.rightx) {
+			if (player.z+player.length/2 > o.backz && player.z-player.length/2 < o.frontz) {
 				if (player.y < o.topy && player.y+player.height > o.bottomy) {
 					return true;
 				}
@@ -256,10 +256,21 @@ class GameManager {
 			handleGameplayInput(&event);
 			camera.moveTranslation(lrAmnt*player.speed, 0, -fbAmnt*player.speed);
 
-			float movex = camera.position.x - player.x;
 			float movey = 0f;
+
+			float movex = camera.position.x - player.x;
 			player.dx = movex;
 			player.x = camera.position.x;
+			if (!placeFree(player,0,0,0)){
+				//movey = builder.dy;
+				player.y += movey;
+				if (!placeFree(player,0,0,0)){
+					movey = 0f;
+					player.y -= movey;
+					player.x -= movex;
+				}
+			}
+			/*
 			foreach (GameObject o ; renderer.objects) {
 				if (o.solid) {
 					if (checkCollision(player, o)){
@@ -268,6 +279,7 @@ class GameManager {
 							player.y += movey;
 						}
 						if (checkCollision(player, o)){
+							movey = 0;
 							player.y -= movey;
 							player.x -= movex;
 						}
@@ -275,10 +287,26 @@ class GameManager {
 					}
 				}
 			}
+			*/
 
 			float movez = camera.position.z - player.z;
 			player.dz = movez;
 			player.z = camera.position.z;
+			if (!placeFree(player,0,0,0)){
+				/*
+				if (movey == 0f)
+					movey = builder.dy;
+				else
+					movey = 0f;
+				*/
+				player.y += movey;
+				if (!placeFree(player,0,0,0)){
+					movey = 0f;
+					player.y -= movey;
+					player.z -= movez;
+				}
+			}
+			/*
 			foreach (GameObject o ; renderer.objects) {
 				if (o.solid) {
 					if (checkCollision(player, o)){
@@ -297,6 +325,7 @@ class GameManager {
 					}
 				}
 			}
+			*/
 
 			player.dy -= player.gravity;
 			player.y += player.dy;
@@ -899,7 +928,6 @@ class GameManager {
 					player.getGameObject().g,
 					player.getGameObject().b);
 				if (server == 1){
-					writeln("Sending block to clients.");
 					foreach(Player p; players){
 						clearbuffer();
 						writebyte(1);
@@ -909,7 +937,6 @@ class GameManager {
 						sendmessage(p.mySocket);
 					}
 				} else if (server == 0){
-					writeln("Sending block to server.");
 					clearbuffer();
 					writebyte(1);
 					writebyte(player.playerID);
