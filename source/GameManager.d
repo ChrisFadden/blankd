@@ -158,7 +158,7 @@ class GameManager {
     		stdin.readln(buf);
     		string s = buf;
     		*/
-	    	buildTime = 60*60*5;
+	    	buildTime = 60*60*1;
 	    	writeln("Build time: ", buildTime);
 	    } else if (server == 0) {
             if (ip_addr.length < 4)
@@ -198,7 +198,7 @@ class GameManager {
 		if (player.y <= 0f)
 			canJump = true;
 		if (canJump == false) {
-			canJump = placeFree(player, 0, -.1f, dz);
+			canJump = !placeFree(player, 0, -.1f, 0);
 		}
 		if (canJump)
 			player.jump();
@@ -257,13 +257,13 @@ class GameManager {
 			camera.moveTranslation(lrAmnt*player.speed, 0, -fbAmnt*player.speed);
 
 			float movex = camera.position.x - player.x;
-			float movey = 0;
+			float movey = 0f;
 			player.dx = movex;
 			player.x = camera.position.x;
 			foreach (GameObject o ; renderer.objects) {
 				if (o.solid) {
 					if (checkCollision(player, o)){
-						if (placeFree(player, 0, -.1f, 0)){
+						if (!placeFree(player, 0, -.1f, 0)){
 							movey = builder.dy;
 							player.y += movey;
 						}
@@ -282,7 +282,7 @@ class GameManager {
 			foreach (GameObject o ; renderer.objects) {
 				if (o.solid) {
 					if (checkCollision(player, o)){
-						if (placeFree(player, 0, -.1f, 0)){
+						if (!placeFree(player, 0, -.1f, 0)){
 							if (movey == 0f)
 								movey = builder.dy;
 							else
@@ -924,9 +924,9 @@ class GameManager {
 	}
 
 	static void addBlock(float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b){
-        resman.loadTexture("simpleTex.png".dup);
-        Texture t = resman.getTexture("simpleTex.png".dup);
-        GameObject got = new GameObject(x1,y1,z1,x2,y2,z2,true, t);
+        //resman.loadTexture("simpleTex.png".dup);
+        //Texture t = resman.getTexture("simpleTex.png".dup);
+        GameObject got = new GameObject(x1,y1,z1,x2,y2,z2); //,true, t);
         got.visible = true;
         got.solid = true;
         got.setRGB(r, g, b);
