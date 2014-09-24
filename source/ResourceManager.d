@@ -12,6 +12,7 @@ import derelict.sdl2.mixer;
 import derelict.sdl2.ttf;
 import ShaderProgram;
 import LoadWav;
+import Texture;
 
 static ResourceManager getResourceManager() {
     static ResourceManager instance;
@@ -26,6 +27,7 @@ class ResourceManager {
 	ShaderProgram[bool] shaders;
 	Mix_Chunk*[] sounds; 
     TTF_Font*[uint] fonts;
+	Texture[string] textures;
 
 	/*
 	** The other items like textures and sounds can go here too!
@@ -67,4 +69,20 @@ class ResourceManager {
         }
         return fonts[size];
     }
+	Texture getTexture(string name) 
+	{
+        if (Texture* tex = (name in textures))
+            return *tex;
+        textures[name] = new Texture(name.dup);
+        return textures[name];
+
+		//for(int i = 0; i < textures.length; i++)
+		//{
+			//if(icmp(textures[i].getName(), name) == 0)
+			//{
+				//return textures[i];
+			//}
+		//}
+		//return null;
+	}
 }

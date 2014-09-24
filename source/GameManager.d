@@ -9,6 +9,7 @@ import std.container;
 import Window;
 import Renderer;
 import gameobject;
+import BlockBuilder;
 import ObjLoader;
 import Player;
 import Vector;
@@ -157,7 +158,7 @@ class GameManager {
     		stdin.readln(buf);
     		string s = buf;
     		*/
-	    	buildTime = 60*60*4;
+	    	buildTime = 60*60*1;
 	    	writeln("Build time: ", buildTime);
 	    } else if (server == 0) {
             if (ip_addr.length < 4)
@@ -193,27 +194,39 @@ class GameManager {
 	}
 
 	void jump() {
-		player.y -= .1f;
 		bool canJump = false;
 		if (player.y <= 0f)
 			canJump = true;
 		if (canJump == false) {
-			foreach (GameObject o ; renderer.objects) {
-				if (o.solid) {
-					if (checkCollision(player, o)){
-						canJump = true;
-						break;
-					}
-				}
-			}
+			canJump = !placeFree(player, 0, -.1f, 0);
 		}
-		player.y += .1f;
 		if (canJump)
 			player.jump();
 	}
 
+	bool placeFree(Player player, float dx, float dy, float dz){
+		player.x += dx;
+		player.y += dy;
+		player.z += dz;
+		bool output = true;
+		foreach (GameObject o ; renderer.objects) {
+			if (o.solid) {
+				if (checkCollision(player, o)){
+					output = false;
+					break;
+				}
+			}
+		}
+		player.x -= dx;
+		player.y -= dy;
+		player.z -= dz;
+		return output;
+	}
+
 	void step(float deltaTime){
 		frameTime = SDL_GetTicks();
+
+		networkCalls();
 
 		SDL_Event event;
 		if (stage == Stage.WAITING) {
@@ -244,12 +257,20 @@ class GameManager {
 			camera.moveTranslation(lrAmnt*player.speed, 0, -fbAmnt*player.speed);
 
 			float movex = camera.position.x - player.x;
+			float movey = 0f;
 			player.dx = movex;
 			player.x = camera.position.x;
 			foreach (GameObject o ; renderer.objects) {
 				if (o.solid) {
 					if (checkCollision(player, o)){
-						player.x -= movex;
+						if (!placeFree(player, 0, -.1f, 0)){
+							movey = builder.dy;
+							player.y += movey;
+						}
+						if (checkCollision(player, o)){
+							player.y -= movey;
+							player.x -= movex;
+						}
 						break;
 					}
 				}
@@ -261,7 +282,17 @@ class GameManager {
 			foreach (GameObject o ; renderer.objects) {
 				if (o.solid) {
 					if (checkCollision(player, o)){
-						player.z -= movez;
+						if (!placeFree(player, 0, -.1f, 0)){
+							if (movey == 0f)
+								movey = builder.dy;
+							else
+								movey = 0f;
+							player.y += movey;
+						}
+						if (checkCollision(player, o)){
+							player.y -= movey;
+							player.z -= movez;
+						}
 						break;
 					}
 				}
@@ -418,8 +449,6 @@ class GameManager {
 				p.update();
 			}
 		}
-
-		networkCalls();
 	}
 
 	float abs(float k){
@@ -675,7 +704,7 @@ class GameManager {
 				beginGameplay();
 				return 1;
 			default:
-				writeln("Unsupported message.");
+				writeln("Unsupported message: ", MSG_ID);
 				return 1;
 		}
 	}
@@ -689,26 +718,26 @@ class GameManager {
 
 	static void beginBuildPhase(){
 		writeln("Begin build phase!");
-		builder.startx = player.team == 1 ? -25*BlockBuilder.dx : 24*BlockBuilder.dx;
+		builder.startx = player.team == 1 ? -25*builder.dx : 24*builder.dx;
 		builder.startz = 0;
 		for(int i = 1; i < ctfFlags.length; i++){
 			GameObject flag = ctfFlags[i].getGameObject();
-			flag.x = ctfFlags[i].team == 1 ? -25*BlockBuilder.dx : 24*BlockBuilder.dx;
+			flag.x = ctfFlags[i].team == 1 ? -25*builder.dx : 24*builder.dx;
 			flag.z = 0;
-			flag.y = BlockBuilder.dy*2;
+			flag.y = builder.dy*2;
 			flag.updateMatrix();
-			addBlock(flag.x-BlockBuilder.dx,
-					flag.y-BlockBuilder.dy*2,
-					flag.z+BlockBuilder.dz,
-					flag.x+BlockBuilder.dx*2,
-					flag.y-BlockBuilder.dy,
-					flag.z-BlockBuilder.dz*2,
+			addBlock(flag.x-builder.dx,
+					flag.y-builder.dy*2,
+					flag.z+builder.dz,
+					flag.x+builder.dx*2,
+					flag.y-builder.dy,
+					flag.z-builder.dz*2,
 					flag.r,
 					0,
 					flag.b);
 			ctfFlags[i].lock();
 		}
-		builder.startx -= player.team == 1 ? 2*BlockBuilder.dx : -2*BlockBuilder.dx;
+		builder.startx -= player.team == 1 ? 2*builder.dx : -2*builder.dx;
 		builder.team = player.team;
 		builder.updateMesh();
 		camera.position.x = builder.startx;
@@ -895,9 +924,10 @@ class GameManager {
 	}
 
 	static void addBlock(float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b){
-        //GameObject got = new GameObject(x1,y1,z1,x2,y2,z2,true, new Texture("simpleTex.bmp".dup));
+        // Font loading
         GameObject got = new GameObject(x1,y1,z1,x2,y2,z2,true, new Texture("blankd".dup, 1,1,0));
         //GameObject got = new GameObject(x1,y1,z1,x2,y2,z2);
+        //GameObject got = new GameObject(x1,y1,z1,x2,y2,z2 ,true, resman.getTexture("simpleTex.png".dup));
         got.visible = true;
         got.solid = true;
         got.setRGB(r, g, b);
@@ -1267,132 +1297,3 @@ class GameManager {
         return closestCol;
 	}
 }
-
-class BlockBuilder {
-    float startx, starty, startz;
-    static float dx = 2.0;
-    static float dy = 1.0;
-    static float dz = 2.0;
-    float width;
-    float length;
-    float height;
-
-    bool placing;
-
-    byte team;
-
-    GameObject gameObject;
-
-    this(float startx, float starty, float startz) {
-        gameObject = new GameObject(startx,starty,startz,startx+dx,starty+dy,startz-dz);
-        gameObject.setRGB(.7,.7,.6);
-        gameObject.updateMatrix();
-        this.startx = startx;
-        this.starty = starty;
-        this.startz = startz;
-        width = dx;
-        length = dz;
-        height = dy;
-        placing = false;
-        team = 0;
-    }
-
-    void beginPlace() {
-        placing = true;
-        gameObject.setRGB(1,1,0.9);
-    }
-
-    float[6] place() {
-        float[6] output = [startx, starty, startz, startx+width, starty+height, startz-length];
-        placing = false;
-        startx = startx+width;
-        reset();
-        return output;
-    }
-
-    GameObject getGameObject() {
-        return gameObject;
-    }
-
-    void reset() {
-        gameObject.setRGB(.7,.7,0.6);
-        width = dx;
-        length = dz;
-        height = dy;
-        gameObject.updateMatrix();
-        updateMesh();
-    }
-
-    void quit() {
-        placing = false;
-        reset();
-    }
-
-    void right() {
-        if (placing){
-        	if (team != 1 || startx+width < 0)
-            	width += dx;
-        }
-        else{
-        	if (team != 1 || startx+dx < 0)
-            	startx += dx;
-        }
-        updateMesh();
-    }
-
-    void left() {
-        if (placing){
-            if (width > dx)
-                width -= dx;
-            else if (team != 2 || startx > 0)
-                startx -= dx;
-        } else if (team != 2 || startx > 0){
-            startx -= dx;
-        }
-        updateMesh();
-    }
-
-    void up() {
-        if (placing)
-            length += dz;
-        else
-            startz -= dz;
-        updateMesh();
-    }
-
-    void down() {
-        if (placing) {
-            if (length > dz)
-                length -= dz;
-            else
-                startz += dz;
-        } else {
-            startz += dz;
-        }
-        updateMesh();
-    }
-
-    void raise() {
-        if (placing)
-            height += dy;
-        else
-            starty += dy;
-        updateMesh();
-    }
-
-    void lower() {
-        if (placing) {
-            if (height > dy)
-                height -= dy;
-        } else if (starty > 0f){
-            starty -= dy;
-        }
-        updateMesh();
-    }
-
-    void updateMesh() {
-        gameObject.setVertexBuffer(startx,starty,startz,startx+width,starty+height,startz-length);
-        gameObject.updateMesh();
-    }
-}
-
