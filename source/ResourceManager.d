@@ -11,6 +11,7 @@ import derelict.sdl2.net;
 import derelict.sdl2.mixer;
 import ShaderProgram;
 import LoadWav;
+import Texture;
 
 static ResourceManager getResourceManager() {
     static ResourceManager instance;
@@ -23,7 +24,8 @@ static ResourceManager getResourceManager() {
 class ResourceManager {
 
 	ShaderProgram[bool] shaders;
-	Mix_Chunk*[] sounds; 
+	Mix_Chunk*[] sounds;
+	Texture[] textures;
 
 	/*
 	** The other items like textures and sounds can go here too!
@@ -51,5 +53,35 @@ class ResourceManager {
 	Mix_Chunk*[] getSound()
 	{
 		return sounds;
+	}
+
+	Texture getTexture(string name) 
+	{
+		for(int i = 0; i < textures.length; i++)
+		{
+			if(icmp(textures[i].getName(), name) == 0)
+			{
+				return textures[i];
+			}
+		}
+		return null;
+	}
+
+	void loadTexture(string name)
+	{
+		bool exists = false;
+		foreach(Texture o; textures)
+		{
+			if(icmp(o.getName(), name) == 0)
+			{
+				exists = true;
+				break;
+			}
+		}
+
+		if(!exists)
+		{
+			textures ~= new Texture(name.dup);
+		}
 	}
 }

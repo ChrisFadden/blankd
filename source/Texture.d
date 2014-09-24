@@ -59,4 +59,8 @@ class Texture {
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Texture error!", error);
     }
+
+    char[] getName(){
+        return name;
+    }
 }

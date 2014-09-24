@@ -895,7 +895,9 @@ class GameManager {
 	}
 
 	static void addBlock(float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b){
-        GameObject got = new GameObject(x1,y1,z1,x2,y2,z2,true, new Texture("simpleTex.png".dup));
+        resman.loadTexture("simpleTex.png".dup);
+        Texture t = resman.getTexture("simpleTex.png".dup);
+        GameObject got = new GameObject(x1,y1,z1,x2,y2,z2,true, t);
         got.visible = true;
         got.solid = true;
         got.setRGB(r, g, b);
