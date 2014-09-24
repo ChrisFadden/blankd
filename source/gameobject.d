@@ -4,6 +4,7 @@ import std.string;
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 
+import ResourceManager;
 import ShaderProgram;
 import Texture;
 import Matrix;
@@ -231,7 +232,7 @@ class GameObject {
         modelMatrix = new Matrix();
         updateMatrix();
 
-        this.shaderProgram = new ShaderProgram(hasTexture);
+        this.shaderProgram = getResourceManager().getShader(hasTexture);
 
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
