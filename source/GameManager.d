@@ -147,7 +147,7 @@ class GameManager {
     		stdin.readln(buf);
     		string s = buf;
     		*/
-	    	buildTime = 60*60*4;
+	    	buildTime = 60*60*5;
 	    	writeln("Build time: ", buildTime);
 	    } else if (server == 0) {
             if (ip_addr.length < 4)
@@ -665,7 +665,7 @@ class GameManager {
 				beginGameplay();
 				return 1;
 			default:
-				writeln("Unsupported message.");
+				writeln("Unsupported message: ", MSG_ID);
 				return 1;
 		}
 	}
