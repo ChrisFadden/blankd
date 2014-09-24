@@ -9,6 +9,7 @@ import derelict.sdl2.sdl;
 import derelict.sdl2.net;
 import derelict.sdl2.ttf;
 import derelict.sdl2.mixer;
+import derelict.sdl2.image;
 
 import networking;
 import GameManager;
@@ -19,6 +20,7 @@ void main() {
     DerelictSDL2.load();
     DerelictSDL2Net.load();
     DerelictSDL2Mixer.load();
+    DerelictSDL2Image.load();
 
     if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
         writeln("SDL2 failed to init: ", SDL_GetError());
@@ -42,7 +44,6 @@ void main() {
         ip_addr = chompPrefix(chompPrefix(buf, "c"), " ").idup;
         break;
         default:
-        ip_addr = "128.61.126.83";
         server = -1;
         break;
     }

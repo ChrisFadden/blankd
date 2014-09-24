@@ -12,6 +12,7 @@ import gameobject;
 import ObjLoader;
 import Player;
 import Vector;
+import ResourceManager;
 
 import networking;
 
@@ -29,6 +30,7 @@ class GameManager {
 	static byte[3] teams = [0, 0, 0];
 	static int[3] score = [0, 0, 0];
     static Renderer renderer;
+    static ResourceManager resman;
     float lrAmnt;
     float fbAmnt;
     float udAmnt;
@@ -79,11 +81,19 @@ class GameManager {
 		camera.setTranslation(0f,9f,11f);
 		camera.moveRotation(0f,-.3f);
     	renderer = new Renderer(win, &camera);
+    	resman = ResourceManager.getResourceManager();
     	this.server = server;
     	
-    
-    	sounds = InitializeSound();
+    	char[] musicName1 = cast(char[])"bullet.wav";
+    	char[] musicName2 = cast(char[])"Teleport.wav";
+    	char[] musicName3 = cast(char[])"Power_Up.wav";
+		char[] musicName4 = cast(char[])"hitByBullet.wav";
 
+		resman.loadSound(musicName2);
+		resman.loadSound(musicName1);
+		resman.loadSound(musicName3);
+		resman.loadSound(musicName4);
+		sounds = resman.getSound();
         PlaySound(sounds[0]);
     	
     	
@@ -885,7 +895,9 @@ class GameManager {
 	}
 
 	static void addBlock(float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b){
-		GameObject got = new GameObject(x1,y1,z1,x2,y2,z2);
+        resman.loadTexture("simpleTex.png".dup);
+        Texture t = resman.getTexture("simpleTex.png".dup);
+        GameObject got = new GameObject(x1,y1,z1,x2,y2,z2,true, t);
         got.visible = true;
         got.solid = true;
         got.setRGB(r, g, b);
@@ -935,7 +947,7 @@ class GameManager {
 				case SDL_JOYBUTTONUP:
 					switch(event.jbutton.button){
 						case 3:
-						//swapMode();
+                        swapMode();
 						break;
 
 						default:
@@ -1014,7 +1026,8 @@ class GameManager {
 							scanHoriz = 0;
 							break;
 						case SDLK_g:
-							//swapMode();
+							if(server == -1)
+								swapMode();
 						break;
 						default:
 						break;
@@ -1091,7 +1104,8 @@ class GameManager {
 						udAmnt = 0f;
 							break;
 						case 3:
-						//swapMode();
+						if(server == -1)
+							swapMode();
 							break;
 						default:
 						break;
@@ -1184,7 +1198,8 @@ class GameManager {
 				case SDL_KEYUP:
 					switch(event.key.keysym.sym){
 						case SDLK_g:
-                            //swapMode();
+                        if (server == -1)
+                            swapMode();
                         break;
                         default:
                         break;
@@ -1213,16 +1228,22 @@ class GameManager {
                 float y = position.y + direction.y * -i; 
                 float z = position.z + direction.z * i; 
 
-                //writeln(obj.vBufferData.length);
-                if (obj.vBufferData.length < 94) // Not a box (it's the floor at 18)
+                if (obj.leftx == 0) // Not a box (it's the floor at 18)
                     break;
 
-                float x1 = obj.vBufferData[75]+obj.x; // Left face x
-                float x2 = obj.vBufferData[93]+obj.x; // Right face x
-                float y1 = obj.vBufferData[19]+obj.y; // Top face y
-                float y2 = obj.vBufferData[55]+obj.y; // Bottom face y
-                float z1 = obj.vBufferData[2]+obj.z; // Front face z
-                float z2 = obj.vBufferData[38]+obj.z; // Back face z
+                float x1 = obj.leftx+obj.x; // Left face x
+                float x2 = obj.rightx+obj.x; // Right face x
+                float y1 = obj.topy+obj.y; // Top face y
+                float y2 = obj.bottomy+obj.y; // Bottom face y
+                float z1 = obj.frontz+obj.z; // Front face z
+                float z2 = obj.backz+obj.z; // Back face z
+
+                //float x1 = obj.vBufferData[75]+obj.x; // Left face x
+                //float x2 = obj.vBufferData[93]+obj.x; // Right face x
+                //float y1 = obj.vBufferData[19]+obj.y; // Top face y
+                //float y2 = obj.vBufferData[55]+obj.y; // Bottom face y
+                //float z1 = obj.vBufferData[2]+obj.z; // Front face z
+                //float z2 = obj.vBufferData[38]+obj.z; // Back face z
                 
                 if (    abs(x - ((x1+x2)/2) ) < abs( (x1-x2)/2)
                         &&  abs(y - ((y1+y2)/2) ) < abs( (y1-y2)/2)
