@@ -75,14 +75,5 @@ class ResourceManager {
             return *tex;
         textures[name] = new Texture(name.dup);
         return textures[name];
-
-		//for(int i = 0; i < textures.length; i++)
-		//{
-			//if(icmp(textures[i].getName(), name) == 0)
-			//{
-				//return textures[i];
-			//}
-		//}
-		//return null;
 	}
 }
