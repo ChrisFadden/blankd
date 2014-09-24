@@ -9,6 +9,7 @@ import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 import derelict.sdl2.net;
 import derelict.sdl2.mixer;
+import derelict.sdl2.ttf;
 import ShaderProgram;
 import LoadWav;
 
@@ -24,6 +25,7 @@ class ResourceManager {
 
 	ShaderProgram[bool] shaders;
 	Mix_Chunk*[] sounds; 
+    TTF_Font*[uint] fonts;
 
 	/*
 	** The other items like textures and sounds can go here too!
@@ -52,4 +54,17 @@ class ResourceManager {
 	{
 		return sounds;
 	}
+
+    TTF_Font* getFont() {
+        uint size = 108; // Crashes if we load more than once, we'll only do one high res size :(
+        if ((size in fonts) == null) {
+            writeln("Loading font of size ", size);
+            fonts[size] = TTF_OpenFont("mplus-1c-light.ttf".dup.ptr, size);
+            if (!fonts[size]) {
+                string err = to!string(cast(char*)TTF_GetError());
+                writeln("TTF Error: ", err);
+            }
+        }
+        return fonts[size];
+    }
 }
