@@ -21,11 +21,14 @@ void main() {
     DerelictSDL2Net.load();
     DerelictSDL2Mixer.load();
     DerelictSDL2Image.load();
+    DerelictSDL2ttf.load();
 
     if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
         writeln("SDL2 failed to init: ", SDL_GetError());
         return;
     }
+
+    TTF_Init();
 
     int server = -1;
     

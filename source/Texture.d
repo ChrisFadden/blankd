@@ -3,6 +3,9 @@ import std.stdio;
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 import derelict.sdl2.image;
+import derelict.sdl2.ttf;
+
+import ResourceManager;
 
 class Texture {
     GLuint texID;
@@ -11,19 +14,34 @@ class Texture {
     uint height;
     void* texData;
 
+    this(char[] text, ubyte r, ubyte g, ubyte b) {
+        this.name = text;
+        //SDL_Color colorS = {r,g,b};
+        SDL_Color colorS = {0,1,0};
+        SDL_Surface* surface = TTF_RenderText_Blended(getResourceManager().getFont(), text.ptr, colorS);
+        if (!surface) {
+            writeln("Could not load ", name);
+            texID = 0;
+        } else {
+            textureFromSDLSurface(surface);
+        }
+    }
     this(char[] name) {
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Before texture error!", error);
         this.name = name;
-
-        GLenum textureFmt;
-        GLint numColors;
         SDL_Surface* surface = IMG_Load(name.ptr);
         if (!surface) {
             writeln("Could not load ", name);
             texID = 0;
         }
+        textureFromSDLSurface(surface);
+    }
+    void textureFromSDLSurface(SDL_Surface* surface) {
+        int error;
+        GLenum textureFmt;
+        GLint numColors;
 
         numColors = surface.format.BytesPerPixel;
         if (numColors == 4) {
@@ -44,6 +62,7 @@ class Texture {
                 texID = 0;
             }
         }
+        //writeln("NumColors: ", numColors);
 
         width = surface.w;
         height = surface.h;
