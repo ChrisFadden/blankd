@@ -5,6 +5,7 @@ import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 
 import ShaderProgram;
+import Texture;
 import Matrix;
 import Camera;
 
@@ -18,23 +19,22 @@ class GameObject {
     float g;
     float b;
     Matrix modelMatrix;
-    float[] verts;
-    float[] norms;
+    GLfloat[] verts;
+    GLfloat[] norms;
+    GLfloat[] texCords;
     int[] ind;
 
 	bool visible = false;
     bool solid = false;
     bool hasModel = false;
+    bool hasTexture = false;
 
     ShaderProgram shaderProgram;
+    Texture texture;
 
-    GLuint vArrayID;
-    GLuint nArrayID;
-    GLfloat[] vBufferData;
-    GLfloat[] nBufferData;
-    uint bufferLen;
     GLuint vBuffer;
     GLuint nBuffer;
+    GLuint tBuffer;
     GLuint iBuffer;
     GLuint shaderProgramID;
 
@@ -43,6 +43,9 @@ class GameObject {
     float topy, bottomy;
 
 	this(float x1, float y1, float z1, float x2, float y2, float z2) {
+        this(x1,y1,z1,x2,y2,z2, false, null);
+    }
+	this(float x1, float y1, float z1, float x2, float y2, float z2, bool hasTexture, Texture texture) {
         leftx = x1;
         rightx = x2;
         frontz = z1;
@@ -50,9 +53,11 @@ class GameObject {
         topy = y2;
         bottomy = y1;
 
-        bufferLen = 6*3*6;
+        this.hasTexture = hasTexture;
+        this.texture = texture;
+
         setVertexBuffer(x1, y1, z1, x2, y2, z2);
-        nBufferData = [
+        norms = [
             0, 0, 1,
             0, 0, 1,
             0, 0, 1,
@@ -95,12 +100,55 @@ class GameObject {
             1, 0, 0,
             1, 0, 0,
         ];
-        
+        texCords = [
+            0, 0,
+            1, 1,
+            0, 1,
+            0, 0,
+            1, 0,
+            1, 1,
+
+            0, 0,
+            1, 1,
+            0, 1,
+            0, 0,
+            1, 0,
+            1, 1,
+
+            0, 0,
+            1, 1,
+            0, 1,
+            0, 0,
+            1, 0,
+            1, 1,
+
+            0, 0,
+            1, 1,
+            0, 1,
+            0, 0,
+            1, 0,
+            1, 1,
+
+            0, 0,
+            1, 1,
+            0, 1,
+            0, 0,
+            1, 0,
+            1, 1,
+
+            0, 0,
+            1, 1,
+            0, 1,
+            0, 0,
+            1, 0,
+            1, 1,
+
+        ];
         setup();
     }
 
     void setVertexBuffer(float x1, float y1, float z1, float x2, float y2, float z2) {
-        vBufferData = [
+        verts = [
             // Front face
             x1, y1, z1,
             x2, y2, z1,
@@ -152,8 +200,7 @@ class GameObject {
     }
 
     this(float x, float z, float width, float length){
-        bufferLen = 18;
-        vBufferData = [
+        verts = [
             x, 0, z,
             x + width, 0, z + length,
             x, 0, z + length,
@@ -161,7 +208,7 @@ class GameObject {
             x + width, 0, z,
             x + width, 0, z + length,
         ];
-        nBufferData = [
+        norms = [
             0,1,0,
             0,1,0,
             0,1,0,
@@ -169,31 +216,12 @@ class GameObject {
             0,1,0,
             0,1,0,
         ];
-
-        setup();
-    }
-
-	this()
-	{
-        debug writeln("THIS CODE SHOULD NEVER BE RUNNING");
-        
-        bufferLen = 9;
-        vBufferData = [
-            -1.0, -1.0, 0.0,
-            1.0, -1.0, 0.0,
-            0.0, 1.0, 0.0,
-        ];
-        nBufferData = [
-            0.0, 0.0, 1.0,
-            0.0, 0.0, 1.0,
-            0.0, 0.0, 1.0,
-        ];
-        
+        hasTexture = false;
         setup();
     }
 
     void setup() {
-        //writeln("Beginning constructor ", vBufferData.sizeof);
+        //writeln("Beginning constructor ", verts.sizeof);
 		x = 0;
 		y = 0;
 		z = 0;
@@ -202,34 +230,38 @@ class GameObject {
         b = 0;
         modelMatrix = new Matrix();
         updateMatrix();
-        //writeln("Done matrix");
 
-        this.shaderProgram = new ShaderProgram();
-        //writeln("Done ShaderProgram");
+        this.shaderProgram = new ShaderProgram(hasTexture);
 
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Pre buffer error!");
         glGenBuffers(1, &vBuffer);
         glGenBuffers(1, &nBuffer);
+        glGenBuffers(1, &tBuffer);
         glGenBuffers(1, &iBuffer);
+        while ((error = glGetError()) != GL_NO_ERROR)
+            writeln("Post buffer error!");
         updateMesh();
 	}
 
     void updateMesh(){
         glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
-        if(!hasModel)
-            glBufferData(GL_ARRAY_BUFFER, bufferLen*GLfloat.sizeof, cast(void*)vBufferData, GL_STATIC_DRAW);
-        else
-            glBufferData(GL_ARRAY_BUFFER, verts.length*GLfloat.sizeof, cast(void*)verts, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, verts.length*GLfloat.sizeof, cast(void*)verts, GL_STATIC_DRAW);
 
         glBindBuffer(GL_ARRAY_BUFFER, nBuffer);
-        if(!hasModel)
-            glBufferData(GL_ARRAY_BUFFER, bufferLen*GLfloat.sizeof, cast(void*)nBufferData, GL_STATIC_DRAW);
-        else
+
+        glBufferData(GL_ARRAY_BUFFER, norms.length*GLfloat.sizeof, cast(void*)norms, GL_STATIC_DRAW);
+        if(hasModel)
         {
-            writeln("Usining Indexed Norms!!!");
-            glBufferData(GL_ARRAY_BUFFER, norms.length*GLfloat.sizeof, cast(void*)norms, GL_STATIC_DRAW);
+            //Object has a model thus an index buffer.
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, int.sizeof*ind.length, &ind[0], GL_STATIC_DRAW);
+        }
+
+        if (hasTexture) {
+            glBindBuffer(GL_ARRAY_BUFFER, tBuffer);
+            glBufferData(GL_ARRAY_BUFFER, texCords.length*GLfloat.sizeof, cast(void*)texCords, GL_STATIC_DRAW);
         }
 
         int error;
@@ -263,49 +295,65 @@ class GameObject {
         }
 
         int mPositionHandle = glGetAttribLocation(shaderProgram.programID, "vertPos_model");   
-        int mNormalHandle = glGetAttribLocation(shaderProgram.programID, "vertNorm_model");
+        int mNormalHandle = glGetAttribLocation(shaderProgram.programID, "norm_model");
+        int mTexHandle = 0;
         
-        if(!hasModel)
-        {
-            //Object doesn't have a model/vertices are placed
-            // attribute 0?, size, type, normalized, stride, array buffer offset
-            glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
-            glVertexAttribPointer(mPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
-            glEnableVertexAttribArray(mPositionHandle);
-        
-            glBindBuffer(GL_ARRAY_BUFFER, nBuffer);
-            glVertexAttribPointer(mNormalHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
-            glEnableVertexAttribArray(mNormalHandle);
+        //Object doesn't have a model/vertices are placed
+        // attribute, size, type, normalized, stride, array buffer offset
+        glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
+        glVertexAttribPointer(mPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
+        glEnableVertexAttribArray(mPositionHandle);
 
-            // start from vertex 0, bufferLen/3 total
-            glDrawArrays(GL_TRIANGLES, 0, bufferLen/3);
-            glDisableVertexAttribArray(mPositionHandle);
-            glDisableVertexAttribArray(mNormalHandle);
+        glBindBuffer(GL_ARRAY_BUFFER, nBuffer);
+        glVertexAttribPointer(mNormalHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
+        glEnableVertexAttribArray(mNormalHandle);
+
+        if (hasTexture) {
+            while ((error = glGetError()) != GL_NO_ERROR)
+                writeln("pre getAttrib Texture error!", error);
+            mTexHandle = glGetAttribLocation(shaderProgram.programID, "texCord");
+            while ((error = glGetError()) != GL_NO_ERROR)
+                writeln("getAttribLocation Texture error!", error);
+            glBindBuffer(GL_ARRAY_BUFFER, tBuffer);
+            while ((error = glGetError()) != GL_NO_ERROR)
+                writeln("glBindBuffer Texture error!", error);
+            glVertexAttribPointer(mTexHandle, 2, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
+            while ((error = glGetError()) != GL_NO_ERROR) {
+                writeln("glVertexAttribPointer Texture error! ", error);
+                if (error == GL_INVALID_ENUM)
+                    writeln("GL_INVALID_ENUM");
+                else if (error == GL_INVALID_VALUE) {
+                    int maxAtt;
+                    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxAtt);
+                    writeln("GL_INVALID_VALUE, mTexHandle: ", mTexHandle, " GL_MAX_VERTEX_ATTRIBS: ", maxAtt);
+                }
+                else
+                    writeln("Not recognized error!");
+            }
+            glEnableVertexAttribArray(mTexHandle);
+            while ((error = glGetError()) != GL_NO_ERROR)
+                writeln("getAttrib Texture error!", error);
+
+            glActiveTexture(GL_TEXTURE0);
+            GLint loc = glGetUniformLocation(shaderProgram.programID, "texture");
+            glBindTexture(GL_TEXTURE_2D, texture.texID);
+            glUniform1i(loc, 0); // GL_TEXTURE0 + n
+
+            while ((error = glGetError()) != GL_NO_ERROR)
+                writeln("getUniform Texture error!", error);
         }
-        else
-        {                
-            //writeln("Rendering .obj GameObject!!!");
-            //Object has a model thus an index buffer.
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, int.sizeof*ind.length, &ind[0], GL_STATIC_DRAW);
-            
-            //Get VertexAttribPointer to Vertices and Normals
-            glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
-            glVertexAttribPointer(mPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
-            
-            
-            glBindBuffer(GL_ARRAY_BUFFER, nBuffer);
-            glVertexAttribPointer(mNormalHandle, 3, GL_FLOAT, GL_FALSE, 0, cast(void*)0);
 
+        if (!hasModel) {
+            // start from vertex 0, verts.length/3 total
+            glDrawArrays(GL_TRIANGLES, 0, cast(int)verts.length/3);
+        } else {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
-            
-            glEnableVertexAttribArray(mPositionHandle);
-            glEnableVertexAttribArray(mNormalHandle);
-
             glDrawElements(GL_TRIANGLES, cast(int)ind.length, GL_UNSIGNED_INT, cast(void *)0);
-            glDisableVertexAttribArray(mPositionHandle);
-            glDisableVertexAttribArray(mNormalHandle);
         }
+        glDisableVertexAttribArray(mPositionHandle);
+        glDisableVertexAttribArray(mNormalHandle);
+        if (hasTexture)
+            glDisableVertexAttribArray(mTexHandle);
 	}
 
     void setRGB(float r, float g, float b) {
