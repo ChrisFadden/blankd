@@ -478,7 +478,8 @@ class GameManager {
 				if (tempClient !is null) {
 					writeln("New client.");
 					byte pTeam = teams[1] > teams[2] ? 2 : 1;
-					Player tempPlayer = new Player(0, 0, 0, &camera,pTeam);
+					Camera c = new Camera();
+					Player tempPlayer = new Player(0, 0, 0, &c,pTeam);
 					tempPlayer.playerID = playerNum;
 					teams[tempPlayer.team]++;
 					renderer.register(tempPlayer.getGameObject());
@@ -945,7 +946,7 @@ class GameManager {
 
 	static void addBlock(float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b){
         // Font loading
-        GameObject got = new GameObject(x1,y1,z1,x2,y2,z2,true, new Texture("blankd".dup, 1,1,0));
+        GameObject got = new GameObject(x1,y1,z1,x2,y2,z2); //,true, new Texture("blankd".dup, 1,1,0));
         //GameObject got = new GameObject(x1,y1,z1,x2,y2,z2);
         //GameObject got = new GameObject(x1,y1,z1,x2,y2,z2 ,true, resman.getTexture("simpleTex.png".dup));
         got.visible = true;
