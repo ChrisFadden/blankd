@@ -261,8 +261,11 @@ class GameManager {
 			player.scanz = -scanVert/20f;
 
 			movePlayer(player);
-			foreach (Player plyr ; players)
+			player.update();
+			foreach (Player plyr ; players){
 				movePlayer(plyr);
+				plyr.update();
+			}
 
 			if (server > -1){
 				player.sendTimer--;
@@ -403,65 +406,65 @@ class GameManager {
 		*/
 	}
 
-	void movePlayer(Player player) {
-		Camera camera = player.camera;
-		camera.moveTranslation(player.lrAmnt*player.speed, 0, -player.fbAmnt*player.speed);
+	void movePlayer(Player p) {
+		Camera c = p.camera;
+		c.moveRotation(p.scanx, p.scanz);
+		c.moveTranslation(p.lrAmnt*p.speed, 0, -p.fbAmnt*p.speed);
 
 		float movey = 0f;
 
-		float movex = camera.position.x - player.x;
-		player.dx = movex;
-		player.x = camera.position.x;
-		if (!placeFree(player,0,0,0)){
+		float movex = c.position.x - p.x;
+		p.dx = movex;
+		p.x = c.position.x;
+		if (!placeFree(p,0,0,0)){
 			movey = builder.dy;
-			player.y += movey;
-			if (!placeFree(player,0,0,0)){
-				player.y -= movey;
-				player.x -= movex;
+			p.y += movey;
+			if (!placeFree(p,0,0,0)){
+				p.y -= movey;
+				p.x -= movex;
 				movey = 0f;
 			}
 		}
 
-		float movez = camera.position.z - player.z;
-		player.dz = movez;
-		player.z = camera.position.z;
-		if (!placeFree(player,0,0,0)){
+		float movez = c.position.z - p.z;
+		p.dz = movez;
+		p.z = c.position.z;
+		if (!placeFree(p,0,0,0)){
 			if (movey == 0f)
 				movey = builder.dy;
 			else
 				movey = 0f;
 			
-			player.y += movey;
-			if (!placeFree(player,0,0,0)){
-				player.y -= movey;
-				player.z -= movez;
+			p.y += movey;
+			if (!placeFree(p,0,0,0)){
+				p.y -= movey;
+				p.z -= movez;
 				movey = 0f;
 			}
 		}
 		
 
-		player.dy -= player.gravity;
-		player.y += player.dy;
-		if (player.y <= 0f){
-			player.y = 0f;
-			player.dy = 0;
+		p.dy -= p.gravity;
+		p.y += p.dy;
+		if (p.y <= 0f){
+			p.y = 0f;
+			p.dy = 0;
 		} else {
 			foreach (GameObject o ; renderer.objects) {
 				if (o.solid) {
-					if (checkCollision(player, o)){
-						if (player.dy > 0){
-							player.y = o.bottomy - player.height;
-						} else if (player.dy < 0){
-							player.y = o.topy;
+					if (checkCollision(p, o)){
+						if (p.dy > 0){
+							p.y = o.bottomy - p.height;
+						} else if (p.dy < 0){
+							p.y = o.topy;
 						}
-						player.dy = 0;
+						p.dy = 0;
 					}
 				}
 			}
 		}
 
-		camera.setTranslation(player.x,player.y+player.height,player.z);
-		camera.moveRotation(player.scanx, player.scanz);
+		c.setTranslation(p.x,p.y+p.height,p.z);
 	}
 
 	float abs(float k){
@@ -481,7 +484,7 @@ class GameManager {
 					Camera c = new Camera();
 					c.setTranslation(0f,9f,11f);
 					c.moveRotation(0f,-.3f);
-					Player tempPlayer = new Player(0, 0, 0, &c,pTeam);
+					Player tempPlayer = new Player(0, 0, 0, &c, pTeam);
 					tempPlayer.playerID = playerNum;
 					teams[tempPlayer.team]++;
 					renderer.register(tempPlayer.getGameObject());
