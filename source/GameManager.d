@@ -162,7 +162,7 @@ class GameManager {
 	    	writeln("Build time: ", buildTime);
 	    } else if (server == 0) {
             if (ip_addr.length < 4)
-                ip_addr = "128.61.126.83";
+                ip_addr = "127.0.0.1";
 	    	if (!SDLNet_InitClient(ip_addr.toStringz, 1234)){
 	    		return;
 	    	}
@@ -255,9 +255,14 @@ class GameManager {
 		else{
 			handleGameplayInput(&event);
 
-			//for (Player plyr : players)
-			//	movePlayer(plyr);
+			player.lrAmnt = lrAmnt;
+			player.fbAmnt = fbAmnt;
+			player.scanx = -scanHoriz/20f;
+			player.scanz = -scanVert/20f;
+
 			movePlayer(player);
+			foreach (Player plyr ; players)
+				movePlayer(plyr);
 
 			if (server > -1){
 				player.sendTimer--;
@@ -270,8 +275,11 @@ class GameManager {
 							writefloat(player.x);
 							writefloat(player.y);
 							writefloat(player.z);
-							writefloat(player.dx);
-							writefloat(player.dz);
+							writefloat(player.dy);
+							writefloat(player.lrAmnt);
+							writefloat(player.fbAmnt);
+							writefloat(player.scanx);
+							writefloat(player.scanz);
 							sendmessage(p.mySocket);
 						}
 					} else {
@@ -280,8 +288,11 @@ class GameManager {
 						writefloat(player.x);
 						writefloat(player.y);
 						writefloat(player.z);
-						writefloat(player.dx);
-						writefloat(player.dz);
+						writefloat(player.dy);
+						writefloat(player.lrAmnt);
+						writefloat(player.fbAmnt);
+						writefloat(player.scanx);
+						writefloat(player.scanz);
 						sendmessage(getSocket());
 					}
 					player.sendTimer = 4;
@@ -289,6 +300,7 @@ class GameManager {
 			}
 		}
 
+		// FLAGS //
 		for (int i = 1; i < ctfFlags.length; i++){
 				Flag flag = ctfFlags[i];
 				GameObject flagObj = ctfFlags[i].getGameObject();
@@ -380,6 +392,7 @@ class GameManager {
 				}
 			}
 
+		/*
 		if (server > -1){
 			foreach (Player p; players){
 				p.x += p.dx;
@@ -387,11 +400,12 @@ class GameManager {
 				p.update();
 			}
 		}
+		*/
 	}
 
 	void movePlayer(Player player) {
 		Camera camera = player.camera;
-		camera.moveTranslation(lrAmnt*player.speed, 0, -fbAmnt*player.speed);
+		camera.moveTranslation(player.lrAmnt*player.speed, 0, -player.fbAmnt*player.speed);
 
 		float movey = 0f;
 
@@ -447,7 +461,7 @@ class GameManager {
 		}
 
 		camera.setTranslation(player.x,player.y+player.height,player.z);
-		camera.moveRotation(-scanHoriz/20f, -scanVert/20f);
+		camera.moveRotation(player.scanx, player.scanz);
 	}
 
 	float abs(float k){
@@ -605,15 +619,21 @@ class GameManager {
 				float newx = readfloat(array);
 				float newy = readfloat(array);
 				float newz = readfloat(array);
-				float newdx = readfloat(array);
-				float newdz = readfloat(array);
+				float newdy = readfloat(array);
+				float newlr = readfloat(array);
+				float newfb = readfloat(array);
+				float newscanx = readfloat(array);
+				float newscanz = readfloat(array);
 				if (plyr !is null) {
 					plyr.getGameObject().visible = true;
 					plyr.x = newx;
 					plyr.y = newy;
 					plyr.z = newz;
-					plyr.dx = newdx;
-					plyr.dz = newdz;
+					plyr.dy = newdy;
+					plyr.lrAmnt = newlr;
+					plyr.fbAmnt = newfb;
+					plyr.scanx = newscanx;
+					plyr.scanz = newscanz;
 				}
 				if (server == 1) {
 					foreach (Player p; players){
@@ -624,13 +644,16 @@ class GameManager {
 							writefloat(newx);
 							writefloat(newy);
 							writefloat(newz);
-							writefloat(newdx);
-							writefloat(newdz);
+							writefloat(newdy);
+							writefloat(newlr);
+							writefloat(newfb);
+							writefloat(newscanx);
+							writefloat(newscanz);
 							sendmessage(p.mySocket);
 						}
 					}
 				}
-				return 1+(server == 0 ? 1 : 0)+(4*5);
+				return 1+(server == 0 ? 1 : 0)+(4*8);
 			case 7:
 				beginBuildPhase();
 				return 1;

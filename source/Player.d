@@ -27,6 +27,9 @@ class Player {
 	float speed;
 	float xpan, ypan;
 
+	float scanx, scanz;
+	float lrAmnt, fbAmnt;
+
 	float width, length;
 
 	float height;
@@ -56,6 +59,11 @@ class Player {
 		this.y = y;
 		this.z = z;
 
+		scanx = 0;
+		scanz = 0;
+		lrAmnt = 0;
+		fbAmnt = 0;
+
 		hp = 4;
 
 		sendTimer = 2;
@@ -66,7 +74,9 @@ class Player {
 		xpan = 1.4f;
 		ypan = 1f;
 
+		dx = 0;
 		dy = 0;
+		dz = 0;
 
 		gravity = .02f;
 	}
