@@ -42,6 +42,7 @@ class Player {
 	byte team;
 
 	bool active = true;
+	bool removed = false;
 
 	this(float x, float y, float z, Camera* camera, byte team) {
 		this.width = 1.2f;

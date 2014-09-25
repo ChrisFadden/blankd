@@ -520,6 +520,7 @@ class GameManager {
 					if (!readsocket(p.mySocket, &userDefined )){
 						p.getGameObject().visible = false;
 						p.active = false;
+						p.removed = true;
 						p = null;
 						writeln("Player disconnected!");
 						discon = true;
@@ -527,21 +528,18 @@ class GameManager {
 				}
 
 				if(discon){
-					ulong len = players.length;
+					Array!(Player) temp;
 					for(int i = 0; i < players.length; i++) {
-						if(players[i] is null) {
-							Array!(Player) temp;
-							temp ~= players[0..i];
-							temp ~= players[i+1..players.length];
-							players = temp;
-							i--;
-							len--;
+						if(players[i].removed == false) {
+							temp ~= players[i];
 						}
 					}
-					players.length = len;
+					players = temp;
+					writeln(temp.length);
+					writeln(players.length);
 
 					foreach (Player p; players) {
-						writeln(&p);
+						writeln(p.playerID);
 					}
 				}
 			}
