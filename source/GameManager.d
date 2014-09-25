@@ -479,6 +479,8 @@ class GameManager {
 					writeln("New client.");
 					byte pTeam = teams[1] > teams[2] ? 2 : 1;
 					Camera c = new Camera();
+					c.setTranslation(0f,9f,11f);
+					c.moveRotation(0f,-.3f);
 					Player tempPlayer = new Player(0, 0, 0, &c,pTeam);
 					tempPlayer.playerID = playerNum;
 					teams[tempPlayer.team]++;
