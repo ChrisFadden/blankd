@@ -158,7 +158,7 @@ class GameManager {
     		stdin.readln(buf);
     		string s = buf;
     		*/
-	    	buildTime = 60*10;
+	    	buildTime = 60*3;
 	    	writeln("Build time: ", buildTime);
 	    } else if (server == 0) {
             if (ip_addr.length < 4)
@@ -482,8 +482,6 @@ class GameManager {
 					writeln("New client.");
 					byte pTeam = teams[1] > teams[2] ? 2 : 1;
 					Camera c = new Camera();
-					c.setTranslation(0f,9f,11f);
-					c.moveRotation(0f,-.3f);
 					Player tempPlayer = new Player(0, 0, 0, &c, pTeam);
 					tempPlayer.playerID = playerNum;
 					teams[tempPlayer.team]++;
@@ -578,7 +576,8 @@ class GameManager {
 				byte pId = readbyte(array);
 				byte pTeam = readbyte(array);
 				writeln("New player: ", pId);
-				Player temp = new Player(0,0,0,&camera,pTeam);
+				Camera c = new Camera();
+				Player temp = new Player(0,0,0,&c,pTeam);
 				temp.playerID = pId;
 				renderer.register(temp.getGameObject());
 				players ~= temp;
@@ -641,7 +640,6 @@ class GameManager {
 					plyr.camera.horizontalAngle = newscanx;
 					plyr.camera.verticalAngle = newscanz;
 					plyr.camera.moveRotation(0,0);
-					writeln("Movement on: ", plyr.playerID, "; I am ", player.playerID);
 				}
 				if (server == 1) {
 					foreach (Player p; players){
