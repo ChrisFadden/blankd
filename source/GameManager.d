@@ -134,7 +134,7 @@ class GameManager {
 	    b.visible = true;
 	    renderer.register(b);
 
-	    GameObject floor = new GameObject(-150,-80,300,160);
+	    GameObject floor = new GameObject(-150,80,300,-160);
 	    floor.visible = true;
 	    floor.setRGB(.2f,.9f,.5f);
 	    renderer.register(floor);
@@ -254,98 +254,10 @@ class GameManager {
 		}
 		else{
 			handleGameplayInput(&event);
-			camera.moveTranslation(lrAmnt*player.speed, 0, -fbAmnt*player.speed);
 
-			float movey = 0f;
-
-			float movex = camera.position.x - player.x;
-			player.dx = movex;
-			player.x = camera.position.x;
-			if (!placeFree(player,0,0,0)){
-				//movey = builder.dy;
-				player.y += movey;
-				if (!placeFree(player,0,0,0)){
-					movey = 0f;
-					player.y -= movey;
-					player.x -= movex;
-				}
-			}
-			/*
-			foreach (GameObject o ; renderer.objects) {
-				if (o.solid) {
-					if (checkCollision(player, o)){
-						if (!placeFree(player, 0, -.1f, 0)){
-							movey = builder.dy;
-							player.y += movey;
-						}
-						if (checkCollision(player, o)){
-							movey = 0;
-							player.y -= movey;
-							player.x -= movex;
-						}
-						break;
-					}
-				}
-			}
-			*/
-
-			float movez = camera.position.z - player.z;
-			player.dz = movez;
-			player.z = camera.position.z;
-			if (!placeFree(player,0,0,0)){
-				/*
-				if (movey == 0f)
-					movey = builder.dy;
-				else
-					movey = 0f;
-				*/
-				player.y += movey;
-				if (!placeFree(player,0,0,0)){
-					movey = 0f;
-					player.y -= movey;
-					player.z -= movez;
-				}
-			}
-			/*
-			foreach (GameObject o ; renderer.objects) {
-				if (o.solid) {
-					if (checkCollision(player, o)){
-						if (!placeFree(player, 0, -.1f, 0)){
-							if (movey == 0f)
-								movey = builder.dy;
-							else
-								movey = 0f;
-							player.y += movey;
-						}
-						if (checkCollision(player, o)){
-							player.y -= movey;
-							player.z -= movez;
-						}
-						break;
-					}
-				}
-			}
-			*/
-
-			player.dy -= player.gravity;
-			player.y += player.dy;
-			if (player.y <= 0f){
-				player.y = 0f;
-				player.dy = 0;
-			} else {
-				foreach (GameObject o ; renderer.objects) {
-					if (o.solid) {
-						if (checkCollision(player, o)){
-							if (player.dy > 0){
-								player.y = o.bottomy - player.height;
-							} else if (player.dy < 0){
-								player.y = o.topy;
-							}
-							player.dy = 0;
-						}
-					}
-				}
-			}
+			//for (Player plyr : players)
+			//	movePlayer(plyr);
+			movePlayer(player);
 
 			if (server > -1){
 				player.sendTimer--;
@@ -375,9 +287,6 @@ class GameManager {
 					player.sendTimer = 4;
 				}
 			}
-
-			camera.setTranslation(player.x,player.y+player.height,player.z);
-			camera.moveRotation(-scanHoriz/20f, -scanVert/20f);
 		}
 
 		for (int i = 1; i < ctfFlags.length; i++){
@@ -478,6 +387,67 @@ class GameManager {
 				p.update();
 			}
 		}
+	}
+
+	void movePlayer(Player player) {
+		Camera camera = player.camera;
+		camera.moveTranslation(lrAmnt*player.speed, 0, -fbAmnt*player.speed);
+
+		float movey = 0f;
+
+		float movex = camera.position.x - player.x;
+		player.dx = movex;
+		player.x = camera.position.x;
+		if (!placeFree(player,0,0,0)){
+			movey = builder.dy;
+			player.y += movey;
+			if (!placeFree(player,0,0,0)){
+				player.y -= movey;
+				player.x -= movex;
+				movey = 0f;
+			}
+		}
+
+		float movez = camera.position.z - player.z;
+		player.dz = movez;
+		player.z = camera.position.z;
+		if (!placeFree(player,0,0,0)){
+			if (movey == 0f)
+				movey = builder.dy;
+			else
+				movey = 0f;
+			
+			player.y += movey;
+			if (!placeFree(player,0,0,0)){
+				player.y -= movey;
+				player.z -= movez;
+				movey = 0f;
+			}
+		}
+		
+
+		player.dy -= player.gravity;
+		player.y += player.dy;
+		if (player.y <= 0f){
+			player.y = 0f;
+			player.dy = 0;
+		} else {
+			foreach (GameObject o ; renderer.objects) {
+				if (o.solid) {
+					if (checkCollision(player, o)){
+						if (player.dy > 0){
+							player.y = o.bottomy - player.height;
+						} else if (player.dy < 0){
+							player.y = o.topy;
+						}
+						player.dy = 0;
+					}
+				}
+			}
+		}
+
+		camera.setTranslation(player.x,player.y+player.height,player.z);
+		camera.moveRotation(-scanHoriz/20f, -scanVert/20f);
 	}
 
 	float abs(float k){
