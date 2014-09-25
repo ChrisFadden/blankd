@@ -3,13 +3,9 @@ import core.thread;
 import std.string;
 import std.math;
 
-import Window;
-import Renderer;
 import gameobject;
 import std.conv;
 import ObjLoader;
-
-import networking;
 
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;

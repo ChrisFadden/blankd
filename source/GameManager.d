@@ -641,6 +641,7 @@ class GameManager {
 					plyr.camera.horizontalAngle = newscanx;
 					plyr.camera.verticalAngle = newscanz;
 					plyr.camera.moveRotation(0,0);
+					writeln("Movement on: ", plyr.playerID, "; I am ", player.playerID);
 				}
 				if (server == 1) {
 					foreach (Player p; players){
