@@ -980,6 +980,8 @@ class GameManager {
 	}
 
 	void shoot(){
+		if (!player.isAlive())
+			return;
 		GameObject shot = checkCollisions();
 		foreach (Player p; players){
 			if (p.getGameObject() == shot){
