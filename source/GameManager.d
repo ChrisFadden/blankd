@@ -1277,6 +1277,8 @@ class GameManager {
 
         int num = 0;
         foreach (GameObject obj; renderer.objects) {
+        	if (obj == player.getGameObject())
+        		continue;
             // This should be cleaner, but you know, hackathon. Time.
             //writeln("Checking object  ", num);
             for (float i = 0; i > -100; i-=.1) {
