@@ -631,9 +631,9 @@ class GameManager {
 				float newscanz = readfloat(array);
 				if (plyr !is null) {
 					plyr.getGameObject().visible = true;
-					plyr.x = newx;
-					plyr.y = newy;
-					plyr.z = newz;
+					plyr.camera.position.x = newx;
+					plyr.camera.position.y = newy;
+					plyr.camera.position.z = newz;
 					plyr.dy = newdy;
 					plyr.lrAmnt = newlr;
 					plyr.fbAmnt = newfb;
