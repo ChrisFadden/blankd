@@ -97,7 +97,7 @@ class GameManager {
 		sounds = resman.getSound();
         PlaySound(sounds[0]);
     	
-    	
+
 
     	lrAmnt = 0;
     	fbAmnt = 0;
@@ -520,7 +520,23 @@ class GameManager {
 						p.getGameObject().visible = false;
 						p.active = false;
 						p = null;
+						writeln("Player disconnected!");
 					}
+				}
+
+				for(int i = 0; i < players.length; i++)
+				{
+					if(players[i] is null)
+					{
+						Array!(Player) temp;
+						temp ~= players[0..i];
+						temp ~= players[i+1..players.length];
+						players = temp;
+						i--;
+					}
+				}
+				foreach (Player p; players) {
+					writeln(p.playerID);
 				}
 			}
 		} else if (server == 0){
