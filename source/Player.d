@@ -29,6 +29,7 @@ class Player {
 	float width, length;
 
 	float height;
+	float eyeHeight;
 
     GameObject gameObj;
 
@@ -50,6 +51,7 @@ class Player {
 		this.width = 1.2f;
 		this.length = 1.2f;
 		this.height = 3.1f;
+		this.eyeHeight = 3.0f;
         gameObj = new GameObject(-width/2, 0, length/2, width/2, height, -length/2);
         gameObj.visible = false;
         setTeam(team);

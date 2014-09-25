@@ -173,7 +173,6 @@ class GameManager {
     		string s = buf;
     		*/
 	    	buildTime = 60*3;
-	    	writeln("Build time: ", buildTime);
 	    } else if (server == 0) {
             if (ip_addr.length < 4)
                 ip_addr = "127.0.0.1";
@@ -285,7 +284,6 @@ class GameManager {
 			}
 
 			if (!player.isAlive){
-				writeln(player.respawnTimer);
 				player.respawnTimer--;
 				if (player.respawnTimer <= 0){
 					clearbuffer();
@@ -490,7 +488,7 @@ class GameManager {
 			}
 		}
 
-		c.setTranslation(p.x,p.y+p.height,p.z);
+		c.setTranslation(p.x,p.y+p.eyeHeight,p.z);
 	}
 
 	float abs(float k){
@@ -890,7 +888,7 @@ class GameManager {
 		player.startx = player.x;
 		player.starty = player.y;
 		player.startz = player.z;
-		player.camera.setTranslation(player.x,player.y+player.height,player.z);
+		player.camera.setTranslation(player.x,player.y+player.eyeHeight,player.z);
 		player.update();
 		foreach (Player p ; players){
 			Flag mFlag = ctfFlags[p.team];
@@ -900,7 +898,7 @@ class GameManager {
 			p.startx = p.x;
 			p.starty = p.y;
 			p.startz = p.z;
-			p.camera.setTranslation(p.x,p.y+p.height,p.z);
+			p.camera.setTranslation(p.x,p.y+p.eyeHeight,p.z);
 			p.update();
 		}
 		builder.getGameObject().visible = false;
@@ -1259,7 +1257,6 @@ class GameManager {
 						default:
 						break;
 					}
-					debug writeln("Button ", event.jbutton.button);
 				break;
 				case SDL_JOYBUTTONUP:
 					switch(event.jbutton.button){
