@@ -136,7 +136,10 @@ void main() {
 
     float cosTheta = clamp( dot(normal_modelSpace, light_pos), 0, 1);
     float dist = distance(position_modelSpace, light_pos); 
-    gl_FragColor =   matDiffuseColor * vec4(0.3,0.3,0.3, 1) + (cosTheta * matDiffuseColor * light_color) / (dist);
+    vec4 finalCol =   matDiffuseColor * vec4(0.3,0.3,0.3, 1) + (cosTheta * matDiffuseColor * light_color) / (dist);
+    if (finalCol.a < 0.1)
+        discard;
+    gl_FragColor = finalCol;
     //gl_FragColor = matDiffuseColor + 0.001 * cosTheta * light_color;
 }
 ";
