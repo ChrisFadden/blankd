@@ -26,6 +26,20 @@ import derelict.sdl2.mixer;
 
 class GameManager {
 
+	static const int MSG_NEWBLOCK = 1;
+	static const int MSG_MYINFO = 2;
+	static const int MSG_NEWPLAYER = 3;
+	static const int MSG_DEATH = 4;
+	static const int MSG_UPDATEXYZ = 5;
+	static const int MSG_SHOT = 6;
+	static const int MSG_BEGINBUILD = 7;
+	static const int MSG_FLAGRESET = 8;
+	static const int MSG_FLAGPICKUP = 9;
+	static const int MSG_FLAGDROP = 10;
+	static const int MSG_FLAGSCORE = 11;
+	static const int MSG_BEGINGAMEPLAY = 12;
+	static const int MSG_RESPAWN = 13;
+
 	static Camera camera;
 	float[] targetCamera = [0, 4, 1];
 	static byte[3] teams = [0, 0, 0];
@@ -245,7 +259,7 @@ class GameManager {
 				if (buildTime < 1) {
 					foreach(Player p; players) {
 						clearbuffer();
-						writebyte(12);
+						writebyte(MSG_BEGINGAMEPLAY);
 						sendmessage(p.mySocket);
 					}
 					beginGameplay();
@@ -261,20 +275,42 @@ class GameManager {
 			player.scanz = -scanVert/20f;
 			camera.moveRotation(player.scanx, player.scanz);
 
-			movePlayer(player);
+			if (player.isAlive)
+				movePlayer(player);
 			player.update();
 			foreach (Player plyr ; players){
-				movePlayer(plyr);
+				if (player.isAlive)
+					movePlayer(plyr);
 				plyr.update();
 			}
 
-			if (server > -1){
+			if (!player.isAlive){
+				writeln(player.respawnTimer);
+				player.respawnTimer--;
+				if (player.respawnTimer <= 0){
+					clearbuffer();
+					writebyte(MSG_RESPAWN);
+					writebyte(player.playerID);
+					if (server == 0){
+						sendmessage(getSocket());
+					} else if (server == 1){
+						foreach(Player p; players){
+							sendmessage(p.mySocket, false);
+						}
+					}
+					clearbuffer();
+					player.spawn();
+					player.getGameObject().visible = false;
+				}
+			}
+
+			if (server > -1 && player.isAlive){
 				player.sendTimer--;
 				if (player.sendTimer <= 0){
 					if (server == 1){
 						foreach (Player p; players) {
 							clearbuffer();
-							writebyte(5);
+							writebyte(MSG_UPDATEXYZ);
 							writebyte(player.playerID);
 							writefloat(player.x);
 							writefloat(player.y);
@@ -288,7 +324,7 @@ class GameManager {
 						}
 					} else {
 						clearbuffer();
-						writebyte(5);
+						writebyte(MSG_UPDATEXYZ);
 						writefloat(player.x);
 						writefloat(player.y);
 						writefloat(player.z);
@@ -335,13 +371,13 @@ class GameManager {
 										flag.reset();
 										foreach(Player p; players){
 											clearbuffer();
-											writebyte(8);
+											writebyte(MSG_FLAGRESET);
 											writebyte(cast(byte)i);
 											sendmessage(p.mySocket);
 										}
 									} else if (server == 0) {
 										clearbuffer();
-										writebyte(8);
+										writebyte(MSG_FLAGRESET);
 										writebyte(cast(byte)i);
 										sendmessage(getSocket());
 									}
@@ -355,13 +391,13 @@ class GameManager {
 											scoreForTeam(teamScore);
 											foreach(Player p ; players){
 												clearbuffer();
-												writebyte(11);
+												writebyte(MSG_FLAGSCORE);
 												writebyte(otherFlagInd);
 												sendmessage(p.mySocket);
 											}
 										} else if (server == 0){
 											clearbuffer();
-											writebyte(11);
+											writebyte(MSG_FLAGSCORE);
 											writebyte(otherFlagInd);
 											sendmessage(getSocket());
 										}
@@ -377,14 +413,14 @@ class GameManager {
 										flag.playerCarrying = player.playerID;
 										foreach(Player p; players){
 											clearbuffer();
-											writebyte(9);
+											writebyte(MSG_FLAGPICKUP);
 											writebyte(cast(byte)i);
 											writebyte(player.playerID);
 											sendmessage(p.mySocket);
 										}
 									} else if (server == 0) {
 										clearbuffer();
-										writebyte(9);
+										writebyte(MSG_FLAGPICKUP);
 										writebyte(cast(byte)i);
 										writebyte(player.playerID);
 										sendmessage(getSocket());
@@ -395,16 +431,6 @@ class GameManager {
 					}
 				}
 			}
-
-		/*
-		if (server > -1){
-			foreach (Player p; players){
-				p.x += p.dx;
-				p.z += p.dz;
-				p.update();
-			}
-		}
-		*/
 	}
 
 	void movePlayer(Player p) {
@@ -489,26 +515,26 @@ class GameManager {
 					tempPlayer.mySocket = tempClient;
 					playerNum++;
 					clearbuffer();
-					writebyte(2);
+					writebyte(MSG_MYINFO);
 					writebyte(tempPlayer.team);
 					writebyte(tempPlayer.playerID);
 					sendmessage(tempPlayer.mySocket);
 
 					foreach(Player p ; players){
 						clearbuffer();
-						writebyte(3);
+						writebyte(MSG_NEWPLAYER);
 						writebyte(p.playerID);
 						writebyte(p.team);
 						sendmessage(tempPlayer.mySocket);
 
 						clearbuffer();
-						writebyte(3);
+						writebyte(MSG_NEWPLAYER);
 						writebyte(tempPlayer.playerID);
 						writebyte(tempPlayer.team);
 						sendmessage(p.mySocket);
 					}
 					clearbuffer();
-					writebyte(3);
+					writebyte(MSG_NEWPLAYER);
 					writebyte(player.playerID);
 					writebyte(player.team);
 					sendmessage(tempPlayer.mySocket);
@@ -555,7 +581,7 @@ class GameManager {
 	static int userDefined(byte** array, TCPsocket socket){
 		byte MSG_ID = readbyte(array);
 		switch(MSG_ID) {
-			case 1:
+			case MSG_NEWBLOCK:
 				byte pId = readbyte(array);
 				float[] xyz = [readfloat(array), readfloat(array), readfloat(array),
 					readfloat(array), readfloat(array), readfloat(array)];
@@ -563,7 +589,7 @@ class GameManager {
 					foreach(Player p; players){
 						if (socket != p.mySocket){
 							clearbuffer();
-							writebyte(1);
+							writebyte(MSG_NEWBLOCK);
 							writebyte(pId);
 							for (int i = 0; i < 6; i++)
 								writefloat(xyz[i]);
@@ -586,14 +612,14 @@ class GameManager {
 				}
 				addBlock(xyz[0], xyz[1], xyz[2], xyz[3], xyz[4], xyz[5], rgb[0], rgb[1], rgb[2]);
 				return 6*4+1+1;
-			case 2:
+			case MSG_MYINFO:
 				byte pTeam = readbyte(array);
 				byte myID = readbyte(array);
 				player.playerID = myID;
 				writeln("You are player ", myID);
 				player.setTeam(pTeam);
 				return 1+2;
-			case 3:
+			case MSG_NEWPLAYER:
 				byte pId = readbyte(array);
 				byte pTeam = readbyte(array);
 				writeln("New player: ", pId);
@@ -603,7 +629,35 @@ class GameManager {
 				renderer.register(temp.getGameObject());
 				players ~= temp;
 				return 1+2;
-			case 6:
+			case MSG_DEATH:
+				byte pId = readbyte(array);
+				Player plyr = findPlayer(pId);
+				if (server == 1){
+					foreach(Player p; players){
+						clearbuffer();
+						writebyte(MSG_DEATH);
+						writebyte(pId);
+						sendmessage(p.mySocket);
+					}
+				}
+				if (plyr !is null)
+					plyr.die();
+				return 2;
+			case MSG_RESPAWN:
+				byte pId = readbyte(array);
+				Player plyr = findPlayer(pId);
+				if (server == 1){
+					foreach(Player p ; players){
+						clearbuffer();
+						writebyte(MSG_RESPAWN);
+						writebyte(pId);
+						sendmessage(p.mySocket);
+					}
+				}
+				if (plyr !is null)
+					plyr.spawn();
+				return 2;
+			case MSG_SHOT:
 				if (server == 1){
 					byte pId = readbyte(array);
 					if (pId == player.playerID)
@@ -612,7 +666,7 @@ class GameManager {
 						foreach (Player p; players){
 							if (p.playerID == pId){
 								clearbuffer();
-								writebyte(6);
+								writebyte(MSG_SHOT);
 								sendmessage(p.mySocket);
 								break;
 							}
@@ -623,7 +677,7 @@ class GameManager {
 					getShot();
 					return 1;
 				}
-			case 5:
+			case MSG_UPDATEXYZ:
 				Player plyr;
 				byte pId;
 				if (server == 0){
@@ -650,23 +704,11 @@ class GameManager {
 				float newfb = readfloat(array);
 				float newscanx = readfloat(array);
 				float newscanz = readfloat(array);
-				if (plyr !is null) {
-					plyr.getGameObject().visible = true;
-					plyr.camera.position.x = newx;
-					plyr.camera.position.y = newy;
-					plyr.camera.position.z = newz;
-					plyr.dy = newdy;
-					plyr.lrAmnt = newlr;
-					plyr.fbAmnt = newfb;
-					plyr.camera.horizontalAngle = newscanx;
-					plyr.camera.verticalAngle = newscanz;
-					plyr.camera.moveRotation(0,0);
-				}
 				if (server == 1) {
 					foreach (Player p; players){
 						if (p.mySocket != socket){
 							clearbuffer();
-							writebyte(5);
+							writebyte(MSG_UPDATEXYZ);
 							writebyte(plyr.playerID);
 							writefloat(newx);
 							writefloat(newy);
@@ -680,11 +722,23 @@ class GameManager {
 						}
 					}
 				}
+				if (plyr !is null) {
+					plyr.getGameObject().visible = true;
+					plyr.camera.position.x = newx;
+					plyr.camera.position.y = newy;
+					plyr.camera.position.z = newz;
+					plyr.dy = newdy;
+					plyr.lrAmnt = newlr;
+					plyr.fbAmnt = newfb;
+					plyr.camera.horizontalAngle = newscanx;
+					plyr.camera.verticalAngle = newscanz;
+					plyr.camera.moveRotation(0,0);
+				}
 				return 1+(server == 0 ? 1 : 0)+(4*8);
-			case 7:
+			case MSG_BEGINBUILD:
 				beginBuildPhase();
 				return 1;
-			case 8: // Reset flag to home
+			case MSG_FLAGRESET: // Reset flag to home
 				byte flagNum = readbyte(array);
 				if (flagNum != 1 && flagNum != 2)
 					flagNum = 0;
@@ -694,14 +748,14 @@ class GameManager {
 					if (server == 1){
 						foreach(Player p; players){
 							clearbuffer();
-							writebyte(8);
+							writebyte(MSG_FLAGRESET);
 							writebyte(flagNum);
 							sendmessage(p.mySocket);
 						}
 					}
 				}
 				return 1+1;
-			case 9: // Pickup flag
+			case MSG_FLAGPICKUP: // Pickup flag
 				byte flagNum = readbyte(array);
 				byte pId = readbyte(array);
 
@@ -711,7 +765,7 @@ class GameManager {
 					if (server == 1){
 						foreach(Player p; players){
 							clearbuffer();
-							writebyte(9);
+							writebyte(MSG_FLAGPICKUP);
 							writebyte(flagNum);
 							writebyte(pId);
 							sendmessage(p.mySocket);
@@ -719,7 +773,7 @@ class GameManager {
 					}
 				}
 				return 3;
-			case 10: // Drop flag
+			case MSG_FLAGDROP: // Drop flag
 				byte flagNum = readbyte(array);
 
 				if (ctfFlags[flagNum].playerCarrying >= 0){
@@ -727,14 +781,14 @@ class GameManager {
 					if (server == 1){
 						foreach(Player p; players){
 							clearbuffer();
-							writebyte(10);
+							writebyte(MSG_FLAGDROP);
 							writebyte(flagNum);
 							sendmessage(p.mySocket);
 						}
 					}
 				}
 				return 2;
-			case 11: // Score
+			case MSG_FLAGSCORE: // Score
 				byte flagNum = readbyte(array);
 				
 				int teamScore = flagNum == 1 ? 2 : 1;
@@ -743,13 +797,13 @@ class GameManager {
 				if (server == 1){
 					foreach (Player p ; players){
 						clearbuffer();
-						writebyte(11);
+						writebyte(MSG_FLAGSCORE);
 						writebyte(flagNum);
 						sendmessage(p.mySocket);
 					}
 				}
 				return 2;
-			case 12:
+			case MSG_BEGINGAMEPLAY:
 				beginGameplay();
 				return 1;
 			default:
@@ -812,6 +866,17 @@ class GameManager {
 		(*window).pause(frameDelay - time);
 	}
 
+	static Player findPlayer(int pId){
+		foreach (Player p; players){
+			if (p.playerID == pId){
+				return p;
+			}
+		}
+		if (pId == player.playerID)
+			return player;
+		return null;
+	}
+
 	void clean(){
 
 	}
@@ -825,8 +890,19 @@ class GameManager {
 		player.startx = player.x;
 		player.starty = player.y;
 		player.startz = player.z;
-		camera.setTranslation(player.x,player.y+player.height,player.z);
+		player.camera.setTranslation(player.x,player.y+player.height,player.z);
 		player.update();
+		foreach (Player p ; players){
+			Flag mFlag = ctfFlags[p.team];
+			p.x = mFlag.lockx;
+			p.z = mFlag.lockz;
+			p.y = mFlag.locky;
+			p.startx = p.x;
+			p.starty = p.y;
+			p.startz = p.z;
+			p.camera.setTranslation(p.x,p.y+p.height,p.z);
+			p.update();
+		}
 		builder.getGameObject().visible = false;
 	}
 
@@ -862,11 +938,24 @@ class GameManager {
 	}
 
 	static void getShot() {
+		if (!player.isAlive)
+			return;
 		player.hp--;
 		PlaySound(sounds[3]);
 		if (player.hp<1){
-			player.spawn();
-			camera.setTranslation(player.x,player.y+player.height,player.z);
+			player.die();
+			clearbuffer();
+			writebyte(MSG_DEATH);
+			writebyte(player.playerID);
+			if (server == 0)
+				sendmessage(getSocket());
+			else if (server == 1){
+				foreach(Player p ; players){
+					sendmessage(p.mySocket, false);
+				}
+			}
+			clearbuffer();
+
 			byte otherFlagInd = player.team == 1 ? 2 : 1;
 			Flag otherFlag = ctfFlags[otherFlagInd];
 			if (otherFlag.playerCarrying == player.playerID){
@@ -874,13 +963,13 @@ class GameManager {
 				if (server == 1){
 					foreach(Player p; players){
 						clearbuffer();
-						writebyte(10);
+						writebyte(MSG_FLAGDROP);
 						writebyte(otherFlagInd);
 						sendmessage(p.mySocket);
 					}
 				} else if (server == 0){
 					clearbuffer();
-					writebyte(10);
+					writebyte(MSG_FLAGDROP);
 					writebyte(otherFlagInd);
 					sendmessage(getSocket());
 				}
@@ -900,11 +989,11 @@ class GameManager {
 				PlaySound(sounds[1]);
 				if (server == 1){
 					clearbuffer();
-					writebyte(6);
+					writebyte(MSG_SHOT);
 					sendmessage(p.mySocket);
 				} else if (server == 0) {
 					clearbuffer();
-					writebyte(6);
+					writebyte(MSG_SHOT);
 					writebyte(p.playerID);
 					sendmessage(getSocket());
 				}
@@ -950,7 +1039,7 @@ class GameManager {
 				if (server == 1){
 					foreach(Player p; players){
 						clearbuffer();
-						writebyte(1);
+						writebyte(MSG_NEWBLOCK);
 						writebyte(player.playerID);
 						for (int i = 0; i < 6; i++)
 							writefloat(coords[i]);
@@ -958,7 +1047,7 @@ class GameManager {
 					}
 				} else if (server == 0){
 					clearbuffer();
-					writebyte(1);
+					writebyte(MSG_NEWBLOCK);
 					writebyte(player.playerID);
 					for (int i = 0; i < 6; i++)
 						writefloat(coords[i]);
@@ -1128,7 +1217,7 @@ class GameManager {
 							if (server != 0){
 								foreach (Player p ; players){
 									clearbuffer();
-									writebyte(7);
+									writebyte(MSG_BEGINBUILD);
 									sendmessage(p.mySocket);
 								}
 								beginBuildPhase();
@@ -1298,6 +1387,8 @@ class GameManager {
 
         int num = 0;
         foreach (GameObject obj; renderer.objects) {
+        	if (!obj.visible)
+        		continue;
         	if (obj == player.getGameObject())
         		continue;
             // This should be cleaner, but you know, hackathon. Time.

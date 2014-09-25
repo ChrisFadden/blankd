@@ -37,6 +37,8 @@ class Player {
 	TCPsocket mySocket;
 
 	int sendTimer;
+	int respawnTimer;
+	bool alive;
 
 	byte playerID;
 	byte team;
@@ -63,7 +65,9 @@ class Player {
 
 		hp = 4;
 
-		sendTimer = 2;
+		sendTimer = 4;
+		respawnTimer = 0;
+		alive = true;
 
 		mySocket = null;
 
@@ -79,11 +83,25 @@ class Player {
 	}
 
 	void spawn(){
+		gameObj.visible = true;
+		alive = true;
 		x = startx;
 		y = starty;
 		z = startz;
+		camera.setTranslation(x,y+height,z);
 		hp = 4;
 		update();
+	}
+
+	void die(){
+		alive = false;
+		gameObj.visible = false;
+		// Five second respawn
+		respawnTimer = (60) * 5;
+	}
+
+	bool isAlive(){
+		return alive;
 	}
 
 	void setTeam(byte team){
