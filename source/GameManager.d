@@ -1304,7 +1304,7 @@ class GameManager {
                 if (    abs(x - ((x1+x2)/2) ) < abs( (x1-x2)/2)
                         &&  abs(y - ((y1+y2)/2) ) < abs( (y1-y2)/2)
                         &&  abs(z - ((z1+z2)/2) ) < abs( (z1-z2)/2) ) {
-                    writeln("A collision with object ", num);
+                    //writeln("A collision with object ", num);
                     if (i > closestIndex) {
                         closestIndex = to!int(i);
                         closestCol = obj;

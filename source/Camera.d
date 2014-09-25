@@ -16,9 +16,8 @@ class Camera {
         projectionMatrix = new Matrix;
         projectionMatrix.setPerspectiveMatrix(60.0, 1280.0/720.0, 1.0, 100.0);
         viewMatrix = new Matrix;
+        moveRotation(0,0);
         position = new Vector(0,0,0);
-        direction = new Vector(0,0,0);
-        right = new Vector(0,0,0);
         resetRotation();
     }
 
