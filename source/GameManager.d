@@ -158,7 +158,7 @@ class GameManager {
     		stdin.readln(buf);
     		string s = buf;
     		*/
-	    	buildTime = 60*60*1;
+	    	buildTime = 60*10;
 	    	writeln("Build time: ", buildTime);
 	    } else if (server == 0) {
             if (ip_addr.length < 4)
@@ -259,6 +259,7 @@ class GameManager {
 			player.fbAmnt = fbAmnt;
 			player.scanx = -scanHoriz/20f;
 			player.scanz = -scanVert/20f;
+			camera.moveRotation(player.scanx, player.scanz);
 
 			movePlayer(player);
 			player.update();
@@ -281,8 +282,8 @@ class GameManager {
 							writefloat(player.dy);
 							writefloat(player.lrAmnt);
 							writefloat(player.fbAmnt);
-							writefloat(player.scanx);
-							writefloat(player.scanz);
+							writefloat(player.camera.horizontalAngle);
+							writefloat(player.camera.verticalAngle);
 							sendmessage(p.mySocket);
 						}
 					} else {
@@ -294,8 +295,8 @@ class GameManager {
 						writefloat(player.dy);
 						writefloat(player.lrAmnt);
 						writefloat(player.fbAmnt);
-						writefloat(player.scanx);
-						writefloat(player.scanz);
+						writefloat(player.camera.horizontalAngle);
+						writefloat(player.camera.verticalAngle);
 						sendmessage(getSocket());
 					}
 					player.sendTimer = 4;
@@ -408,7 +409,6 @@ class GameManager {
 
 	void movePlayer(Player p) {
 		Camera c = p.camera;
-		c.moveRotation(p.scanx, p.scanz);
 		c.moveTranslation(p.lrAmnt*p.speed, 0, -p.fbAmnt*p.speed);
 
 		float movey = 0f;
@@ -638,8 +638,9 @@ class GameManager {
 					plyr.dy = newdy;
 					plyr.lrAmnt = newlr;
 					plyr.fbAmnt = newfb;
-					plyr.scanx = newscanx;
-					plyr.scanz = newscanz;
+					plyr.camera.horizontalAngle = newscanx;
+					plyr.camera.verticalAngle = newscanz;
+					plyr.camera.moveRotation(0,0);
 				}
 				if (server == 1) {
 					foreach (Player p; players){
