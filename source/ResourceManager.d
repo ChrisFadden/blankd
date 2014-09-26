@@ -26,7 +26,8 @@ class ResourceManager {
 
 	ShaderProgram[bool] shaders;
 	Mix_Chunk*[] sounds; 
-    TTF_Font*[uint] fonts;
+    //TTF_Font*[uint] fonts;
+    SDL_Surface*[char] fontCharacters;
 	Texture[string] textures;
 
 	/*
@@ -37,6 +38,7 @@ class ResourceManager {
 	{
 		shaders[true] = new ShaderProgram(true);
 		shaders[false] = new ShaderProgram(false);
+        setupFont();
     }
 
 	~this()
@@ -57,17 +59,42 @@ class ResourceManager {
 		return sounds;
 	}
 
-    TTF_Font* getFont() {
-        uint size = 108; // Crashes if we load more than once, we'll only do one high res size :(
-        if ((size in fonts) == null) {
-            writeln("Loading font of size ", size);
-            fonts[size] = TTF_OpenFont("mplus-1c-light.ttf".dup.ptr, size);
-            if (!fonts[size]) {
-                string err = to!string(cast(char*)TTF_GetError());
-                writeln("TTF Error: ", err);
-            }
+    SDL_Surface* renderText(char[] text) {
+        uint width = 0;
+        uint height = 0;
+        for (uint i = 0; i < text.length; i++) {
+            width += fontCharacters[text[i]].w;
+            height = fontCharacters[text[i]].h > height ? fontCharacters[text[i]].h : height;
         }
-        return fonts[size];
+        SDL_Surface* dest = SDL_CreateRGBSurface(0, width, height, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+        if (!dest)
+            writeln("COuld not create surface");
+        uint runningX = 0;
+        for (uint i = 0; i < text.length; i++) {
+            SDL_Rect destRec = {runningX,0, 0,0};
+            SDL_BlitSurface(fontCharacters[text[i]], null, dest, &destRec);
+            runningX += fontCharacters[text[i]].w;
+        }
+        return dest;
+    }
+
+    void setupFont() {
+        uint size = 108; // Crashes if we load more than once, we'll only do one high res size :(
+        writeln("Loading font of size ", size);
+        TTF_Font* font = TTF_OpenFont("mplus-1c-light.ttf".dup.ptr, size);
+        if (!font) {
+            string err = to!string(cast(char*)TTF_GetError());
+            writeln("TTF Error: ", err);
+            return;
+        }
+        SDL_Color colorS = {1,1,0};
+        for (uint i = 0; i < 1 << (char.sizeof * 8); i++) {
+            char[2] charString;
+            charString[0]= to!char(i);
+            charString[1] = '\0';
+            fontCharacters[to!char(i)] = TTF_RenderText_Blended(font, charString.ptr, colorS);
+        }
+        TTF_CloseFont(font);
     }
 	Texture getTexture(string name) 
 	{

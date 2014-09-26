@@ -16,11 +16,9 @@ class Texture {
 
     this(char[] text, ubyte r, ubyte g, ubyte b) {
         this.name = text;
-        //SDL_Color colorS = {r,g,b};
-        SDL_Color colorS = {0,1,0};
-        SDL_Surface* surface = TTF_RenderText_Blended(getResourceManager().getFont(), text.ptr, colorS);
+        SDL_Surface* surface = getResourceManager().renderText(text);
         if (!surface) {
-            writeln("Could not load ", name);
+            writeln("Could not render ", name);
             texID = 0;
         } else {
             textureFromSDLSurface(surface);
