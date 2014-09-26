@@ -13,6 +13,8 @@ class BlockBuilder {
     float length;
     float height;
 
+    float dir;
+
     bool placing;
 
     byte team;
@@ -31,6 +33,8 @@ class BlockBuilder {
         height = dy;
         placing = false;
         team = 0;
+
+        dir = 0;
     }
 
     void beginPlace() {
