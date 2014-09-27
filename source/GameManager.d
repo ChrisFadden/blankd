@@ -892,7 +892,8 @@ class GameManager {
 		player.startx = player.x;
 		player.starty = player.y;
 		player.startz = player.z;
-		player.camera.setTranslation(player.x,player.y+player.eyeHeight,player.z);
+		player.spawn();
+		player.getGameObject.visible = false;
 		player.update();
 		foreach (Player p ; players){
 			Flag mFlag = ctfFlags[p.team];
@@ -1139,6 +1140,8 @@ class GameManager {
         got.updateMatrix();
         renderer.register(got);
 	}
+
+	// http://www.libsdl.org/release/SDL-1.2.15/docs/html/sdlkey.html
 
 	void handleGameplayInput(SDL_Event *event) {
 		while (SDL_PollEvent(event)) {
