@@ -212,20 +212,20 @@ class Menu {
                         break;
                     default:
                 }
-            }
 
-            if (entryText != oldEntryText) {
-                if (oldEntryText.length < entryText.length) {
-                    char[] letterString;
-                    letterString ~= entryText[entryText.length-1];
-                    entryObjs ~= new GameObject(x + 2.5 + 0.6*entryText.length,y-0.2,0.6,-1,true, new Texture(letterString.dup, 1,1,0));
-                    renderer.register(entryObjs.back);
-                } else if (oldEntryText.length > entryText.length) {
-                    renderer.remove(entryObjs.back);
-                    entryObjs.removeBack();
+                if (entryText != oldEntryText) {
+                    if (oldEntryText.length < entryText.length) {
+                        char[] letterString;
+                        letterString ~= entryText[entryText.length-1];
+                        entryObjs ~= new GameObject(x + 2.5 + 0.6*entryText.length,y-0.2,0.6,-1,true, new Texture(letterString.dup, 1,1,0));
+                        renderer.register(entryObjs.back);
+                    } else if (oldEntryText.length > entryText.length) {
+                        renderer.remove(entryObjs.back);
+                        entryObjs.removeBack();
+                    }
+                    writeln(entryText);
+                    oldEntryText = entryText;
                 }
-                writeln(entryText);
-                oldEntryText = entryText;
             }
 
             renderer.draw();
