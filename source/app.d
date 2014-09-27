@@ -30,35 +30,17 @@ void main() {
 
     TTF_Init();
 
-    Window window = new Window("HackGT - blankd");
+    //Settings settings = {1080, 1920, -1, 10, "127.0.0.1"};
+    Settings settings = {720, 1280, -1, 10, "127.0.0.1"};
+    Window window = new Window("HackGT - blankd", settings.windowHeight, settings.windowWidth);
     window.init();
 
     // Has to reload after we have a context
     DerelictGL3.reload();
     
     Renderer renderer = new Renderer(window);
-    Menu menu = new Menu(window, renderer);
-    Settings settings = menu.run();
-    //int server = -1;
-    
-    //writeln("Server or client or no networking? s/c/n");
-    //writeln("If client, optional server IP parameter (c 127.0.0.1)");
-    //char[] buf;
-    //stdin.readln(buf);
-    //string ip_addr;
-    //switch (buf[0]){
-        //case 's':
-        //ip_addr = "";
-        //server = 1;
-        //break;
-        //case 'c':
-        //server = 0;
-        //ip_addr = chompPrefix(chompPrefix(buf, "c"), " ").idup;
-        //break;
-        //default:
-        //server = -1;
-        //break;
-    //}
+    Menu menu = new Menu(window, renderer, settings);
+    settings = menu.run();
 
     if (settings.server != -2) //quit
         new GameManager(window, renderer, settings);

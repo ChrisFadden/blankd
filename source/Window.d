@@ -12,8 +12,10 @@ class Window {
     SDL_Window *window;
     SDL_GLContext glcontext;
 
-    this(string title) {
+    this(string title, int width, int height) {
         this.title = title;
+        windowWidth = width;
+        windowHeight = height;
     }
 
     void init() {

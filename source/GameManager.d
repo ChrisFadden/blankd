@@ -64,6 +64,7 @@ class GameManager {
     int frameDelay = 1000/61;
 
     Window window;
+    static float aspectRatio;
 
     int buildTime;
 
@@ -100,7 +101,9 @@ class GameManager {
     static KeyManager keyman;
 
 	this(Window win, Renderer renderer, Settings settings) {
-		camera = new Camera();
+    	window = win;
+        aspectRatio = to!float(window.windowWidth)/window.windowHeight;
+		camera = new Camera(aspectRatio);
 		camera.setTranslation(0f,9f,11f);
 		camera.moveRotation(0f,-.3f);
     	this.renderer = renderer;
@@ -130,7 +133,6 @@ class GameManager {
     	scanHoriz = 0;
     	scanVert = 0;
 
-    	window = win;
 
     	player = new Player(0, 5, 0, &camera, 1);
     	player.playerID = 0;
@@ -562,7 +564,7 @@ class GameManager {
 					writeln("New client.");
 					if (stage == Stage.WAITING){
 						byte pTeam = teams[1] > teams[2] ? 2 : 1;
-						Camera c = new Camera();
+						Camera c = new Camera(aspectRatio);
 						Player tempPlayer = new Player(0, 0, 0, &c, pTeam);
 						tempPlayer.playerID = playerNum;
 						teams[tempPlayer.team]++;
@@ -683,7 +685,7 @@ class GameManager {
 				byte pId = readbyte(array);
 				byte pTeam = readbyte(array);
 				writeln("New player: ", pId);
-				Camera c = new Camera();
+				Camera c = new Camera(aspectRatio);
 				Player temp = new Player(0,0,0,&c,pTeam);
 				temp.playerID = pId;
 				renderer.register(temp.getGameObject());
@@ -1136,7 +1138,7 @@ class GameManager {
 	void shoot(){
 		if (!player.isAlive())
 			return;
-		GameObject shot = checkCollisions();
+		GameObject shot = checkCollisions(camera.position, camera.direction, 100, 0.1);
 		foreach (Player p; players){
 			if (p.getGameObject() == shot){
 				writeln("You shot player ", p.playerID, "!");
@@ -1276,13 +1278,10 @@ class GameManager {
         renderer.register(got);
 	}
 
-    GameObject checkCollisions()
-    {
-
+    GameObject checkCollisions(Vector position, Vector direction, float range, float step) {
+        range = -range; //Going in negative direction
         GameObject closestCol = null;
-        Vector direction = camera.direction;
-        Vector position = camera.position;
-        int closestIndex = -100;
+        float closestIndex = range;
 
         int num = 0;
         foreach (GameObject obj; renderer.objects) {
@@ -1292,7 +1291,7 @@ class GameManager {
         		continue;
             // This should be cleaner, but you know, hackathon. Time.
             //writeln("Checking object  ", num);
-            for (float i = 0; i > -100; i-=.1) {
+            for (float i = 0; i > range; i-=step) {
                 float x = position.x + direction.x * i; 
                 float y = position.y + direction.y * -i; 
                 float z = position.z + direction.z * i; 
@@ -1307,7 +1306,7 @@ class GameManager {
                 float z1 = obj.frontz+obj.z; // Front face z
                 float z2 = obj.backz+obj.z; // Back face z
 
-                //float x1 = obj.vBufferData[75]+obj.x; // Left face x
+                //float x1 = obj:.vBufferData[75]+obj.x; // Left face x
                 //float x2 = obj.vBufferData[93]+obj.x; // Right face x
                 //float y1 = obj.vBufferData[19]+obj.y; // Top face y
                 //float y2 = obj.vBufferData[55]+obj.y; // Bottom face y

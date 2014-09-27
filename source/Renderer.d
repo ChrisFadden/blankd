@@ -1,4 +1,5 @@
 import std.container;
+import std.conv;
 import std.algorithm;
 
 import derelict.opengl3.gl3;
@@ -19,7 +20,7 @@ class Renderer {
 
     this(Window window) {
         this.window = window;
-        guiCam = new Camera();
+        guiCam = new Camera(to!float(window.windowWidth)/window.windowHeight);
         guiCam.setTranslation(0,0,2);
         reticle = new GameObject(-.01,-.01,-.01, .01,.01,.01);
         reticle.z = 1;

@@ -14,9 +14,9 @@ class Camera {
     float verticalAngle = 0;
     float oldHorizontalAngle;
     float oldVerticalAngle;
-    this() {
+    this(float aspectRatio) {
         projectionMatrix = new Matrix;
-        projectionMatrix.setPerspectiveMatrix(60.0, 1280.0/720.0, 1.0, 100.0);
+        projectionMatrix.setPerspectiveMatrix(60.0, aspectRatio, 1.0, 100.0);
         viewMatrix = new Matrix;
         moveRotation(0,0);
         position = new Vector(0,0,0);

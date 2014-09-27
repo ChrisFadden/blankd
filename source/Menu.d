@@ -14,6 +14,8 @@ import derelict.sdl2.sdl;
 
 struct Settings {
     // 1 server, 0 client, -1 non networked, -2 quit
+    int windowWidth;
+    int windowHeight;
     int server;
     int build_time;
     string ip_addr;
@@ -25,11 +27,12 @@ class Menu {
     Renderer renderer;
     Camera menuCam;
     ResourceManager resMan;
-    this(Window window, Renderer renderer) {
+    this(Window window, Renderer renderer, Settings settings) {
         this.window = window;
         this.renderer = renderer;
+        this.settings = settings;
         resMan = getResourceManager();
-        menuCam = new Camera();
+        menuCam = new Camera(to!float(window.windowWidth)/window.windowHeight);
         menuCam.setTranslation(0,10,0);
         menuCam.moveRotation(0, -PI/2);
     }
@@ -43,8 +46,6 @@ class Menu {
     }
 
     Settings run() {
-        Settings settings = {-1, 60, "127.0.0.1"};
-        this.settings = settings;
         GameObject background = new GameObject(-30,-2,-30,30,-1,30);
         background.setColor(10,10,10);
 
@@ -112,6 +113,8 @@ class Menu {
                                 continueMenu = false;
                                 if (option == 1)
                                     settings.ip_addr = textEntry(-5,1.3, 1.2, "->server IP: ");
+                                else if (option == 0)
+                                    settings.build_time = to!int(textEntry(-5,-0.2, 1.2, "->build time: "));
                                 break;
                             default:
                         }
