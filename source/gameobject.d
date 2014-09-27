@@ -23,6 +23,7 @@ class GameObject {
     float r;
     float g;
     float b;
+    float a;
     Matrix modelMatrix;
     GLfloat[] verts;
     GLfloat[] norms;
@@ -57,6 +58,7 @@ class GameObject {
         backz = z2;
         topy = y2;
         bottomy = y1;
+        a = 1;
 
         this.hasTexture = hasTexture;
         this.texture = texture;
@@ -319,7 +321,7 @@ class GameObject {
             writeln("Error Before Bind!!");
             writeln(error);
         }
-        shaderProgram.bind(modelMatrix, camera.getVPMatrix(), r, g, b);
+        shaderProgram.bind(modelMatrix, camera.getVPMatrix(), r, g, b, a);
         while ((error = glGetError()) != GL_NO_ERROR)
         {
             writeln("Error After Bind!");
@@ -389,9 +391,15 @@ class GameObject {
 	}
 
     void setRGB(float r, float g, float b) {
+        writeln("Setting RGBA!!!");
+        setRGB(r,g,b,1);
+    }
+
+    void setRGB(float r, float g, float b, float a) {
         this.r = r;
         this.g = g;
         this.b = b;
+        this.a = a;
     }
 
     void printVerts()
