@@ -58,6 +58,7 @@ class GameObject {
         backz = z2;
         topy = y2;
         bottomy = y1;
+        a = 1;
 
         this.hasTexture = hasTexture;
         this.texture = texture;
