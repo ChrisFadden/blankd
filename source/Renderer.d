@@ -14,9 +14,8 @@ class Renderer {
     Array!(GameObject) objects;
     GameObject reticle;
 
-    this(Window* window, Camera* camera) {
-        this.window = *window;
-        this.camera = *camera;
+    this(Window window) {
+        this.window = window;
         guiCam = new Camera();
         guiCam.setTranslation(0,0,2);
         reticle = new GameObject(-.01,-.01,-.01, .01,.01,.01);
@@ -30,8 +29,20 @@ class Renderer {
         glClearColor(.5f,.5f,1f,1f);
     }
 
+    void setCamera(Camera camera) {
+        this.camera = camera;
+    }
+
     void register(GameObject obj) {
         objects ~= obj;
+    }
+
+    void remove(GameObject obj) {
+        objects.remove(obj);
+    }
+
+    void clearObjects() {
+        objects.clear();
     }
 
     void draw(GameObject o = null) {

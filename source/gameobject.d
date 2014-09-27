@@ -25,7 +25,7 @@ class GameObject {
     GLfloat[] texCords;
     int[] ind;
 
-	bool visible = false;
+	bool visible = true;
     bool solid = false;
     bool hasModel = false;
     bool hasTexture = false;
@@ -201,6 +201,11 @@ class GameObject {
     }
 
     this(float x, float z, float width, float length){
+        this(x, z, width, length, false, null); 
+    }
+    this(float x, float z, float width, float length, bool hasTexture, Texture texture){
+        this.hasTexture = hasTexture;
+        this.texture = texture;
         verts = [
             x, 0, z,
             x + width, 0, z + length,
@@ -217,7 +222,15 @@ class GameObject {
             0,1,0,
             0,1,0,
         ];
-        hasTexture = false;
+        texCords = [
+            0,0,
+            1,1,
+            0,1,
+            0,0,
+            1,0,
+            1,1,
+        ];
+
         setup();
     }
 

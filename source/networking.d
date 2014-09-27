@@ -1,4 +1,5 @@
 import std.stdio;
+import std.conv;
 
 import derelict.sdl2.net;
 
@@ -105,12 +106,12 @@ bool SDLNet_InitServer(ushort port, uint clients) {
 	IPaddress ip;
 
 	if (SDLNet_ResolveHost(&ip, null, port) < 0) {
-		writeln("SDLNet ResolveHost failed: ", SDLNet_GetError());
+		writeln("SDLNet ResolveHost failed: ", to!string(cast(char*)SDLNet_GetError()));
 		return false;
 	}
 	socket = SDLNet_TCP_Open(&ip);
 	if (!socket) {
-		writeln("SDLNet TCPOpen failed: ", SDLNet_GetError());
+		writeln("SDLNet TCPOpen failed: ", to!string(cast(char*)SDLNet_GetError()));
 		return false;
 	}
 	SDLNet_TCP_AddSocket(socketSet, socket);
@@ -126,12 +127,12 @@ bool SDLNet_InitClient(const char* host, ushort port) {
 	IPaddress ip;
 
 	if (SDLNet_ResolveHost(&ip, host, port) < 0) {
-        writeln("SDLNet ResolveHost failure: ", SDLNet_GetError());
+        writeln("SDLNet ResolveHost failure: ", to!string(cast(char*)SDLNet_GetError()));
         return false;
     }
     socket = SDLNet_TCP_Open(&ip);
     if (!socket) {
-        writeln("SDLNet TCP_Open failure: ", SDLNet_GetError());
+        writeln("SDLNet TCP_Open failure: ", to!string(cast(char*)SDLNet_GetError()));
         writeln("Could not connect to server. ");
         return false;
     }
@@ -152,7 +153,7 @@ SDLNet_SocketSet SDLNet_Initialize(uint socketSetSize) {
 	// Initialize SDLNet
 	if (SDLNet_Init() < 0) {
 		// If we fail...
-		writeln("SDLNet Init failure: ", SDLNet_GetError());
+		writeln("SDLNet Init failure: ", to!string(cast(char*)SDLNet_GetError()));
 		return null;
 	}
 

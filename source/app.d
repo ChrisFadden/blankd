@@ -2,8 +2,6 @@ import std.stdio;
 import core.thread;
 import std.string;
 
-import Window;
-
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 import derelict.sdl2.net;
@@ -12,6 +10,8 @@ import derelict.sdl2.mixer;
 import derelict.sdl2.image;
 
 import networking;
+import Window;
+import Menu;
 import GameManager;
 bool running;
 
@@ -30,33 +30,38 @@ void main() {
 
     TTF_Init();
 
-    int server = -1;
-    
-    writeln("Server or client or no networking? s/c/n");
-    writeln("If client, optional server IP parameter (c 127.0.0.1)");
-    char[] buf;
-    stdin.readln(buf);
-    string ip_addr;
-    switch (buf[0]){
-        case 's':
-        ip_addr = "";
-        server = 1;
-        break;
-        case 'c':
-        server = 0;
-        ip_addr = chompPrefix(chompPrefix(buf, "c"), " ").idup;
-        break;
-        default:
-        server = -1;
-        break;
-    }
-
     Window window = new Window("HackGT - blankd");
     window.init();
+
     // Has to reload after we have a context
     DerelictGL3.reload();
+    
+    Renderer renderer = new Renderer(window);
+    Menu menu = new Menu(window, renderer);
+    Settings settings = menu.run();
+    //int server = -1;
+    
+    //writeln("Server or client or no networking? s/c/n");
+    //writeln("If client, optional server IP parameter (c 127.0.0.1)");
+    //char[] buf;
+    //stdin.readln(buf);
+    //string ip_addr;
+    //switch (buf[0]){
+        //case 's':
+        //ip_addr = "";
+        //server = 1;
+        //break;
+        //case 'c':
+        //server = 0;
+        //ip_addr = chompPrefix(chompPrefix(buf, "c"), " ").idup;
+        //break;
+        //default:
+        //server = -1;
+        //break;
+    //}
 
-    new GameManager(&window, server, ip_addr);
+    if (settings.server != -2) //quit
+        new GameManager(window, renderer, settings);
 
     //Finish and quit
     window.quit();

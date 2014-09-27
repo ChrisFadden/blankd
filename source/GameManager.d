@@ -8,6 +8,7 @@ import std.container;
 
 import Window;
 import Renderer;
+import Menu;
 import gameobject;
 import BlockBuilder;
 import ObjLoader;
@@ -57,7 +58,7 @@ class GameManager {
 
     int frameDelay = 1000/61;
 
-    Window* window;
+    Window window;
 
     int buildTime;
 
@@ -89,15 +90,18 @@ class GameManager {
     ObjLoader objloader;
     GameObject g0;
     static int server;
+    static Settings settings;
     static Mix_Chunk*[4] sounds;
 
-	this(Window* win, int server, string ip_addr) {
+	this(Window win, Renderer renderer, Settings settings) {
 		camera = new Camera();
 		camera.setTranslation(0f,9f,11f);
 		camera.moveRotation(0f,-.3f);
-    	renderer = new Renderer(win, &camera);
+    	this.renderer = renderer;
+        renderer.setCamera(camera);
     	resman = ResourceManager.getResourceManager();
-    	this.server = server;
+        this.settings = settings;
+    	this.server = settings.server;
     	
     	char[] musicName1 = cast(char[])"bullet.wav";
     	char[] musicName2 = cast(char[])"Teleport.wav";
@@ -174,9 +178,10 @@ class GameManager {
     		*/
 	    	buildTime = 60*3;
 	    } else if (server == 0) {
-            if (ip_addr.length < 4)
-                ip_addr = "127.0.0.1";
-	    	if (!SDLNet_InitClient(ip_addr.toStringz, 1234)){
+            if (settings.ip_addr.length < 4)
+                settings.ip_addr = "127.0.0.1";
+            writeln("Connecting to ", settings.ip_addr);
+	    	if (!SDLNet_InitClient(settings.ip_addr.toStringz, 1234)){
 	    		return;
 	    	}
 	    }
@@ -861,7 +866,7 @@ class GameManager {
 		if (frameDelay <= time)
 			time = 0;
 
-		(*window).pause(frameDelay - time);
+		window.pause(frameDelay - time);
 	}
 
 	static Player findPlayer(int pId){
@@ -1061,8 +1066,8 @@ class GameManager {
 
 	static void addBlock(float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b){
         // Font loading
-        GameObject got = new GameObject(x1,y1,z1,x2,y2,z2,true, new Texture("blankd".dup, 1,1,0));
-        //GameObject got = new GameObject(x1,y1,z1,x2,y2,z2);
+        //GameObject got = new GameObject(x1,y1,z1,x2,y2,z2,true, new Texture("blankd".dup, 1,1,0));
+        GameObject got = new GameObject(x1,y1,z1,x2,y2,z2);
         //GameObject got = new GameObject(x1,y1,z1,x2,y2,z2 ,true, resman.getTexture("simpleTex.png".dup));
         got.visible = true;
         got.solid = true;
@@ -1208,6 +1213,21 @@ class GameManager {
 	void handleWaitingInput(SDL_Event *event) {
 		while (SDL_PollEvent(event)) {
 			switch(event.type){
+                case SDL_JOYBUTTONDOWN:
+                    switch (event.jbutton.button) {
+                        case 1:
+							if (server != 0){
+								foreach (Player p ; players){
+									clearbuffer();
+									writebyte(MSG_BEGINBUILD);
+									sendmessage(p.mySocket);
+								}
+								beginBuildPhase();
+							}
+                            break;
+                        default:
+                    }
+                    break;
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym){
 						case SDLK_ESCAPE:
