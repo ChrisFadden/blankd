@@ -773,7 +773,7 @@ class GameManager {
 					clearbuffer();
 				}
 				if (plyr !is null) {
-					plyr.getGameObject().visible = true;
+					//plyr.getGameObject().visible = true;
 					plyr.camera.position.x = newx;
 					plyr.camera.position.y = newy;
 					plyr.camera.position.z = newz;
@@ -805,7 +805,7 @@ class GameManager {
 					clearbuffer();
 				}
 				if (plyr !is null) {
-					plyr.getGameObject().visible = true;
+					//plyr.getGameObject().visible = true;
 					plyr.camera.horizontalAngle = newHoriz;
 					plyr.camera.verticalAngle = newVert;
 					plyr.camera.moveRotation(0,0);
@@ -837,7 +837,7 @@ class GameManager {
 					clearbuffer();
 				}
 				if (plyr !is null) {
-					plyr.getGameObject().visible = true;
+					//plyr.getGameObject().visible = true;
 					plyr.lrAmnt = newlrAmnt;
 					plyr.fbAmnt = newfbAmnt;
 				}
@@ -864,7 +864,7 @@ class GameManager {
 					clearbuffer();
 				}
 				if (plyr !is null) {
-					plyr.getGameObject().visible = true;
+					//plyr.getGameObject().visible = true;
 					plyr.jump();
 				}
 				return 1+1;
@@ -1039,6 +1039,7 @@ class GameManager {
 			p.starty = p.y;
 			p.startz = p.z;
 			p.camera.setTranslation(p.x,p.y+p.eyeHeight,p.z);
+			p.getGameObject.visible = true;
 			p.update();
 		}
 		builder.getGameObject().visible = false;
