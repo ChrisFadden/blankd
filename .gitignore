@@ -4,4 +4,4 @@ blankd
 *.swo
 *.swn
 .DS_Store
-
+settings.conf

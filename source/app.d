@@ -1,6 +1,8 @@
 import std.stdio;
 import core.thread;
 import std.string;
+import std.conv;
+import std.file;
 
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
@@ -31,8 +33,10 @@ void main() {
     TTF_Init();
 
     //Settings settings = {1080, 1920, -1, 10, "127.0.0.1"};
-    Settings settings = {720, 1280, -1, 10, "127.0.0.1"};
-    Window window = new Window("HackGT - blankd", settings.windowHeight, settings.windowWidth);
+    Settings settings = {720, 1280, -1, 10, "127.0.0.1", "debug"};
+    writeln("Initial values");
+    readSettings(&settings);
+    Window window = new Window("HackGT - blankd", settings.windowWidth, settings.windowHeight);
     window.init();
 
     // Has to reload after we have a context
@@ -52,3 +56,35 @@ void main() {
     SDL_Quit();
 }
 
+void readSettings(Settings* s){
+    if(!exists("settings.conf")) {
+        writeFile(s);
+    }
+    else {
+        File f = File("settings.conf", "r");
+        string ln;
+        string attrib;
+        while(!f.eof()) {
+            ln = chomp(f.readln());
+            if(ln.length > 0) {
+                attrib = munch(ln, "versionheightwidth");
+                ln = strip(ln);
+                if(attrib == "height") {
+                    s.windowHeight = to!int(ln);
+                }
+                if(attrib == "width") {
+                    s.windowWidth = to!int(ln);
+                }
+            }
+        }
+        f.close();
+    }
+}
+
+void writeFile(Settings* s) {
+    File f = File("settings.conf", "w");
+    f.writeln("version ", s.buildNum);
+    f.writeln("height ", s.windowHeight);
+    f.writeln("width ", s.windowWidth);
+    f.close();
+}

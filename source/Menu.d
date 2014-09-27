@@ -14,11 +14,12 @@ import derelict.sdl2.sdl;
 
 struct Settings {
     // 1 server, 0 client, -1 non networked, -2 quit
-    int windowWidth;
     int windowHeight;
+    int windowWidth;
     int server;
     int build_time;
     string ip_addr;
+    string buildNum;
 }
 
 class Menu {
