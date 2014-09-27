@@ -411,7 +411,7 @@ class GameManager {
 						flag.getGameObject().updateMatrix();
 					}
 				}
-				if (stage == Stage.GAMEPLAY && abs(flagObj.x-player.x) < 2){
+				if (player.isAlive && stage == Stage.GAMEPLAY && abs(flagObj.x-player.x) < 2){
 					if (abs(flagObj.z-player.z) < 2){
 						if (abs(flagObj.y-player.y) < 7){
 
