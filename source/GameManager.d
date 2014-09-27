@@ -42,6 +42,8 @@ class GameManager {
 	static const int MSG_RESPAWN = 13;
 	static const int MSG_UPDATEMOVEMENT = 14;
 	static const int MSG_UPDATECAMERA = 15;
+	static const int MSG_JUMP = 16;
+	static const int MSG_CLOSED = 17;
 
 	static Camera camera;
 	float[] targetCamera = [0, 4, 1];
@@ -66,7 +68,7 @@ class GameManager {
 
     //GameObject go1;
 
-    bool running;
+    static bool running;
 
     long fpsTime;
     int fps;
@@ -219,8 +221,22 @@ class GameManager {
 		if (canJump == false) {
 			canJump = !placeFree(player, 0, -.1f, 0);
 		}
-		if (canJump)
+		if (canJump){
+			if (server > -1){
+				clearbuffer();
+				writebyte(MSG_JUMP);
+				writebyte(player.playerID);
+				if (server == 1){
+					foreach (Player p; players) {
+						sendmessage(p.mySocket, false);
+					}
+					clearbuffer();
+				} else {
+					sendmessage(getSocket());
+				}
+			}
 			player.jump();
+		}
 	}
 
 	bool placeFree(Player player, float dx, float dy, float dz){
@@ -540,40 +556,46 @@ class GameManager {
 				TCPsocket tempClient = checkForNewClient();
 				if (tempClient !is null) {
 					writeln("New client.");
-					byte pTeam = teams[1] > teams[2] ? 2 : 1;
-					Camera c = new Camera();
-					Player tempPlayer = new Player(0, 0, 0, &c, pTeam);
-					tempPlayer.playerID = playerNum;
-					teams[tempPlayer.team]++;
-					renderer.register(tempPlayer.getGameObject());
-					tempPlayer.mySocket = tempClient;
-					playerNum++;
-					clearbuffer();
-					writebyte(MSG_MYINFO);
-					writebyte(tempPlayer.team);
-					writebyte(tempPlayer.playerID);
-					sendmessage(tempPlayer.mySocket);
-
-					foreach(Player p ; players){
+					if (stage == Stage.WAITING){
+						byte pTeam = teams[1] > teams[2] ? 2 : 1;
+						Camera c = new Camera();
+						Player tempPlayer = new Player(0, 0, 0, &c, pTeam);
+						tempPlayer.playerID = playerNum;
+						teams[tempPlayer.team]++;
+						renderer.register(tempPlayer.getGameObject());
+						tempPlayer.mySocket = tempClient;
+						playerNum++;
 						clearbuffer();
-						writebyte(MSG_NEWPLAYER);
-						writebyte(p.playerID);
-						writebyte(p.team);
+						writebyte(MSG_MYINFO);
+						writebyte(tempPlayer.team);
+						writebyte(tempPlayer.playerID);
 						sendmessage(tempPlayer.mySocket);
 
+						foreach(Player p ; players){
+							clearbuffer();
+							writebyte(MSG_NEWPLAYER);
+							writebyte(p.playerID);
+							writebyte(p.team);
+							sendmessage(tempPlayer.mySocket);
+
+							clearbuffer();
+							writebyte(MSG_NEWPLAYER);
+							writebyte(tempPlayer.playerID);
+							writebyte(tempPlayer.team);
+							sendmessage(p.mySocket);
+						}
 						clearbuffer();
 						writebyte(MSG_NEWPLAYER);
-						writebyte(tempPlayer.playerID);
-						writebyte(tempPlayer.team);
-						sendmessage(p.mySocket);
-					}
-					clearbuffer();
-					writebyte(MSG_NEWPLAYER);
-					writebyte(player.playerID);
-					writebyte(player.team);
-					sendmessage(tempPlayer.mySocket);
+						writebyte(player.playerID);
+						writebyte(player.team);
+						sendmessage(tempPlayer.mySocket);
 
-					players ~= tempPlayer;
+						players ~= tempPlayer;
+					} else {
+						clearbuffer();
+						writebyte(MSG_CLOSED);
+						sendmessage(tempClient);
+					}
 				}
 				bool discon = false;
 				foreach (Player p; players) {
@@ -808,6 +830,32 @@ class GameManager {
 					plyr.fbAmnt = newfbAmnt;
 				}
 				return 1+1+(4*2);
+			case MSG_JUMP:
+				Player plyr;
+				byte pId = readbyte(array);
+				foreach (Player p; players){
+					if (p.playerID == pId){
+						plyr = p;
+						break;
+					}
+				}
+				
+				if (server == 1) {
+					clearbuffer();
+					writebyte(MSG_JUMP);
+					writebyte(plyr.playerID);
+					foreach (Player p; players){
+						if (p.mySocket != socket){
+							sendmessage(p.mySocket, false);
+						}
+					}
+					clearbuffer();
+				}
+				if (plyr !is null) {
+					plyr.getGameObject().visible = true;
+					plyr.jump();
+				}
+				return 1+1;
 			case MSG_BEGINBUILD:
 				beginBuildPhase();
 				return 1;
@@ -878,6 +926,10 @@ class GameManager {
 				return 2;
 			case MSG_BEGINGAMEPLAY:
 				beginGameplay();
+				return 1;
+			case MSG_CLOSED:
+				writeln("The server rejected your connection, likely because the match has already started.");
+				running = false;
 				return 1;
 			default:
 				writeln("Unsupported message: ", MSG_ID);
