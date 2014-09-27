@@ -5,6 +5,7 @@ import std.container;
 
 import Window;
 import Renderer;
+import ResourceManager;
 import gameobject;
 import ObjLoader;
 
@@ -21,12 +22,22 @@ class Menu {
     Window window;
     Renderer renderer;
     Camera menuCam;
+    ResourceManager resMan;
     this(Window window, Renderer renderer) {
         this.window = window;
         this.renderer = renderer;
+        resMan = getResourceManager();
         menuCam = new Camera();
         menuCam.setTranslation(0,10,0);
         menuCam.moveRotation(0, -PI/2);
+    }
+
+    GameObject getTextObject(float x, float y, float height, string text) {
+        float ratio;
+        Texture textTex = resMan.getTextTexture(text.dup, &ratio);
+        writeln("x ", x, " y: ", y, " width: ", ratio*height, " height: ", height);
+        return new GameObject(x,y, ratio*height, -height, true, textTex);
+        //return new GameObject(-3,-3, 6, -3, true, textTex);
     }
 
     Settings run() {
@@ -35,14 +46,18 @@ class Menu {
         GameObject background = new GameObject(-30,-2,-30,30,-1,30);
         background.setRGB(10,10,10);
 
-        GameObject title = new GameObject(-3,-3,6,-3,true, new Texture("blankd".dup, 1,1,0));
+        float ratio; // x/y for text objects so we know how wide to make them
 
-        GameObject serverTxt = new GameObject(-9,0,3,-1.5,true, new Texture("server".dup, 1,1,0));
-        GameObject clientTxt = new GameObject(-9,1.5,3,-1.5,true, new Texture("client".dup, 1,1,0));
-        GameObject testTxt = new GameObject(-9,3,3,-1.5,true, new Texture("test".dup, 1,1,0));
-        GameObject exitTxt = new GameObject(-9,4.5,3,-1.5,true, new Texture("exit".dup, 1,1,0));
+        // Note that getTextTexture is evaluated before the constructor, so ratio is updated properly
+        GameObject title = getTextObject(-3.2,-3.5,3, "blankd");
+        GameObject titleUnderline = new GameObject(-3.5,0,-4, 3.5,0,-4.04);
 
-        GameObject selector = new GameObject(-9,0,-0.2,-4,-0.1,-0.22);
+        GameObject serverTxt = getTextObject(-9,0,2, "server");
+        GameObject clientTxt = getTextObject(-9,1.5,2, "client");
+        GameObject testTxt = getTextObject(-9,3,2,"test");
+        GameObject exitTxt = getTextObject(-9,4.5,2,"exit");
+
+        GameObject selector = new GameObject(-9,0,0, -4,0,0.03);
 
         ObjLoader objloader = new ObjLoader();
         GameObject flag = new GameObject(0,0,0,0);
@@ -55,6 +70,7 @@ class Menu {
         renderer.setCamera(menuCam);
         renderer.register(background);
         renderer.register(title);
+        renderer.register(titleUnderline);
         renderer.register(serverTxt);
         renderer.register(clientTxt);
         renderer.register(testTxt);
@@ -92,7 +108,7 @@ class Menu {
                         switch (event.jbutton.button) {
                             case 1:
                                 continueMenu = false;
-                                settings.ip_addr = textEntry(-9,2, "Server IP: ");
+                                settings.ip_addr = textEntry(-5,1.3, 1.2, "->server IP: ");
                                 break;
                             default:
                         }
@@ -105,7 +121,7 @@ class Menu {
                             case SDLK_RETURN:
                                 continueMenu = false;
                                 if (option == 1)
-                                    settings.ip_addr = textEntry(-5,1.5, "Server IP: ");
+                                    settings.ip_addr = textEntry(-5,1.3, 1.2, "->server IP: ");
                                 break;
                             case SDLK_UP:
                                 option = (option-1+numOptions)%numOptions;
@@ -120,7 +136,7 @@ class Menu {
                 }
             }
 
-            selector.z = option * 1.5;
+            selector.z = option * 1.5 - 0.2;
             selector.updateMatrix();
 
             flag.rz += 0.001;
@@ -136,8 +152,8 @@ class Menu {
     }
 
 
-    string textEntry(float x, float y, string prompt) {
-        GameObject promptTxt = new GameObject(x,y,3,-1.5,true, new Texture(prompt.dup, 1,1,0));
+    string textEntry(float x, float y, float height, string prompt) {
+        GameObject promptTxt = getTextObject(x,y,height,prompt);
         renderer.register(promptTxt);
 
         SDL_Event event;
@@ -147,7 +163,7 @@ class Menu {
         char[] oldEntryText;
         while(continueEntry) {
             while (SDL_PollEvent(&event)) {
-                writeln(event.type);
+                //writeln(event.type);
                 switch (event.type) {
                     case SDL_KEYDOWN:
                         switch (event.key.keysym.sym) {
@@ -217,7 +233,8 @@ class Menu {
                     if (oldEntryText.length < entryText.length) {
                         char[] letterString;
                         letterString ~= entryText[entryText.length-1];
-                        entryObjs ~= new GameObject(x + 2.5 + 0.6*entryText.length,y-0.2,0.6,-1,true, new Texture(letterString.dup, 1,1,0));
+                        float curX = (entryObjs.length ? entryObjs.back.rightx : promptTxt.rightx);
+                        entryObjs ~= getTextObject(curX,y,height,letterString.dup);
                         renderer.register(entryObjs.back);
                     } else if (oldEntryText.length > entryText.length) {
                         renderer.remove(entryObjs.back);

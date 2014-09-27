@@ -2,8 +2,6 @@ import std.stdio;
 
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
-import derelict.sdl2.image;
-import derelict.sdl2.ttf;
 
 import ResourceManager;
 
@@ -14,26 +12,8 @@ class Texture {
     uint height;
     void* texData;
 
-    this(char[] text, ubyte r, ubyte g, ubyte b) {
-        this.name = text;
-        SDL_Surface* surface = getResourceManager().renderText(text);
-        if (!surface) {
-            writeln("Could not render ", name);
-            texID = 0;
-        } else {
-            textureFromSDLSurface(surface);
-        }
-    }
-    this(char[] name) {
-        int error;
-        while ((error = glGetError()) != GL_NO_ERROR)
-            writeln("Before texture error!", error);
+    this(char[] name, SDL_Surface *surface) {
         this.name = name;
-        SDL_Surface* surface = IMG_Load(name.ptr);
-        if (!surface) {
-            writeln("Could not load ", name);
-            texID = 0;
-        }
         textureFromSDLSurface(surface);
     }
     void textureFromSDLSurface(SDL_Surface* surface) {

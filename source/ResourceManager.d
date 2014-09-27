@@ -9,6 +9,7 @@ import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 import derelict.sdl2.net;
 import derelict.sdl2.mixer;
+import derelict.sdl2.image;
 import derelict.sdl2.ttf;
 import ShaderProgram;
 import LoadWav;
@@ -59,7 +60,7 @@ class ResourceManager {
 		return sounds;
 	}
 
-    SDL_Surface* renderText(char[] text) {
+    SDL_Surface* renderText(char[] text, float *ratio) {
         uint width = 0;
         uint height = 0;
         for (uint i = 0; i < text.length; i++) {
@@ -68,13 +69,14 @@ class ResourceManager {
         }
         SDL_Surface* dest = SDL_CreateRGBSurface(0, width, height, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
         if (!dest)
-            writeln("COuld not create surface");
+            writeln("Could not create surface");
         uint runningX = 0;
         for (uint i = 0; i < text.length; i++) {
             SDL_Rect destRec = {runningX,0, 0,0};
             SDL_BlitSurface(fontCharacters[text[i]], null, dest, &destRec);
             runningX += fontCharacters[text[i]].w;
         }
+        *ratio = to!float(runningX)/height;
         return dest;
     }
 
@@ -100,7 +102,23 @@ class ResourceManager {
 	{
         if (Texture* tex = (name in textures))
             return *tex;
-        textures[name] = new Texture(name.dup);
+        int error;
+        while ((error = glGetError()) != GL_NO_ERROR)
+            writeln("Before texture error!", error);
+        SDL_Surface* surface = IMG_Load(name.ptr);
+        if (!surface) {
+            writeln("Could not load ", name);
+            return null;
+        }
+        textures[name] = new Texture(name.dup, surface);
         return textures[name];
 	}
+    Texture getTextTexture(char[] text, float *ratio) {
+        SDL_Surface* surface = renderText(text, ratio);
+        if (!surface) {
+            writeln("Could not render ", text);
+            return null;
+        }
+        return new Texture(text, surface);
+    }
 }

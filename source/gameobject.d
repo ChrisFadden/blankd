@@ -208,6 +208,13 @@ class GameObject {
         this(x, z, width, length, false, null); 
     }
     this(float x, float z, float width, float length, bool hasTexture, Texture texture){
+        leftx = x;
+        rightx = x + width;
+        frontz = z;
+        backz = z + length;
+        topy = 0;
+        bottomy = 0;
+
         this.hasTexture = hasTexture;
         this.texture = texture;
         verts = [
