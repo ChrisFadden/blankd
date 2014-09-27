@@ -702,9 +702,6 @@ class GameManager {
 				}
 				if (plyr !is null)
 					plyr.die();
-				
-				if(!player.isAlive)
-					renderer.isDead = true;
 				return 2;
 			case MSG_RESPAWN:
 				byte pId = readbyte(array);
@@ -1093,6 +1090,7 @@ class GameManager {
 		if (player.hp<1){
 			player.die();
 			clearbuffer();
+			renderer.isDead = true;
 			writebyte(MSG_DEATH);
 			writebyte(player.playerID);
 			if (server == 0)
