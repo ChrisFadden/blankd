@@ -1,4 +1,5 @@
 import std.container;
+import std.algorithm;
 
 import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
@@ -38,7 +39,14 @@ class Renderer {
     }
 
     void remove(GameObject obj) {
-        objects.remove(obj);
+        //objects.remove(obj);
+        //objects.linearRemove(take(find(objects[], obj), 1));
+        for (uint i = 0; i < objects.length; i++) {
+            if (objects[i] == obj) {
+                objects.linearRemove(objects[i..i+1]);
+                break;
+            }
+        }
     }
 
     void clearObjects() {

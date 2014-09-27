@@ -138,7 +138,6 @@ class GameManager {
 	    	GameObject flag = ctfFlags[i].getGameObject();
 	    	flag.visible = true;
 	    	objloader.open("flag.obj", flag);
-	    	flag.setup();
 			ctfFlags[i].setColor();
 	    	renderer.register(flag);
 	    }

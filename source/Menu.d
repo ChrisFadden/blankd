@@ -6,6 +6,7 @@ import std.container;
 import Window;
 import Renderer;
 import gameobject;
+import ObjLoader;
 
 import derelict.sdl2.sdl;
 
@@ -43,6 +44,14 @@ class Menu {
 
         GameObject selector = new GameObject(-9,0,-0.2,-4,-0.1,-0.22);
 
+        ObjLoader objloader = new ObjLoader();
+        GameObject flag = new GameObject(0,0,0,0);
+        objloader.open("flag.obj", flag);
+        flag.x = 3;
+        flag.y = -2;
+        flag.rx = -PI/2;
+        flag.updateMatrix();
+
         renderer.setCamera(menuCam);
         renderer.register(background);
         renderer.register(title);
@@ -51,6 +60,7 @@ class Menu {
         renderer.register(testTxt);
         renderer.register(exitTxt);
         renderer.register(selector);
+        renderer.register(flag);
         
         SDL_Event event;
         bool continueMenu = true;
@@ -95,7 +105,7 @@ class Menu {
                             case SDLK_RETURN:
                                 continueMenu = false;
                                 if (option == 1)
-                                    settings.ip_addr = textEntry(-9,2, "Server IP: ");
+                                    settings.ip_addr = textEntry(-5,1.5, "Server IP: ");
                                 break;
                             case SDLK_UP:
                                 option = (option-1+numOptions)%numOptions;
@@ -113,6 +123,9 @@ class Menu {
             selector.z = option * 1.5;
             selector.updateMatrix();
 
+            flag.rz += 0.001;
+            //flag.ry += 0.001;
+            flag.updateMatrix();
             renderer.draw();
         }
 
@@ -123,9 +136,8 @@ class Menu {
     }
 
 
-    string textEntry(int x, int y, string prompt) {
-        GameObject promptTxt = new GameObject(-5,2.5,3,-1.5,true, new Texture(prompt.dup, 1,1,0));
-        //GameObject exitTxt = new GameObject(-9,4.5,3,-1.5,true, new Texture("exit".dup, 1,1,0));
+    string textEntry(float x, float y, string prompt) {
+        GameObject promptTxt = new GameObject(x,y,3,-1.5,true, new Texture(prompt.dup, 1,1,0));
         renderer.register(promptTxt);
 
         SDL_Event event;
@@ -203,10 +215,10 @@ class Menu {
             }
 
             if (entryText != oldEntryText) {
-                if (oldEntryText.length > entryText.length) {
+                if (oldEntryText.length < entryText.length) {
                     char[] letterString;
                     letterString ~= entryText[entryText.length-1];
-                    entryObjs ~= new GameObject(-5 + entryText.length,5.5,3,-1.5,true, new Texture(letterString.dup, 1,1,0));
+                    entryObjs ~= new GameObject(x + 2.5 + 0.6*entryText.length,y-0.2,0.6,-1,true, new Texture(letterString.dup, 1,1,0));
                     renderer.register(entryObjs.back);
                 } else if (oldEntryText.length > entryText.length) {
                     renderer.remove(entryObjs.back);

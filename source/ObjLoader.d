@@ -159,8 +159,8 @@ class ObjLoader
 			g.hasModel = true;
 		}
 		writeln("Done!!!! Object is indexed!!!");
-
-
+        // Setup the object
+        g.setup();
 		file.close();
 	}
 }

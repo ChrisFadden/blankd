@@ -16,6 +16,10 @@ class GameObject {
 	float y;
 	float z;
 
+    float rx;
+    float ry;
+    float rz;
+
     float r;
     float g;
     float b;
@@ -239,6 +243,9 @@ class GameObject {
 		x = 0;
 		y = 0;
 		z = 0;
+        rx = 0;
+        ry = 0;
+        rz = 0;
         r = 0;
         g = 0;
         b = 0;
@@ -289,7 +296,11 @@ class GameObject {
 	}
 
     void updateMatrix() {
+        //modelMatrix.setIdentity();
+        //modelMatrix.rotate(rx,ry,rz);
+        //modelMatrix.setTranslation(x, y, z);
         modelMatrix.setTranslation(x, y, z);
+        modelMatrix.rotate(rx,ry,rz);
     }
 
 	void draw(Camera camera) {
