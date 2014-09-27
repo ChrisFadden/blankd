@@ -24,7 +24,8 @@ class ShaderProgram {
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("makeShaders error!");
     }
-    void bind(Matrix modelMatrix, Matrix viewProjectionMatrix, float r, float g, float b) {
+    
+    void bind(Matrix modelMatrix, Matrix viewProjectionMatrix, float r, float g, float b, float a) {
         int error;
         while ((error = glGetError()) != GL_NO_ERROR)
         {
@@ -51,9 +52,14 @@ class ShaderProgram {
         GLint colorHandle = glGetUniformLocation(programID, "materialColor");
         while ((error = glGetError()) != GL_NO_ERROR)
             writeln("Get uniform location error 2!");
+
+        GLint alphaHandle = glGetUniformLocation(programID, "alpha");
+        while ((error = glGetError()) != GL_NO_ERROR)
+            writeln("Get uniform location error 3!");
         
 
         glUniform3f(colorHandle, r, g, b);
+        glUniform1f(alphaHandle, a);
         glUniformMatrix4fv(modelMatrixHandle, 1, GL_FALSE, cast(float*)modelMatrix.matrix);
         glUniformMatrix4fv(viewProjectionMatrixHandle, 1, GL_FALSE, cast(float*)viewProjectionMatrix.matrix);
     }
@@ -81,6 +87,7 @@ string simpleFragShaderSource = "
 #version 120
 
 uniform vec3 materialColor;
+uniform float alpha;
 
 varying vec4 position_modelSpace;
 varying vec4 normal_modelSpace;
@@ -93,7 +100,7 @@ void main() {
 
     float cosTheta = clamp( dot(normal_modelSpace, light_pos), 0, 1);
     float dist = distance(position_modelSpace, light_pos); 
-    gl_FragColor =   vec4(materialColor * vec3(0.3,0.3,0.3) + (cosTheta * materialColor * light_color) / (dist), 1);
+    gl_FragColor =   vec4(materialColor * vec3(0.3,0.3,0.3) + (cosTheta * materialColor * light_color) / (dist), alpha);
 }
 ";
 

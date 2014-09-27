@@ -14,6 +14,8 @@ class Renderer {
     Camera guiCam;
     Array!(GameObject) objects;
     GameObject reticle;
+    GameObject death;
+    bool isDead;
 
     this(Window window) {
         this.window = window;
@@ -24,6 +26,11 @@ class Renderer {
         reticle.visible = true;
         reticle.updateMatrix();
         glEnable(GL_BLEND);
+        death = new GameObject(-10,-10,-0.1, 10,10,-0.1);
+        death.setRGB(1.0,0.0,0.0,0.5f);
+        death.updateMatrix();
+        isDead = false;
+
         glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -63,6 +70,9 @@ class Renderer {
             o.draw(camera);
         }
         reticle.draw(guiCam);
+        death.visible = isDead;
+        if(death.visible)
+            death.draw(guiCam);
         window.flip();
     }
 }

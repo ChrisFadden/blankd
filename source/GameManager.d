@@ -107,7 +107,7 @@ class GameManager {
         this.settings = settings;
     	this.server = settings.server;
     	keyman = new KeyManager(this);
-    	
+
     	char[] musicName1 = cast(char[])"bullet.wav";
     	char[] musicName2 = cast(char[])"Teleport.wav";
     	char[] musicName3 = cast(char[])"Power_Up.wav";
@@ -295,6 +295,7 @@ class GameManager {
 			if (!player.isAlive){
 				player.respawnTimer--;
 				if (player.respawnTimer <= 0){
+					renderer.isDead = false;
 					clearbuffer();
 					writebyte(MSG_RESPAWN);
 					writebyte(player.playerID);
@@ -679,6 +680,9 @@ class GameManager {
 				}
 				if (plyr !is null)
 					plyr.die();
+				
+				if(!player.isAlive)
+					renderer.isDead = true;
 				return 2;
 			case MSG_RESPAWN:
 				byte pId = readbyte(array);
