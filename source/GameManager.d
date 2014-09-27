@@ -15,6 +15,7 @@ import ObjLoader;
 import Player;
 import Vector;
 import ResourceManager;
+import KeyManager;
 
 import networking;
 
@@ -96,6 +97,7 @@ class GameManager {
     static int server;
     static Settings settings;
     static Mix_Chunk*[4] sounds;
+    static KeyManager keyman;
 
 	this(Window win, Renderer renderer, Settings settings) {
 		camera = new Camera();
@@ -106,6 +108,7 @@ class GameManager {
     	resman = ResourceManager.getResourceManager();
         this.settings = settings;
     	this.server = settings.server;
+    	keyman = new KeyManager(this);
     	
     	char[] musicName1 = cast(char[])"bullet.wav";
     	char[] musicName2 = cast(char[])"Teleport.wav";
@@ -265,11 +268,11 @@ class GameManager {
 
 		SDL_Event event;
 		if (stage == Stage.WAITING) {
-			handleWaitingInput(&event);
+			keyman.handleWaitingInput(&event);
 		} else if (stage == Stage.MAP_MAKER){
 			if (server == 1)
 				buildTime--;
-			handleMapMakerInput(&event);
+			keyman.handleMapMakerInput(&event);
 			float scale = 0.6f;
 			camera.position.x += lrAmnt*scale;
 			camera.position.y += udAmnt*scale;
@@ -288,7 +291,7 @@ class GameManager {
 			}
 		}
 		else{
-			handleGameplayInput(&event);
+			keyman.handleGameplayInput(&event);
 
 			player.lrAmnt = lrAmnt;
 			player.fbAmnt = fbAmnt;
@@ -1263,370 +1266,6 @@ class GameManager {
         got.setRGB(r, g, b);
         got.updateMatrix();
         renderer.register(got);
-	}
-
-	// http://www.libsdl.org/release/SDL-1.2.15/docs/html/sdlkey.html
-
-	void handleGameplayInput(SDL_Event *event) {
-		while (SDL_PollEvent(event)) {
-			switch(event.type){
-				case SDL_JOYAXISMOTION:
-				float deadzone = 3200f;
-
-				if ((event.jaxis.value < -deadzone) || (event.jaxis.value > deadzone)){
-					float value;
-					if (event.jaxis.value > 0)
-						value = (short.max/(short.max-deadzone))*((event.jaxis.value-deadzone)/cast(float)short.max);
-					else
-						value = (short.max/(short.max-deadzone))*((event.jaxis.value+deadzone)/cast(float)short.max);	
-
-					if (event.jaxis.axis == 0) {
-						lrAmnt = value;
-					} if (event.jaxis.axis == 1) {
-						fbAmnt = value;
-					} else if (event.jaxis.axis == 2) {
-						scanHoriz = value;
-					} else if (event.jaxis.axis == 5) {
-						scanVert = value;
-					}
-				} else {
-					if (event.jaxis.axis == 0){
-						lrAmnt = 0;
-					} else if (event.jaxis.axis == 1) {
-						fbAmnt = 0;
-					} else if (event.jaxis.axis == 2) {
-						scanHoriz = 0;
-					} else if (event.jaxis.axis == 5) {
-						scanVert = 0;
-					}
-				}
-				break;
-				case SDL_JOYBUTTONDOWN:
-					switch(event.jbutton.button){
-						case 1:
-						jump();
-						break;
-						case 7:
-						shoot();
-						break;
-						default:
-						break;
-					}
-					//debug writeln("Button ", event.jbutton.button);
-				break;
-				case SDL_JOYBUTTONUP:
-					switch(event.jbutton.button){
-						case 3:
-                        swapMode();
-						break;
-
-						default:
-						break;
-					}
-					//debug writeln("Button ", event.jbutton.button);
-				break;
-				case SDL_MOUSEBUTTONDOWN:
-					switch(event.button.button){
-						case SDL_BUTTON_LEFT:
-							shoot();
-							break;
-						default:
-						break;
-					}
-				break;
-                case SDL_MOUSEMOTION:
-                    int midx = window.width()/2;
-                    int midy = window.height()/2;
-                    int x = event.motion.x;
-                    int y = event.motion.y;
-                    int difx = midx-x;
-                    int dify = midy-y;
-                    camera.moveRotation(difx/400f, dify/400f);
-                    SDL_WarpMouseInWindow(window.window, midx, midy);
-                    break;
-				case SDL_KEYDOWN:
-					switch(event.key.keysym.sym){
-						case SDLK_ESCAPE:
-							running = false;
-							break;
-						case SDLK_w:
-							fbAmnt = -1;
-						break;
-						case SDLK_s:
-							fbAmnt = 1;
-						break;
-						case SDLK_a:
-							lrAmnt = -1;
-						break;
-						case SDLK_d:
-							lrAmnt = 1;
-						break;
-						case SDLK_q:
-							scanHoriz = -0.5;
-							break;
-						case SDLK_e: 
-							scanHoriz = 0.5;
-						break;
-						case SDLK_SPACE:
-							jump();
-						break;
-						default:
-						break;
-					}
-					break;
-
-				case SDL_KEYUP:
-					switch(event.key.keysym.sym){
-						case SDLK_w:
-							fbAmnt = 0;
-						break;
-						case SDLK_s:
-							fbAmnt = 0;
-						break;
-						case SDLK_a:
-							lrAmnt = 0;
-						break;
-						case SDLK_d:
-							lrAmnt = 0;
-						break;
-						case SDLK_q:
-							scanHoriz = 0;
-							break;
-						case SDLK_e: 
-							scanHoriz = 0;
-							break;
-						case SDLK_g:
-							if(server == -1)
-								swapMode();
-						break;
-						default:
-						break;
-					}
-					break;
-				default:
-				break;
-			}
-		}
-	}
-
-	void handleWaitingInput(SDL_Event *event) {
-		while (SDL_PollEvent(event)) {
-			switch(event.type){
-                case SDL_JOYBUTTONDOWN:
-                    switch (event.jbutton.button) {
-                        case 1:
-							if (server != 0){
-								foreach (Player p ; players){
-									clearbuffer();
-									writebyte(MSG_BEGINBUILD);
-									sendmessage(p.mySocket);
-								}
-								beginBuildPhase();
-							}
-                            break;
-                        default:
-                    }
-                    break;
-				case SDL_KEYDOWN:
-					switch(event.key.keysym.sym){
-						case SDLK_ESCAPE:
-							running = false;
-							break;
-						case SDLK_RETURN:
-							if (server != 0){
-								foreach (Player p ; players){
-									clearbuffer();
-									writebyte(MSG_BEGINBUILD);
-									sendmessage(p.mySocket);
-								}
-								beginBuildPhase();
-							}
-							break;
-						default:
-							break;
-					}
-					break;
-				default:
-					break;
-			}
-		}
-	}
-
-	void handleMapMakerInput(SDL_Event *event) {
-		while (SDL_PollEvent(event)) {
-			switch(event.type){
-				case SDL_JOYBUTTONDOWN:
-					switch(event.jbutton.button){
-						case 1:
-						placeBlock();
-							break;
-						case 2:
-						quitBlock();
-							break;
-						case 5:
-						raiseBlock();
-							break;
-						case 4:
-						lowerBlock();
-							break;
-						case 6:
-						udAmnt = -.25f;
-							break;
-						case 7:
-						udAmnt = .25f;
-							break;
-						case 10:
-						rotateViewRight();
-							break;
-						default:
-						break;
-					}
-					//writeln(event.jbutton.button);
-				break;
-				case SDL_JOYBUTTONUP:
-					switch(event.jbutton.button){
-						case 6:
-						udAmnt = 0f;
-							break;
-						case 7:
-						udAmnt = 0f;
-							break;
-						case 3:
-						if(server == -1)
-							swapMode();
-							break;
-						default:
-						break;
-					}
-				break;
-				case SDL_JOYHATMOTION:
-					if (event.jhat.value & SDL_HAT_UP) {
-						moveBlockUp();
-					} else if (event.jhat.value & SDL_HAT_RIGHT) {
-						moveBlockRight();
-					} else if (event.jhat.value & SDL_HAT_DOWN) {
-						moveBlockDown();
-					} else if (event.jhat.value & SDL_HAT_LEFT) {
-						moveBlockLeft();
-					}
-				break;
-				case SDL_JOYAXISMOTION:
-				float deadzone = 3200f;
-				if ((event.jaxis.value < -deadzone) || (event.jaxis.value > deadzone)){
-					float value;
-					if (event.jaxis.value > 0)
-						value = (short.max/(short.max-deadzone))*((event.jaxis.value-deadzone)/cast(float)short.max);
-					else
-						value = (short.max/(short.max-deadzone))*((event.jaxis.value+deadzone)/cast(float)short.max);
-					if (event.jaxis.axis == 0) {
-						if (builder.dir == 0)
-							lrAmnt = value;
-						else if (builder.dir == 1)
-							fbAmnt = -value;
-						else if (builder.dir == 2)
-							lrAmnt = -value;
-						else if (builder.dir == 3)
-							fbAmnt = value;
-					} else if (event.jaxis.axis == 1) {
-						if (builder.dir == 0)
-							fbAmnt = value;
-						else if (builder.dir == 1)
-							lrAmnt = value;
-						else if (builder.dir == 2)
-							fbAmnt = -value;
-						else if (builder.dir == 3)
-							lrAmnt = -value;
-					}
-				} else {
-					if (event.jaxis.axis == 0){
-						if (builder.dir%2 == 0)
-							lrAmnt = 0;
-						else
-							fbAmnt = 0;
-					} else if (event.jaxis.axis == 1) {
-						if (builder.dir%2 == 0)
-							fbAmnt = 0;
-						else
-							lrAmnt = 0;
-					} 
-				}
-				break;
-				case SDL_KEYDOWN:
-					switch(event.key.keysym.sym){
-						case SDLK_ESCAPE:
-							running = false;
-							break;
-						case SDLK_a:
-							moveBlockLeft();
-							break;
-						case SDLK_d:
-							moveBlockRight();
-							break;
-						case SDLK_w:
-							moveBlockUp();
-							break;
-						case SDLK_s:
-							moveBlockDown();
-							break;
-						case SDLK_SPACE:
-						case SDLK_RETURN:
-							placeBlock();
-							break;
-						case SDLK_r:
-							raiseBlock();
-							break;
-						case SDLK_f:
-							lowerBlock();
-							break;
-						case SDLK_o:
-							rotateViewRight();
-							break;
-						case SDLK_u:
-							rotateViewLeft();
-							break;
-						case SDLK_q:
-							quitBlock();
-							break;
-						case SDLK_i:
-							moveCameraForward();
-							//fbAmnt = -1f;
-							break;
-						case SDLK_j:
-							//lrAmnt = 1f;
-							moveCameraLeft();
-							break;
-						case SDLK_k:
-							//fbAmnt = 1f;
-							moveCameraBack();
-							break;
-						case SDLK_l:
-							//lrAmnt = -1f;
-							moveCameraRight();
-							break;
-						case SDLK_SEMICOLON:
-							moveCameraDown();
-							break;
-						case SDLK_p:
-							moveCameraUp();
-							break;
-						default:
-						break;
-					}
-				break;
-				case SDL_KEYUP:
-					switch(event.key.keysym.sym){
-						case SDLK_g:
-                        if (server == -1)
-                            swapMode();
-                        break;
-                        default:
-                        break;
-					}
-				break;
-				default:
-				break;
-			}
-		}
 	}
 
     GameObject checkCollisions()
