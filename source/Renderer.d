@@ -27,7 +27,7 @@ class Renderer {
         reticle.updateMatrix();
         glEnable(GL_BLEND);
         death = new GameObject(-10,-10,-0.1, 10,10,-0.1);
-        death.setRGB(1.0,0.0,0.0,0.5f);
+        death.setColor(1.0,0.0,0.0,0.5f);
         death.updateMatrix();
         isDead = false;
 

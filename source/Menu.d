@@ -1,5 +1,6 @@
 import std.stdio;
 import std.conv;
+import std.string;
 import std.math;
 import std.container;
 
@@ -14,6 +15,7 @@ import derelict.sdl2.sdl;
 struct Settings {
     // 1 server, 0 client, -1 non networked, -2 quit
     int server;
+    int build_time;
     string ip_addr;
 }
 
@@ -41,10 +43,10 @@ class Menu {
     }
 
     Settings run() {
-        Settings settings = {-1, "127.0.0.1"};
+        Settings settings = {-1, 60, "127.0.0.1"};
         this.settings = settings;
         GameObject background = new GameObject(-30,-2,-30,30,-1,30);
-        background.setRGB(10,10,10);
+        background.setColor(10,10,10);
 
         float ratio; // x/y for text objects so we know how wide to make them
 
@@ -108,7 +110,8 @@ class Menu {
                         switch (event.jbutton.button) {
                             case 1:
                                 continueMenu = false;
-                                settings.ip_addr = textEntry(-5,1.3, 1.2, "->server IP: ");
+                                if (option == 1)
+                                    settings.ip_addr = textEntry(-5,1.3, 1.2, "->server IP: ");
                                 break;
                             default:
                         }
@@ -122,6 +125,8 @@ class Menu {
                                 continueMenu = false;
                                 if (option == 1)
                                     settings.ip_addr = textEntry(-5,1.3, 1.2, "->server IP: ");
+                                else if (option == 0)
+                                    settings.build_time = to!int(textEntry(-5,-0.2, 1.2, "->build time: "));
                                 break;
                             case SDLK_UP:
                                 option = (option-1+numOptions)%numOptions;
@@ -152,7 +157,7 @@ class Menu {
     }
 
 
-    string textEntry(float x, float y, float height, string prompt) {
+string textEntry(float x, float y, float height, string prompt) {
         GameObject promptTxt = getTextObject(x,y,height,prompt);
         renderer.register(promptTxt);
 

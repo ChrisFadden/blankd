@@ -160,7 +160,7 @@ class GameManager {
 
 	    GameObject floor = new GameObject(-150,80,300,-160);
 	    floor.visible = true;
-	    floor.setRGB(.2f,.9f,.5f);
+	    floor.setColor(.2f,.9f,.5f);
 	    renderer.register(floor);
     	
 
@@ -182,7 +182,7 @@ class GameManager {
     		stdin.readln(buf);
     		string s = buf;
     		*/
-	    	buildTime = 60*3;
+	    	buildTime = settings.build_time * 60;
 	    } else if (server == 0) {
             if (settings.ip_addr.length < 4)
                 settings.ip_addr = "127.0.0.1";
@@ -1271,7 +1271,7 @@ class GameManager {
         //GameObject got = new GameObject(x1,y1,z1,x2,y2,z2 ,true, resman.getTexture("simpleTex.png".dup));
         got.visible = true;
         got.solid = true;
-        got.setRGB(r, g, b);
+        got.setColor(r, g, b);
         got.updateMatrix();
         renderer.register(got);
 	}

@@ -391,12 +391,7 @@ class GameObject {
             glDisableVertexAttribArray(mTexHandle);
 	}
 
-    void setRGB(float r, float g, float b) {
-        writeln("Setting RGBA!!!");
-        setRGB(r,g,b,1);
-    }
-
-    void setRGB(float r, float g, float b, float a) {
+    void setColor(float r, float g, float b, float a = 1) {
         this.r = r;
         this.g = g;
         this.b = b;
@@ -431,7 +426,7 @@ class BlockBuilder {
 
     this(float startx, float starty, float startz) {
         gameObject = new GameObject(startx,starty,startz,startx+dx,starty+dy,startz-dz);
-        gameObject.setRGB(.7,.7,.6);
+        gameObject.setColor(.7,.7,.6);
         gameObject.updateMatrix();
         this.startx = startx;
         this.starty = starty;
@@ -444,7 +439,7 @@ class BlockBuilder {
 
     void beginPlace() {
         placing = true;
-        gameObject.setRGB(1,1,0.9);
+        gameObject.setColor(1,1,0.9);
     }
 
     float[6] place() {
@@ -460,7 +455,7 @@ class BlockBuilder {
     }
 
     void reset() {
-        gameObject.setRGB(.7,.7,0.6);
+        gameObject.setColor(.7,.7,0.6);
         width = dx;
         length = dz;
         height = dy;

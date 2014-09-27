@@ -128,9 +128,9 @@ class Player {
 	void setTeam(byte team){
 		this.team = team;
 		if (team == 1)
-        	gameObj.setRGB(1,0,0.2);
+        	gameObj.setColor(1,0,0.2);
         else if (team == 2)
-        	gameObj.setRGB(.2,0,1);
+        	gameObj.setColor(.2,0,1);
 	}
 
 	GameObject getGameObject(){
@@ -188,9 +188,9 @@ class Flag {
 
 	void setColor(){
 		if (team == 1) {
-			gameObject.setRGB(1,.4,.4);
+			gameObject.setColor(1,.4,.4);
 		} else if (team == 2) {
-			gameObject.setRGB(.4,.4,1);
+			gameObject.setColor(.4,.4,1);
 		}
 	}
 }
