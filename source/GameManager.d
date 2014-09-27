@@ -693,12 +693,15 @@ class GameManager {
 				byte pId = readbyte(array);
 				Player plyr = findPlayer(pId);
 				if (server == 1){
+					clearbuffer();
+					writebyte(MSG_DEATH);
+					writebyte(pId);
 					foreach(Player p; players){
-						clearbuffer();
-						writebyte(MSG_DEATH);
-						writebyte(pId);
-						sendmessage(p.mySocket);
+						if (p.mySocket != socket){
+							sendmessage(p.mySocket, false);
+						}
 					}
+					clearbuffer();
 				}
 				if (plyr !is null)
 					plyr.die();
@@ -707,12 +710,15 @@ class GameManager {
 				byte pId = readbyte(array);
 				Player plyr = findPlayer(pId);
 				if (server == 1){
+					clearbuffer();
+					writebyte(MSG_RESPAWN);
+					writebyte(pId);
 					foreach(Player p ; players){
-						clearbuffer();
-						writebyte(MSG_RESPAWN);
-						writebyte(pId);
-						sendmessage(p.mySocket);
+						if (p.mySocket != socket){
+							sendmessage(p.mySocket, false);
+						}
 					}
+					clearbuffer();
 				}
 				if (plyr !is null)
 					plyr.spawn();
