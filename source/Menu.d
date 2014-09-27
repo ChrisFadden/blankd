@@ -70,7 +70,7 @@ class Menu {
         SDL_Joystick* joystick = SDL_JoystickOpen(0);
         while(continueMenu) {
             while (SDL_PollEvent(&event)) {
-                writeln(event.type);
+                //writeln(event.type);
                 switch (event.type) {
                     case SDL_JOYHATMOTION:
                         if (event.jhat.value & SDL_HAT_UP)
