@@ -59,6 +59,13 @@ class Window {
         return windowHeight;
     }
 
+    void resize(int width, int height) {
+        windowWidth = width;
+        windowHeight = height;
+        SDL_SetWindowSize(window, width, height);
+        glViewport(0,0,width,height);
+    }
+
     void flip() {
         SDL_GL_SwapWindow(window);
     }

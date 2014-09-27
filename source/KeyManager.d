@@ -159,7 +159,7 @@ private GameManager gm;
 							gm.scanHoriz = 0;
 							break;
 						case SDLK_g:
-							if(gm.server == -1)
+							if(gm.connectionType == ConnectionType.None)
 								gm.swapMode();
 						break;
 						default:
@@ -212,7 +212,7 @@ private GameManager gm;
 						gm.udAmnt = 0f;
 							break;
 						case 3:
-						if(gm.server == -1)
+						if(gm.connectionType == ConnectionType.None)
 							gm.swapMode();
 							break;
 						default:
@@ -336,7 +336,7 @@ private GameManager gm;
 				case SDL_KEYUP:
 					switch(event.key.keysym.sym){
 						case SDLK_g:
-                        if (gm.server == -1)
+                        if (gm.connectionType == ConnectionType.None)
                             gm.swapMode();
                         break;
                         default:
@@ -355,7 +355,7 @@ private GameManager gm;
                 case SDL_JOYBUTTONDOWN:
                     switch (event.jbutton.button) {
                         case 1:
-							if (gm.server != 0){
+							if (gm.connectionType != ConnectionType.Client){
 								foreach (Player p ; gm.players){
 									clearbuffer();
 									writebyte(gm.MSG_BEGINBUILD);
@@ -373,7 +373,7 @@ private GameManager gm;
 							gm.running = false;
 							break;
 						case SDLK_RETURN:
-							if (gm.server != 0){
+							if (gm.connectionType != ConnectionType.Client){
 								foreach (Player p ; gm.players){
 									clearbuffer();
 									writebyte(gm.MSG_BEGINBUILD);

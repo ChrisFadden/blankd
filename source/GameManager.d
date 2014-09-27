@@ -95,7 +95,7 @@ class GameManager {
     static Player player;
     ObjLoader objloader;
     GameObject g0;
-    static int server;
+    static ConnectionType connectionType;
     static Settings settings;
     static Mix_Chunk*[4] sounds;
     static KeyManager keyman;
@@ -110,7 +110,7 @@ class GameManager {
         renderer.setCamera(camera);
     	resman = ResourceManager.getResourceManager();
         this.settings = settings;
-    	this.server = settings.server;
+    	this.connectionType = settings.connection;
     	keyman = new KeyManager(this);
 
     	char[] musicName1 = cast(char[])"bullet.wav";
@@ -136,7 +136,7 @@ class GameManager {
 
     	player = new Player(0, 5, 0, &camera, 1);
     	player.playerID = 0;
-    	if (server == 1)
+    	if (connectionType == ConnectionType.Server)
     		teams[player.team]++;
     	renderer.register(player.getGameObject());
 
@@ -175,7 +175,7 @@ class GameManager {
 
 	    stage = Stage.WAITING;
 
-	    if (server == 1) {
+	    if (connectionType == ConnectionType.Server) {
 	    	SDLNet_InitServer(1234, 20);
 	    	playerNum = 1;
 	    	/*
@@ -185,7 +185,7 @@ class GameManager {
     		string s = buf;
     		*/
 	    	buildTime = settings.build_time * 60;
-	    } else if (server == 0) {
+	    } else if (connectionType == ConnectionType.Client) {
             if (settings.ip_addr.length < 4)
                 settings.ip_addr = "127.0.0.1";
             writeln("Connecting to ", settings.ip_addr);
@@ -227,11 +227,11 @@ class GameManager {
 			canJump = !placeFree(player, 0, -.1f, 0);
 		}
 		if (canJump){
-			if (server > -1){
+			if (connectionType != ConnectionType.None){
 				clearbuffer();
 				writebyte(MSG_JUMP);
 				writebyte(player.playerID);
-				if (server == 1){
+				if (connectionType == ConnectionType.Server){
 					foreach (Player p; players) {
 						sendmessage(p.mySocket, false);
 					}
@@ -272,7 +272,7 @@ class GameManager {
 		if (stage == Stage.WAITING) {
 			keyman.handleWaitingInput(&event);
 		} else if (stage == Stage.MAP_MAKER){
-			if (server == 1)
+			if (connectionType == ConnectionType.Server)
 				buildTime--;
 			keyman.handleMapMakerInput(&event);
 			float scale = 0.6f;
@@ -281,7 +281,7 @@ class GameManager {
 			if (camera.position.y < 1)
 				camera.position.y = 1f;
 			camera.position.z += fbAmnt*scale;
-			if (server == 1){
+			if (connectionType == ConnectionType.Server){
 				if (buildTime < 1) {
 					foreach(Player p; players) {
 						clearbuffer();
@@ -317,9 +317,9 @@ class GameManager {
 					clearbuffer();
 					writebyte(MSG_RESPAWN);
 					writebyte(player.playerID);
-					if (server == 0){
+					if (connectionType == ConnectionType.Client){
 						sendmessage(getSocket());
-					} else if (server == 1){
+					} else if (connectionType == ConnectionType.Server){
 						foreach(Player p; players){
 							sendmessage(p.mySocket, false);
 						}
@@ -330,7 +330,7 @@ class GameManager {
 				}
 			}
 
-			if (server > -1 && player.isAlive){
+			if (connectionType != ConnectionType.None && player.isAlive){
 				player.sendTimer--;
 
 				if (player.sendTimer <= 0){
@@ -341,7 +341,7 @@ class GameManager {
 					writefloat(player.y);
 					writefloat(player.z);
 					player.setOld();
-					if (server == 1){
+					if (connectionType == ConnectionType.Server){
 						foreach (Player p; players) {
 							sendmessage(p.mySocket, false);
 						}
@@ -359,7 +359,7 @@ class GameManager {
 					writebyte(player.playerID);
 					writefloat(player.lrAmnt);
 					writefloat(player.fbAmnt);
-					if (server == 1){
+					if (connectionType == ConnectionType.Server){
 						foreach (Player p; players) {
 							sendmessage(p.mySocket, false);
 						}
@@ -378,7 +378,7 @@ class GameManager {
 					writebyte(player.playerID);
 					writefloat(camera.horizontalAngle);
 					writefloat(camera.verticalAngle);
-					if (server == 1){
+					if (connectionType == ConnectionType.Server){
 						foreach (Player p; players) {
 							sendmessage(p.mySocket, false);
 						}
@@ -419,7 +419,7 @@ class GameManager {
 
 							if (flag.team == player.team){
 								if (!flag.isHome() && flag.playerCarrying < 0){
-									if (server == 1) {
+									if (connectionType == ConnectionType.Server) {
 										flag.reset();
 										foreach(Player p; players){
 											clearbuffer();
@@ -427,7 +427,7 @@ class GameManager {
 											writebyte(cast(byte)i);
 											sendmessage(p.mySocket);
 										}
-									} else if (server == 0) {
+									} else if (connectionType == ConnectionType.Client) {
 										clearbuffer();
 										writebyte(MSG_FLAGRESET);
 										writebyte(cast(byte)i);
@@ -438,7 +438,7 @@ class GameManager {
 									Flag otherFlag = ctfFlags[otherFlagInd];
 									if (otherFlag.playerCarrying == player.playerID){
 										otherFlag.reset();
-										if (server == 1){
+										if (connectionType == ConnectionType.Server){
 											byte teamScore = player.team;
 											scoreForTeam(teamScore);
 											foreach(Player p ; players){
@@ -447,7 +447,7 @@ class GameManager {
 												writebyte(otherFlagInd);
 												sendmessage(p.mySocket);
 											}
-										} else if (server == 0){
+										} else if (connectionType == ConnectionType.Client){
 											clearbuffer();
 											writebyte(MSG_FLAGSCORE);
 											writebyte(otherFlagInd);
@@ -461,7 +461,7 @@ class GameManager {
 								if (flag.playerCarrying < 0){
 									writeln("Pickup!");
 									PlaySound(sounds[2]);
-									if (server == 1) {
+									if (connectionType == ConnectionType.Server) {
 										flag.playerCarrying = player.playerID;
 										foreach(Player p; players){
 											clearbuffer();
@@ -470,7 +470,7 @@ class GameManager {
 											writebyte(player.playerID);
 											sendmessage(p.mySocket);
 										}
-									} else if (server == 0) {
+									} else if (connectionType == ConnectionType.Client) {
 										clearbuffer();
 										writebyte(MSG_FLAGPICKUP);
 										writebyte(cast(byte)i);
@@ -556,7 +556,7 @@ class GameManager {
 	}
 
 	void networkCalls(){
-		if (server == 1){
+		if (connectionType == ConnectionType.Server){
 			TCPsocket client;
 			if (checkSockets() > 0){
 				TCPsocket tempClient = checkForNewClient();
@@ -632,7 +632,7 @@ class GameManager {
 				}
 			}
 			
-		} else if (server == 0){
+		} else if (connectionType == ConnectionType.Client){
 			if (checkSockets() > 0){
 				if (!readsocket(getSocket(), &userDefined))
 					running = false;
@@ -647,7 +647,7 @@ class GameManager {
 				byte pId = readbyte(array);
 				float[] xyz = [readfloat(array), readfloat(array), readfloat(array),
 					readfloat(array), readfloat(array), readfloat(array)];
-				if (server == 1) {
+				if (connectionType == ConnectionType.Server) {
 					foreach(Player p; players){
 						if (socket != p.mySocket){
 							clearbuffer();
@@ -694,7 +694,7 @@ class GameManager {
 			case MSG_DEATH:
 				byte pId = readbyte(array);
 				Player plyr = findPlayer(pId);
-				if (server == 1){
+				if (connectionType == ConnectionType.Server){
 					clearbuffer();
 					writebyte(MSG_DEATH);
 					writebyte(pId);
@@ -711,7 +711,7 @@ class GameManager {
 			case MSG_RESPAWN:
 				byte pId = readbyte(array);
 				Player plyr = findPlayer(pId);
-				if (server == 1){
+				if (connectionType == ConnectionType.Server){
 					clearbuffer();
 					writebyte(MSG_RESPAWN);
 					writebyte(pId);
@@ -726,7 +726,7 @@ class GameManager {
 					plyr.spawn();
 				return 2;
 			case MSG_SHOT:
-				if (server == 1){
+				if (connectionType == ConnectionType.Server){
 					byte pId = readbyte(array);
 					if (pId == player.playerID)
 						getShot();
@@ -758,7 +758,7 @@ class GameManager {
 				float newy = readfloat(array);
 				float newz = readfloat(array);
 
-				if (server == 1) {
+				if (connectionType == ConnectionType.Server) {
 					clearbuffer();
 					writebyte(MSG_UPDATEXYZ);
 					writebyte(plyr.playerID);
@@ -791,7 +791,7 @@ class GameManager {
 				float newHoriz = readfloat(array);
 				float newVert = readfloat(array);
 				
-				if (server == 1) {
+				if (connectionType == ConnectionType.Server) {
 					clearbuffer();
 					writebyte(MSG_UPDATECAMERA);
 					writebyte(plyr.playerID);
@@ -823,7 +823,7 @@ class GameManager {
 				float newlrAmnt = readfloat(array);
 				float newfbAmnt = readfloat(array);
 				
-				if (server == 1) {
+				if (connectionType == ConnectionType.Server) {
 					clearbuffer();
 					writebyte(MSG_UPDATEMOVEMENT);
 					writebyte(plyr.playerID);
@@ -852,7 +852,7 @@ class GameManager {
 					}
 				}
 				
-				if (server == 1) {
+				if (connectionType == ConnectionType.Server) {
 					clearbuffer();
 					writebyte(MSG_JUMP);
 					writebyte(plyr.playerID);
@@ -878,7 +878,7 @@ class GameManager {
 				
 				if (flagNum != 0 && ctfFlags[flagNum].playerCarrying < 0){
 					ctfFlags[flagNum].reset();
-					if (server == 1){
+					if (connectionType == ConnectionType.Server){
 						foreach(Player p; players){
 							clearbuffer();
 							writebyte(MSG_FLAGRESET);
@@ -895,7 +895,7 @@ class GameManager {
 				if (ctfFlags[flagNum].playerCarrying < 0){
 					writeln("Pickup flag!");
 					ctfFlags[flagNum].playerCarrying = pId;
-					if (server == 1){
+					if (connectionType == ConnectionType.Server){
 						foreach(Player p; players){
 							clearbuffer();
 							writebyte(MSG_FLAGPICKUP);
@@ -911,7 +911,7 @@ class GameManager {
 
 				if (ctfFlags[flagNum].playerCarrying >= 0){
 					ctfFlags[flagNum].playerCarrying = -1;
-					if (server == 1){
+					if (connectionType == ConnectionType.Server){
 						foreach(Player p; players){
 							clearbuffer();
 							writebyte(MSG_FLAGDROP);
@@ -927,7 +927,7 @@ class GameManager {
 				int teamScore = flagNum == 1 ? 2 : 1;
 				scoreForTeam(teamScore);
 				ctfFlags[flagNum].reset();
-				if (server == 1){
+				if (connectionType == ConnectionType.Server){
 					foreach (Player p ; players){
 						clearbuffer();
 						writebyte(MSG_FLAGSCORE);
@@ -1102,9 +1102,9 @@ class GameManager {
 			renderer.isDead = true;
 			writebyte(MSG_DEATH);
 			writebyte(player.playerID);
-			if (server == 0)
+			if (connectionType == ConnectionType.Client)
 				sendmessage(getSocket());
-			else if (server == 1){
+			else if (connectionType == ConnectionType.Server){
 				foreach(Player p ; players){
 					sendmessage(p.mySocket, false);
 				}
@@ -1115,14 +1115,14 @@ class GameManager {
 			Flag otherFlag = ctfFlags[otherFlagInd];
 			if (otherFlag.playerCarrying == player.playerID){
 				otherFlag.playerCarrying = -1;
-				if (server == 1){
+				if (connectionType == ConnectionType.Server){
 					foreach(Player p; players){
 						clearbuffer();
 						writebyte(MSG_FLAGDROP);
 						writebyte(otherFlagInd);
 						sendmessage(p.mySocket);
 					}
-				} else if (server == 0){
+				} else if (connectionType == ConnectionType.Client){
 					clearbuffer();
 					writebyte(MSG_FLAGDROP);
 					writebyte(otherFlagInd);
@@ -1144,11 +1144,11 @@ class GameManager {
 			if (p.getGameObject() == shot){
 				writeln("You shot player ", p.playerID, "!");
 				PlaySound(sounds[1]);
-				if (server == 1){
+				if (connectionType == ConnectionType.Server){
 					clearbuffer();
 					writebyte(MSG_SHOT);
 					sendmessage(p.mySocket);
-				} else if (server == 0) {
+				} else if (connectionType == ConnectionType.Client) {
 					clearbuffer();
 					writebyte(MSG_SHOT);
 					writebyte(p.playerID);
@@ -1244,7 +1244,7 @@ class GameManager {
 					player.getGameObject().r,
 					player.getGameObject().g,
 					player.getGameObject().b);
-				if (server == 1){
+				if (connectionType == ConnectionType.Server){
 					foreach(Player p; players){
 						clearbuffer();
 						writebyte(MSG_NEWBLOCK);
@@ -1253,7 +1253,7 @@ class GameManager {
 							writefloat(coords[i]);
 						sendmessage(p.mySocket);
 					}
-				} else if (server == 0){
+				} else if (connectionType == ConnectionType.Client){
 					clearbuffer();
 					writebyte(MSG_NEWBLOCK);
 					writebyte(player.playerID);

@@ -12,14 +12,17 @@ import ObjLoader;
 
 import derelict.sdl2.sdl;
 
+enum ConnectionType {Server, Client, None};
+
 struct Settings {
     // 1 server, 0 client, -1 non networked, -2 quit
     int windowHeight;
     int windowWidth;
-    int server;
+    ConnectionType connection;
     int build_time;
     string ip_addr;
     string buildNum;
+    bool running;
 }
 
 class Menu {
@@ -59,7 +62,8 @@ class Menu {
         GameObject serverTxt = getTextObject(-9,0,2, "server");
         GameObject clientTxt = getTextObject(-9,1.5,2, "client");
         GameObject testTxt = getTextObject(-9,3,2,"test");
-        GameObject exitTxt = getTextObject(-9,4.5,2,"exit");
+        GameObject settingsTxt = getTextObject(-9,4.5,2,"settings");
+        GameObject exitTxt = getTextObject(-9,6,2,"exit");
 
         GameObject selector = new GameObject(-9,0,0, -4,0,0.03);
 
@@ -78,6 +82,7 @@ class Menu {
         renderer.register(serverTxt);
         renderer.register(clientTxt);
         renderer.register(testTxt);
+        renderer.register(settingsTxt);
         renderer.register(exitTxt);
         renderer.register(selector);
         renderer.register(flag);
@@ -85,7 +90,7 @@ class Menu {
         SDL_Event event;
         bool continueMenu = true;
         int option = 0;
-        int numOptions = 4;
+        int numOptions = 5;
         SDL_JoystickEventState(SDL_ENABLE);
         SDL_Joystick* joystick = SDL_JoystickOpen(0);
         while(continueMenu) {
@@ -123,14 +128,29 @@ class Menu {
                     case SDL_KEYDOWN:
                         switch (event.key.keysym.sym) {
                             case SDLK_ESCAPE:
-                                option = 3;
+                                option = 4;
+                                settings.running = false;
                                 goto case;
                             case SDLK_RETURN:
-                                continueMenu = false;
-                                if (option == 1)
-                                    settings.ip_addr = textEntry(-5,1.3, 1.2, "->server IP: ");
-                                else if (option == 0)
+                                if (option == 0) {
                                     settings.build_time = to!int(textEntry(-5,-0.2, 1.2, "->build time: "));
+                                    settings.connection = ConnectionType.Server;
+                                    continueMenu = false;
+                                } else if (option == 1) {
+                                    settings.ip_addr = textEntry(-5,1.3, 1.2, "->server IP: ");
+                                    settings.connection = ConnectionType.Client;
+                                    continueMenu = false;
+                                } else if (option == 2) {
+                                    settings.connection = ConnectionType.None;
+                                    continueMenu = false;
+                                } else if (option == 3) {
+                                    settings.windowHeight = to!int(textEntry(-3,4.2, 1.2, "->window height: "));
+                                    settings.windowWidth = to!int(textEntry(-3,4.2, 1.2, "->window width: "));
+                                    window.resize(settings.windowWidth, settings.windowHeight);
+                                } else if (option == 4) {
+                                    continueMenu = false;
+                                    settings.running = false;
+                                }
                                 break;
                             case SDLK_UP:
                                 option = (option-1+numOptions)%numOptions;
@@ -156,7 +176,6 @@ class Menu {
 
         renderer.clearObjects();
 
-        settings.server = 1-option;
         return settings;
     }
 
@@ -256,6 +275,9 @@ string textEntry(float x, float y, float height, string prompt) {
 
             renderer.draw();
         }
+        renderer.remove(promptTxt);
+        foreach (GameObject obj; entryObjs)
+            renderer.remove(obj);
         return to!string(entryText);
     }
 }

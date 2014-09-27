@@ -33,7 +33,7 @@ void main() {
     TTF_Init();
 
     //Settings settings = {1080, 1920, -1, 10, "127.0.0.1"};
-    Settings settings = {720, 1280, -1, 10, "127.0.0.1", "debug"};
+    Settings settings = {720, 1280, ConnectionType.None, 10, "127.0.0.1", "debug", true};
     writeln("Initial values");
     readSettings(&settings);
     Window window = new Window("HackGT - blankd", settings.windowWidth, settings.windowHeight);
@@ -46,7 +46,8 @@ void main() {
     Menu menu = new Menu(window, renderer, settings);
     settings = menu.run();
 
-    if (settings.server != -2) //quit
+    writeFile(&settings);
+    if (settings.running)
         new GameManager(window, renderer, settings);
 
     //Finish and quit
@@ -59,8 +60,7 @@ void main() {
 void readSettings(Settings* s){
     if(!exists("settings.conf")) {
         writeFile(s);
-    }
-    else {
+    } else {
         File f = File("settings.conf", "r");
         string ln;
         string attrib;
