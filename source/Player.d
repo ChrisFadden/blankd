@@ -13,6 +13,7 @@ import derelict.sdl2.net;
 
 class Player {
 	float x, y, z;
+	float oldx, oldy, oldz;
 	float dx, dy, dz;
 	float gravity;
 
@@ -24,7 +25,9 @@ class Player {
 	float xpan, ypan;
 
 	float scanx, scanz;
+
 	float lrAmnt, fbAmnt;
+	float oldlrAmnt, oldfbAmnt;
 
 	float width, length;
 
@@ -59,15 +62,20 @@ class Player {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		oldx = this.x;
+		oldy = this.y;
+		oldz = this.z;
 
 		scanx = 0;
 		scanz = 0;
-		lrAmnt = 0;
-		fbAmnt = 0;
+		oldlrAmnt = lrAmnt = 0;
+		oldfbAmnt = fbAmnt = 0;
 
 		hp = 4;
 
 		sendTimer = 4;
+
+
 		respawnTimer = 0;
 		alive = true;
 
@@ -82,6 +90,12 @@ class Player {
 		dz = 0;
 
 		gravity = .02f;
+	}
+
+	void setOld(){
+		oldx = x;
+		oldy = y;
+		oldz = z;
 	}
 
 	void spawn(){

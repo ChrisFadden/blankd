@@ -40,6 +40,8 @@ class GameManager {
 	static const int MSG_FLAGSCORE = 11;
 	static const int MSG_BEGINGAMEPLAY = 12;
 	static const int MSG_RESPAWN = 13;
+	static const int MSG_UPDATEMOVEMENT = 14;
+	static const int MSG_UPDATECAMERA = 15;
 
 	static Camera camera;
 	float[] targetCamera = [0, 4, 1];
@@ -308,36 +310,62 @@ class GameManager {
 
 			if (server > -1 && player.isAlive){
 				player.sendTimer--;
+
 				if (player.sendTimer <= 0){
+					clearbuffer();
+					writebyte(MSG_UPDATEXYZ);
+					writebyte(player.playerID);
+					writefloat(player.x);
+					writefloat(player.y);
+					writefloat(player.z);
+					player.setOld();
 					if (server == 1){
 						foreach (Player p; players) {
-							clearbuffer();
-							writebyte(MSG_UPDATEXYZ);
-							writebyte(player.playerID);
-							writefloat(player.x);
-							writefloat(player.y);
-							writefloat(player.z);
-							writefloat(player.dy);
-							writefloat(player.lrAmnt);
-							writefloat(player.fbAmnt);
-							writefloat(player.camera.horizontalAngle);
-							writefloat(player.camera.verticalAngle);
-							sendmessage(p.mySocket);
+							sendmessage(p.mySocket, false);
 						}
-					} else {
 						clearbuffer();
-						writebyte(MSG_UPDATEXYZ);
-						writefloat(player.x);
-						writefloat(player.y);
-						writefloat(player.z);
-						writefloat(player.dy);
-						writefloat(player.lrAmnt);
-						writefloat(player.fbAmnt);
-						writefloat(player.camera.horizontalAngle);
-						writefloat(player.camera.verticalAngle);
+					} else {
 						sendmessage(getSocket());
 					}
-					player.sendTimer = 4;
+					player.sendTimer = 15;
+				}
+
+				if (player.oldlrAmnt != player.lrAmnt ||
+					player.oldfbAmnt != player.fbAmnt) {
+					clearbuffer();
+					writebyte(MSG_UPDATEMOVEMENT);
+					writebyte(player.playerID);
+					writefloat(player.lrAmnt);
+					writefloat(player.fbAmnt);
+					if (server == 1){
+						foreach (Player p; players) {
+							sendmessage(p.mySocket, false);
+						}
+						clearbuffer();
+					} else {
+						sendmessage(getSocket());
+					}
+					player.oldlrAmnt = player.lrAmnt;
+					player.oldfbAmnt = player.fbAmnt;
+				}
+
+				if (camera.oldHorizontalAngle != camera.horizontalAngle ||
+					camera.oldVerticalAngle != camera.verticalAngle) {
+					clearbuffer();
+					writebyte(MSG_UPDATECAMERA);
+					writebyte(player.playerID);
+					writefloat(camera.horizontalAngle);
+					writefloat(camera.verticalAngle);
+					if (server == 1){
+						foreach (Player p; players) {
+							sendmessage(p.mySocket, false);
+						}
+						clearbuffer();
+					} else {
+						sendmessage(getSocket());
+					}
+					camera.oldHorizontalAngle = camera.horizontalAngle;
+					camera.oldVerticalAngle = camera.verticalAngle;
 				}
 			}
 		}
@@ -685,62 +713,101 @@ class GameManager {
 				}
 			case MSG_UPDATEXYZ:
 				Player plyr;
-				byte pId;
-				if (server == 0){
-					pId = readbyte(array);
-					foreach (Player p; players){
-						if (p.playerID == pId){
-							plyr = p;
-							break;
-						}
-					}
-				} else if (server == 1) {
-					foreach (Player p; players){
-						if (p.mySocket == socket){
-							plyr = p;
-							break;
-						}
+				byte pId = readbyte(array);
+				foreach (Player p; players){
+					if (p.playerID == pId){
+						plyr = p;
+						break;
 					}
 				}
 				float newx = readfloat(array);
 				float newy = readfloat(array);
 				float newz = readfloat(array);
-				float newdy = readfloat(array);
-				float newlr = readfloat(array);
-				float newfb = readfloat(array);
-				float newscanx = readfloat(array);
-				float newscanz = readfloat(array);
+
 				if (server == 1) {
+					clearbuffer();
+					writebyte(MSG_UPDATEXYZ);
+					writebyte(plyr.playerID);
+					writefloat(newx);
+					writefloat(newy);
+					writefloat(newz);
 					foreach (Player p; players){
 						if (p.mySocket != socket){
-							clearbuffer();
-							writebyte(MSG_UPDATEXYZ);
-							writebyte(plyr.playerID);
-							writefloat(newx);
-							writefloat(newy);
-							writefloat(newz);
-							writefloat(newdy);
-							writefloat(newlr);
-							writefloat(newfb);
-							writefloat(newscanx);
-							writefloat(newscanz);
-							sendmessage(p.mySocket);
+							sendmessage(p.mySocket, false);
 						}
 					}
+					clearbuffer();
 				}
 				if (plyr !is null) {
 					plyr.getGameObject().visible = true;
 					plyr.camera.position.x = newx;
 					plyr.camera.position.y = newy;
 					plyr.camera.position.z = newz;
-					plyr.dy = newdy;
-					plyr.lrAmnt = newlr;
-					plyr.fbAmnt = newfb;
-					plyr.camera.horizontalAngle = newscanx;
-					plyr.camera.verticalAngle = newscanz;
+				}
+				return 1+1+(4*3);
+			case MSG_UPDATECAMERA:
+				Player plyr;
+				byte pId = readbyte(array);
+				foreach (Player p; players){
+					if (p.playerID == pId){
+						plyr = p;
+						break;
+					}
+				}
+				float newHoriz = readfloat(array);
+				float newVert = readfloat(array);
+				
+				if (server == 1) {
+					clearbuffer();
+					writebyte(MSG_UPDATECAMERA);
+					writebyte(plyr.playerID);
+					writefloat(newHoriz);
+					writefloat(newVert);
+					foreach (Player p; players){
+						if (p.mySocket != socket){
+							sendmessage(p.mySocket, false);
+						}
+					}
+					clearbuffer();
+				}
+				if (plyr !is null) {
+					plyr.getGameObject().visible = true;
+					plyr.camera.horizontalAngle = newHoriz;
+					plyr.camera.verticalAngle = newVert;
 					plyr.camera.moveRotation(0,0);
 				}
-				return 1+(server == 0 ? 1 : 0)+(4*8);
+				return 1+1+(4*2);
+			case MSG_UPDATEMOVEMENT:
+				Player plyr;
+				byte pId = readbyte(array);
+				foreach (Player p; players){
+					if (p.playerID == pId){
+						plyr = p;
+						break;
+					}
+				}
+				float newlrAmnt = readfloat(array);
+				float newfbAmnt = readfloat(array);
+				
+				if (server == 1) {
+					clearbuffer();
+					writebyte(MSG_UPDATEMOVEMENT);
+					writebyte(plyr.playerID);
+					writefloat(newlrAmnt);
+					writefloat(newfbAmnt);
+					foreach (Player p; players){
+						if (p.mySocket != socket){
+							sendmessage(p.mySocket, false);
+						}
+					}
+					clearbuffer();
+				}
+				if (plyr !is null) {
+					plyr.getGameObject().visible = true;
+					plyr.lrAmnt = newlrAmnt;
+					plyr.fbAmnt = newfbAmnt;
+				}
+				return 1+1+(4*2);
 			case MSG_BEGINBUILD:
 				beginBuildPhase();
 				return 1;
@@ -919,7 +986,8 @@ class GameManager {
 		} else {
 			stage = Stage.MAP_MAKER;
 			builder.getGameObject().visible = true;
-			camera.setTranslation(0f,9f,11f);
+			builder.dir = 0;
+			camera.setTranslation(builder.startx + 0f, builder.starty + 9f, builder.startz + 11f);
 			camera.resetRotation();
 			camera.moveRotation(0f,-0.3f);
 		}
