@@ -283,7 +283,7 @@ class GameManager {
 				movePlayer(player);
 			player.update();
 			foreach (Player plyr ; players){
-				if (player.isAlive)
+				if (plyr.isAlive)
 					movePlayer(plyr);
 				plyr.update();
 			}
@@ -446,8 +446,10 @@ class GameManager {
 		p.dx = movex;
 		p.x = c.position.x;
 		if (!placeFree(p,0,0,0)){
-			movey = builder.dy;
-			p.y += movey;
+			if (player.y == 0 || (!placeFree(p,-movex,-.1f,0))){
+				movey = builder.dy;
+				p.y += movey;
+			}
 			if (!placeFree(p,0,0,0)){
 				p.y -= movey;
 				p.x -= movex;
@@ -459,12 +461,14 @@ class GameManager {
 		p.dz = movez;
 		p.z = c.position.z;
 		if (!placeFree(p,0,0,0)){
-			if (movey == 0f)
-				movey = builder.dy;
-			else
-				movey = 0f;
-			
-			p.y += movey;
+			if (player.y == 0 || (!placeFree(p,0,-.1f,-movez))){
+				if (movey == 0f)
+					movey = builder.dy;
+				else
+					movey = 0f;
+				
+				p.y += movey;
+			}
 			if (!placeFree(p,0,0,0)){
 				p.y -= movey;
 				p.z -= movez;
@@ -893,7 +897,8 @@ class GameManager {
 		player.startx = player.x;
 		player.starty = player.y;
 		player.startz = player.z;
-		player.camera.setTranslation(player.x,player.y+player.eyeHeight,player.z);
+		player.spawn();
+		player.getGameObject.visible = false;
 		player.update();
 		foreach (Player p ; players){
 			Flag mFlag = ctfFlags[p.team];
@@ -931,13 +936,27 @@ class GameManager {
 		camera.position.y += 1f;
 	}
 	void moveCameraForward(){
-		camera.position.z -= 1f;
+		if (builder.dir == 0)
+			camera.position.z -= 1f;
+		else if (builder.dir == 1)
+			camera.position.x -= 1f;
+		else if (builder.dir == 2)
+			camera.position.z += 1f;
+		else if (builder.dir == 3)
+			camera.position.x += 1f;
 	}
 	void moveCameraDown(){
 		camera.position.y -= 1f;
 	}
 	void moveCameraBack(){
-		camera.position.z += 1f;
+		if (builder.dir == 0)
+			camera.position.z += 1f;
+		else if (builder.dir == 1)
+			camera.position.x += 1f;
+		else if (builder.dir == 2)
+			camera.position.z -= 1f;
+		else if (builder.dir == 3)
+			camera.position.x -= 1f;
 	}
 
 	static void getShot() {
@@ -1010,20 +1029,71 @@ class GameManager {
 	void quitBlock() {
 		builder.quit();
 	}
+
+	void rotateViewLeft(){
+		camera.moveRotation(-PI/2, 0);
+		builder.dir--;
+		if (builder.dir < 0)
+			builder.dir = 3;
+		float dx = camera.position.x - builder.startx;
+		float dz = camera.position.z - builder.startz;
+		camera.position.x = builder.startx - dz;
+		camera.position.z = builder.startz + dx;
+	}
+
+	void rotateViewRight(){
+		camera.moveRotation(PI/2, 0);
+		builder.dir++;
+		if (builder.dir > 3)
+			builder.dir = 0;
+		float dx = camera.position.x - builder.startx;
+		float dz = camera.position.z - builder.startz;
+		camera.position.x = builder.startx + dz;
+		camera.position.z = builder.startz - dx;
+	}
+
 	void moveBlockLeft(){
-		builder.left();
+		if (builder.dir == 0)
+			builder.left();
+		else if (builder.dir == 1)
+			builder.down();
+		else if (builder.dir == 2)
+			builder.right();
+		else if (builder.dir == 3)
+			builder.up();
 		//camera.moveTranslation(-.05f,0f,0f);
 	}
 	void moveBlockRight(){
-		builder.right();
+		if (builder.dir == 0)
+			builder.right();
+		else if (builder.dir == 1)
+			builder.up();
+		else if (builder.dir == 2)
+			builder.left();
+		else if (builder.dir == 3)
+			builder.down();
 		//camera.moveTranslation(.05f,0f,0f);
 	}
 	void moveBlockUp(){
-		builder.up();
+		if (builder.dir == 0)
+			builder.up();
+		else if (builder.dir == 1)
+			builder.left();
+		else if (builder.dir == 2)
+			builder.down();
+		else if (builder.dir == 3)
+			builder.right();
 		//camera.moveTranslation(0f,0.05f,0f);
 	}
 	void moveBlockDown(){
-		builder.down();
+		if (builder.dir == 0)
+			builder.down();
+		else if (builder.dir == 1)
+			builder.right();
+		else if (builder.dir == 2)
+			builder.up();
+		else if (builder.dir == 3)
+			builder.left();
 		//camera.moveTranslation(0f,-0.05f,0f);
 	}
 	void raiseBlock(){
@@ -1076,19 +1146,29 @@ class GameManager {
         renderer.register(got);
 	}
 
+	// http://www.libsdl.org/release/SDL-1.2.15/docs/html/sdlkey.html
+
 	void handleGameplayInput(SDL_Event *event) {
 		while (SDL_PollEvent(event)) {
 			switch(event.type){
 				case SDL_JOYAXISMOTION:
-				if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)){
+				float deadzone = 3200f;
+
+				if ((event.jaxis.value < -deadzone) || (event.jaxis.value > deadzone)){
+					float value;
+					if (event.jaxis.value > 0)
+						value = (short.max/(short.max-deadzone))*((event.jaxis.value-deadzone)/cast(float)short.max);
+					else
+						value = (short.max/(short.max-deadzone))*((event.jaxis.value+deadzone)/cast(float)short.max);	
+
 					if (event.jaxis.axis == 0) {
-						lrAmnt = event.jaxis.value/(cast(float)short.max);
+						lrAmnt = value;
 					} if (event.jaxis.axis == 1) {
-						fbAmnt = event.jaxis.value/(cast(float)short.max);
+						fbAmnt = value;
 					} else if (event.jaxis.axis == 2) {
-						scanHoriz = event.jaxis.value/(cast(float)short.max);
+						scanHoriz = value;
 					} else if (event.jaxis.axis == 5) {
-						scanVert = event.jaxis.value/(cast(float)short.max);
+						scanVert = value;
 					}
 				} else {
 					if (event.jaxis.axis == 0){
@@ -1276,9 +1356,13 @@ class GameManager {
 						case 7:
 						udAmnt = .25f;
 							break;
+						case 10:
+						rotateViewRight();
+							break;
 						default:
 						break;
 					}
+					//writeln(event.jbutton.button);
 				break;
 				case SDL_JOYBUTTONUP:
 					switch(event.jbutton.button){
@@ -1308,17 +1392,43 @@ class GameManager {
 					}
 				break;
 				case SDL_JOYAXISMOTION:
-				if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)){
+				float deadzone = 3200f;
+				if ((event.jaxis.value < -deadzone) || (event.jaxis.value > deadzone)){
+					float value;
+					if (event.jaxis.value > 0)
+						value = (short.max/(short.max-deadzone))*((event.jaxis.value-deadzone)/cast(float)short.max);
+					else
+						value = (short.max/(short.max-deadzone))*((event.jaxis.value+deadzone)/cast(float)short.max);
 					if (event.jaxis.axis == 0) {
-						lrAmnt = event.jaxis.value/(cast(float)short.max);
+						if (builder.dir == 0)
+							lrAmnt = value;
+						else if (builder.dir == 1)
+							fbAmnt = -value;
+						else if (builder.dir == 2)
+							lrAmnt = -value;
+						else if (builder.dir == 3)
+							fbAmnt = value;
 					} else if (event.jaxis.axis == 1) {
-						fbAmnt = event.jaxis.value/(cast(float)short.max);
+						if (builder.dir == 0)
+							fbAmnt = value;
+						else if (builder.dir == 1)
+							lrAmnt = value;
+						else if (builder.dir == 2)
+							fbAmnt = -value;
+						else if (builder.dir == 3)
+							lrAmnt = -value;
 					}
 				} else {
 					if (event.jaxis.axis == 0){
-						lrAmnt = 0;
+						if (builder.dir%2 == 0)
+							lrAmnt = 0;
+						else
+							fbAmnt = 0;
 					} else if (event.jaxis.axis == 1) {
-						fbAmnt = 0;
+						if (builder.dir%2 == 0)
+							fbAmnt = 0;
+						else
+							lrAmnt = 0;
 					} 
 				}
 				break;
@@ -1339,19 +1449,23 @@ class GameManager {
 						case SDLK_s:
 							moveBlockDown();
 							break;
+						case SDLK_SPACE:
 						case SDLK_RETURN:
 							placeBlock();
 							break;
-						case SDLK_UP:
+						case SDLK_r:
 							raiseBlock();
 							break;
-						case SDLK_DOWN:
+						case SDLK_f:
 							lowerBlock();
 							break;
-						case SDLK_e:
-							angleRight();
+						case SDLK_o:
+							rotateViewRight();
 							break;
-						case SDLK_r:
+						case SDLK_u:
+							rotateViewLeft();
+							break;
+						case SDLK_q:
 							quitBlock();
 							break;
 						case SDLK_i:
@@ -1370,10 +1484,10 @@ class GameManager {
 							//lrAmnt = -1f;
 							moveCameraRight();
 							break;
-						case SDLK_u:
+						case SDLK_SEMICOLON:
 							moveCameraDown();
 							break;
-						case SDLK_o:
+						case SDLK_p:
 							moveCameraUp();
 							break;
 						default:

@@ -91,6 +91,11 @@ class Player {
 		y = starty;
 		z = startz;
 		camera.setTranslation(x,y+height,z);
+		camera.resetRotation();
+		if (team == 1)
+			camera.moveRotation(-PI/2, 0);
+		else
+			camera.moveRotation(PI/2, 0);
 		hp = 4;
 		update();
 	}

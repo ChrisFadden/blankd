@@ -24,6 +24,7 @@ class Camera {
     void resetRotation(){
         horizontalAngle = 0;
         verticalAngle = 0;
+        moveRotation(0,0);
     }
 
     void moveTranslation(float dx, float dy, float dz) {
