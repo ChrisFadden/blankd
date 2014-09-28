@@ -157,9 +157,10 @@ class Flag {
 
 	float lockx, locky, lockz;
 
-	this(byte team){
+	this(byte team, Texture t){
 		this.team = team;
-		gameObject = new GameObject(0,0,0,0);
+
+		gameObject = new GameObject(0,0,0,0,true,t);
 		playerCarrying = -1;
 		setColor();
 	}

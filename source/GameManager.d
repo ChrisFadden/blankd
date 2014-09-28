@@ -143,7 +143,8 @@ class GameManager {
     	objloader = new ObjLoader();
 
     	for (int i = 1; i < ctfFlags.length; i++){
-	    	ctfFlags[i] = new Flag(cast(byte)i);
+    		Texture t = resman.getTexture("Flag.bmp");
+	    	ctfFlags[i] = new Flag(cast(byte)i, t);
 	    	GameObject flag = ctfFlags[i].getGameObject();
 	    	flag.visible = true;
 	    	objloader.open("flag.obj", flag);

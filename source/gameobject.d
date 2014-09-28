@@ -236,14 +236,16 @@ class GameObject {
             0,1,0,
             0,1,0,
         ];
-        texCords = [
-            0,0,
-            1,1,
-            0,1,
-            0,0,
-            1,0,
-            1,1,
-        ];
+        if(texCords.length == 0) {
+            texCords = [
+                0,0,
+                1,1,
+                0,1,
+                0,0,
+                1,0,
+                1,1,
+            ];
+        }
 
         setup();
     }
