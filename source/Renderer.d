@@ -43,6 +43,9 @@ class Renderer {
     }
 
     void register(GameObject obj) {
+        foreach(GameObject o; objects)
+            if (o == obj)
+                return;
         objects ~= obj;
     }
 

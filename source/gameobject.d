@@ -307,6 +307,13 @@ class GameObject {
 	{
 	}
 
+    void setPosition(Vector position){
+        this.x = position.x;
+        this.y = position.y;
+        this.z = position.z;
+        updateMatrix();
+    }
+
     void updateMatrix() {
         //modelMatrix.setIdentity();
         //modelMatrix.rotate(rx,ry,rz);
