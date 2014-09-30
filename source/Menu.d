@@ -44,7 +44,7 @@ class Menu {
     GameObject getTextObject(float x, float y, float height, string text) {
         float ratio;
         Texture textTex = resMan.getTextTexture(text.dup, &ratio);
-        writeln("x ", x, " y: ", y, " width: ", ratio*height, " height: ", height);
+        //writeln("x ", x, " y: ", y, " width: ", ratio*height, " height: ", height);
         return new GameObject(x,y, ratio*height, -height, true, textTex);
         //return new GameObject(-3,-3, 6, -3, true, textTex);
     }
@@ -68,12 +68,20 @@ class Menu {
         GameObject selector = new GameObject(-9,0,0, -4,0,0.03);
 
         ObjLoader objloader = new ObjLoader();
-        GameObject flag = new GameObject(0,0,0,0);
-        objloader.open("flag.obj", flag);
-        flag.x = 3;
-        flag.y = -2;
-        flag.rx = -PI/2;
-        flag.updateMatrix();
+        GameObject flagR = new GameObject(0,0,0,0);
+        GameObject flagB = new GameObject(0,0,0,0);
+        objloader.open("flag.obj", flagR);
+        objloader.open("flag.obj", flagB);
+        flagR.x = 3;
+        flagR.y = -2;
+        flagR.rx = -PI/2;
+        flagR.setColor(1,0,0);
+        flagR.updateMatrix();
+        flagB.x = 3;
+        flagB.y = -2;
+        flagB.rx = PI/2;
+        flagB.setColor(0,0,1);
+        flagB.updateMatrix();
 
         renderer.setCamera(menuCam);
         renderer.register(background);
@@ -85,7 +93,8 @@ class Menu {
         renderer.register(settingsTxt);
         renderer.register(exitTxt);
         renderer.register(selector);
-        renderer.register(flag);
+        renderer.register(flagR);
+        renderer.register(flagB);
         
         SDL_Event event;
         bool continueMenu = true;
@@ -168,9 +177,11 @@ class Menu {
             selector.z = option * 1.5 - 0.2;
             selector.updateMatrix();
 
-            flag.rz += 0.001;
-            //flag.ry += 0.001;
-            flag.updateMatrix();
+            //flag.rz += 0.001;
+            flagR.ry += 0.005;
+            flagB.ry += 0.005;
+            flagR.updateMatrix();
+            flagB.updateMatrix();
             renderer.draw();
         }
 
@@ -268,7 +279,7 @@ string textEntry(float x, float y, float height, string prompt) {
                         renderer.remove(entryObjs.back);
                         entryObjs.removeBack();
                     }
-                    writeln(entryText);
+                    //writeln(entryText);
                     oldEntryText = entryText;
                 }
             }

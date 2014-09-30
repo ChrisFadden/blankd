@@ -308,9 +308,11 @@ class GameObject {
 	}
 
     void updateMatrix() {
-        //modelMatrix.setIdentity();
-        //modelMatrix.rotate(rx,ry,rz);
-        //modelMatrix.setTranslation(x, y, z);
+        modelMatrix.setIdentity();
+        modelMatrix.rotate(rx,ry,rz);
+        modelMatrix.setTranslation(x, y, z);
+    }
+    void updateMatrixWrong() {
         modelMatrix.setTranslation(x, y, z);
         modelMatrix.rotate(rx,ry,rz);
     }
