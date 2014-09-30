@@ -17,6 +17,9 @@ import Vector;
 import ResourceManager;
 import KeyManager;
 
+import Bullet;
+import pool;
+
 import networking;
 
 import derelict.opengl3.gl3;
@@ -57,6 +60,8 @@ class GameManager {
     float udAmnt;
     float scanHoriz;
     float scanVert;
+
+    Pool!(Bullet) bulletPool;
 
     static Array!(Player) players;
     static byte playerNum;
@@ -117,6 +122,8 @@ class GameManager {
     	char[] musicName2 = cast(char[])"Teleport.wav";
     	char[] musicName3 = cast(char[])"Power_Up.wav";
 		char[] musicName4 = cast(char[])"hitByBullet.wav";
+
+		bulletPool = new Pool!(Bullet);
 
 		resman.loadSound(musicName2);
 		resman.loadSound(musicName1);
@@ -310,6 +317,7 @@ class GameManager {
 					movePlayer(plyr);
 				plyr.update();
 			}
+			workBullets();
 
 			if (!player.isAlive){
 				player.respawnTimer--;
@@ -393,6 +401,10 @@ class GameManager {
 			}
 		}
 
+		handleFlags();
+	}
+
+	void handleFlags(){
 		// FLAGS //
 		for (int i = 1; i < ctfFlags.length; i++){
 				Flag flag = ctfFlags[i];
@@ -410,7 +422,7 @@ class GameManager {
 					if (carrying !is null){
 						flag.getGameObject().x = carrying.x;
 						flag.getGameObject().y = carrying.y+carrying.height;
-						flag.getGameObject().z = carrying.z;
+						flag.getGameObject().z = carrying.z+2;
 						flag.getGameObject().updateMatrix();
 					}
 				}
@@ -484,6 +496,39 @@ class GameManager {
 					}
 				}
 			}
+	}
+
+	void workBullets(){
+		foreach(Bullet bullet; bulletPool.getItems()){
+			if (!bullet.getGameObject().visible)
+				continue;
+			bullet.getGameObject.visible = false;
+			GameObject shot = checkCollisions(bullet.position, bullet.direction, bullet.speed, 0.1f, true);
+			bullet.getGameObject.visible = true;
+			foreach (Player p; players){
+				if (p.getGameObject() == shot){
+					writeln("You shot player ", p.playerID, "!");
+					PlaySound(sounds[1]);
+					if (connectionType == ConnectionType.Server){
+						clearbuffer();
+						writebyte(MSG_SHOT);
+						sendmessage(p.mySocket);
+					} else if (connectionType == ConnectionType.Client) {
+						clearbuffer();
+						writebyte(MSG_SHOT);
+						writebyte(p.playerID);
+						sendmessage(getSocket());
+					}
+					break;
+				}
+			}
+			bullet.update();
+			if (bullet.isDead() || shot !is null){
+				bullet.kill();
+				bulletPool.release(bullet);
+			}
+		}
+		
 	}
 
 	void movePlayer(Player p) {
@@ -965,13 +1010,13 @@ class GameManager {
 			GameObject flag = ctfFlags[i].getGameObject();
 			flag.x = ctfFlags[i].team == 1 ? -25*builder.dx : 24*builder.dx;
 			flag.z = 0;
-			flag.y = builder.dy*2;
+			flag.y = builder.dy;
 			flag.updateMatrix();
-			addBlock(flag.x-builder.dx,
-					flag.y-builder.dy*2,
-					flag.z+builder.dz,
-					flag.x+builder.dx*2,
+			addBlock(flag.x-builder.dx*2,
 					flag.y-builder.dy,
+					flag.z+builder.dz*2,
+					flag.x+builder.dx*2,
+					flag.y,
 					flag.z-builder.dz*2,
 					flag.r,
 					0,
@@ -1140,6 +1185,10 @@ class GameManager {
 	void shoot(){
 		if (!player.isAlive())
 			return;
+		Bullet bullet = bulletPool.newObj();
+		bullet.set(camera.position.clone, camera.direction.clone, 10f);
+		renderer.register(bullet.gameObject);
+		/*
 		GameObject shot = checkCollisions(camera.position, camera.direction, 100, 0.1);
 		foreach (Player p; players){
 			if (p.getGameObject() == shot){
@@ -1158,6 +1207,7 @@ class GameManager {
 				break;
 			}
 		}
+		*/
 	}
 
 	void quitBlock() {
@@ -1280,7 +1330,7 @@ class GameManager {
         renderer.register(got);
 	}
 
-    GameObject checkCollisions(Vector position, Vector direction, float range, float step) {
+    GameObject checkCollisions(Vector position, Vector direction, float range, float step, bool movePosition = false) {
         range = -range; //Going in negative direction
         GameObject closestCol = null;
         float closestIndex = range;
@@ -1328,7 +1378,12 @@ class GameManager {
             }
             num++;
         }
-        //float x = position.x + direction.x * closestIndex; 
+        if (movePosition){
+        	position.x += direction.x * closestIndex;
+        	position.y += direction.y * -closestIndex;
+        	position.z += direction.z * closestIndex;
+    	}
+    	//float x = position.x + direction.x * closestIndex; 
         //float y = position.y + direction.y * -closestIndex; 
         //float z = position.z + direction.z * closestIndex; 
         //GameObject hitObj = new GameObject(x-.1,y-.1,z-.1,x+.1,y+.1,z+.1);

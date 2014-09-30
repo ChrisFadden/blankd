@@ -41,6 +41,10 @@ class Vector {
         } else static assert(0, "Operator "~op~" not implemented");
     }
 
+    Vector clone(){
+        return new Vector(x,y,z);
+    }
+
     float Dot(Vector rhs) {
         return x*rhs.x + y*rhs.y + z*rhs.z;
     }

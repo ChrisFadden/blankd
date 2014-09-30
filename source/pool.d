@@ -1,9 +1,13 @@
+import std.container;
 
 class Pool(T)
 {
     Array!(T) pool;
+    Array!(T) items;
+
     this() {
     }
+
     T newObj() {
         for (int i = 0; i < pool.length; i++) {
             if (pool[i] !is null) {
@@ -12,7 +16,9 @@ class Pool(T)
                 return thing;
             }
         }
-        return new T();
+        T t = new T();
+        items ~= t;
+        return t;
     }
 
     void release(T obj) {
@@ -23,6 +29,10 @@ class Pool(T)
             }
         }
         pool ~= obj;
+    }
+
+    Array!(T) getItems(){
+        return items;
     }
 }
 
