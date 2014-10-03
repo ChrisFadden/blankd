@@ -12,14 +12,16 @@ SDLNet_SocketSet socketSet;
 TCPsocket socket;
 
 // Returns whether or not the socket is still connected
-bool readsocket(TCPsocket msocket, int function(byte**, TCPsocket) func) {
+bool readsocket(TCPsocket msocket, int function(byte**, TCPsocket, bool) func) {
 	if (SDLNet_SocketReady(msocket)){
 		int len;
 		byte readBuffer[maxBufferSize];
 		if ((len = SDLNet_TCP_Recv(msocket, &readBuffer, maxBufferSize)) > 0) {
 			byte* buf = cast(byte*)readBuffer;
+			bool print = false;
 			while (len > 0){
-				len -= func(&buf, msocket);
+				len -= func(&buf, msocket, print);
+				print = true;
 			}
 			return true;
 		} else {

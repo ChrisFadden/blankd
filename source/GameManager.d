@@ -48,6 +48,7 @@ class GameManager {
 	static const int MSG_UPDATECAMERA = 15;
 	static const int MSG_JUMP = 16;
 	static const int MSG_CLOSED = 17;
+	static const int MSG_BULLET = 18;
 
 	static Camera camera;
 	float[] targetCamera = [0, 4, 1];
@@ -61,7 +62,7 @@ class GameManager {
     float scanHoriz;
     float scanVert;
 
-    Pool!(Bullet) bulletPool;
+    static Pool!(Bullet) bulletPool;
 
     static Array!(Player) players;
     static byte playerNum;
@@ -505,21 +506,23 @@ class GameManager {
 			bullet.getGameObject.visible = false;
 			GameObject shot = checkCollisions(bullet.position, bullet.direction, bullet.speed, 0.1f, true);
 			bullet.getGameObject.visible = true;
-			foreach (Player p; players){
-				if (p.getGameObject() == shot){
-					writeln("You shot player ", p.playerID, "!");
-					PlaySound(sounds[1]);
-					if (connectionType == ConnectionType.Server){
-						clearbuffer();
-						writebyte(MSG_SHOT);
-						sendmessage(p.mySocket);
-					} else if (connectionType == ConnectionType.Client) {
-						clearbuffer();
-						writebyte(MSG_SHOT);
-						writebyte(p.playerID);
-						sendmessage(getSocket());
+			if (bullet.source == player){
+				foreach (Player p; players){
+					if (p.getGameObject() == shot){
+						writeln("You shot player ", p.playerID, "!");
+						PlaySound(sounds[1]);
+						if (connectionType == ConnectionType.Server){
+							clearbuffer();
+							writebyte(MSG_SHOT);
+							sendmessage(p.mySocket);
+						} else if (connectionType == ConnectionType.Client) {
+							clearbuffer();
+							writebyte(MSG_SHOT);
+							writebyte(p.playerID);
+							sendmessage(getSocket());
+						}
+						break;
 					}
-					break;
 				}
 			}
 			bullet.update();
@@ -686,8 +689,10 @@ class GameManager {
 		}
 	}
 
-	static int userDefined(byte** array, TCPsocket socket){
+	static int userDefined(byte** array, TCPsocket socket, bool printMsg = false){
 		byte MSG_ID = readbyte(array);
+		//if (printMsg)
+		//	writeln("Secondary messages received: ", MSG_ID);
 		switch(MSG_ID) {
 			case MSG_NEWBLOCK:
 				byte pId = readbyte(array);
@@ -917,6 +922,30 @@ class GameManager {
 			case MSG_BEGINBUILD:
 				beginBuildPhase();
 				return 1;
+			case MSG_BULLET:
+				Player plyr;
+				byte pId = readbyte(array);
+				foreach (Player p; players){
+					if (p.playerID == pId){
+						plyr = p;
+						break;
+					}
+				}
+				if (connectionType == ConnectionType.Server){
+					clearbuffer();
+					writebyte(MSG_BULLET);
+					writebyte(pId);
+					foreach(Player p ; players){
+						sendmessage(p.mySocket, false);
+					}
+					clearbuffer();
+				}
+				if (plyr !is null) {
+					Bullet bullet = bulletPool.newObj();
+					bullet.set(plyr,plyr.camera.position.clone, plyr.camera.direction.clone, 10f);
+					renderer.register(bullet.gameObject);
+				}
+				return 1+1;
 			case MSG_FLAGRESET: // Reset flag to home
 				byte flagNum = readbyte(array);
 				if (flagNum != 1 && flagNum != 2)
@@ -1186,8 +1215,19 @@ class GameManager {
 		if (!player.isAlive())
 			return;
 		Bullet bullet = bulletPool.newObj();
-		bullet.set(camera.position.clone, camera.direction.clone, 10f);
+		bullet.set(player,camera.position.clone, camera.direction.clone, 10f);
 		renderer.register(bullet.gameObject);
+		clearbuffer();
+		writebyte(MSG_BULLET);
+		writebyte(player.playerID);
+		if (connectionType == ConnectionType.Client)
+			sendmessage(getSocket());
+		else if (connectionType == ConnectionType.Server){
+			foreach(Player p ; players){
+				sendmessage(p.mySocket, false);
+			}
+		}
+		clearbuffer();
 		/*
 		GameObject shot = checkCollisions(camera.position, camera.direction, 100, 0.1);
 		foreach (Player p; players){

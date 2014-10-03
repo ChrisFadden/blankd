@@ -23,11 +23,12 @@ class Bullet{
 		this.time = 10;
 	}
 
-	void set(Vector position, Vector direction, float speed){
+	void set(Player source, Vector position, Vector direction, float speed){
 		gameObject.visible = true;
 		this.position = position;
 		this.direction = direction;
 		this.speed = speed;
+		this.source = source;
 		gameObject.setPosition(position);
 		time = 15;
 	}
