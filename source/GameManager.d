@@ -55,6 +55,7 @@ class GameManager {
 	static byte[3] teams = [0, 0, 0];
 	static int[3] score = [0, 0, 0];
     static Renderer renderer;
+    static Scene scene;
     static ResourceManager resman;
     float lrAmnt;
     float fbAmnt;
@@ -63,25 +64,18 @@ class GameManager {
     float scanVert;
 
     static Pool!(Bullet) bulletPool;
-
     static Array!(Player) players;
     static byte playerNum;
 
-    int frameDelay = 1000/61;
-
     Window window;
+    int frameDelay = 1000/61;
     static float aspectRatio;
 
     int buildTime;
-
-    //GameObject go1;
-
     static bool running;
-
     long fpsTime;
     int fps;
     int fpsCounter;
-
     long frameTime;
 
     SDL_Joystick *joystick;
@@ -100,6 +94,8 @@ class GameManager {
 
     static Player player;
     ObjLoader objloader;
+    static GameObject death;
+    static bool isDead;
     GameObject g0;
     static ConnectionType connectionType;
     static Settings settings;
@@ -113,7 +109,27 @@ class GameManager {
 		camera.setTranslation(0f,9f,11f);
 		camera.moveRotation(0f,-.3f);
     	this.renderer = renderer;
-        renderer.setCamera(camera);
+        scene = new Scene();
+        scene.addPair(camera);
+
+        Camera guiCam = new Camera(to!float(window.windowWidth)/window.windowHeight);
+        guiCam.setTranslation(0,0,2);
+        GameObject reticle = new GameObject(-.01,-.01,-.01, .01,.01,.01);
+        reticle.z = 1;
+        reticle.visible = true;
+        reticle.updateMatrix();
+        death = new GameObject(-10,-10,-0.1, 10,10,-0.1);
+        death.visible = false;
+        death.setColor(1.0,0.0,0.0,0.5f);
+        death.updateMatrix();
+        isDead = false;
+
+        Array!(GameObject) tmpObjs;
+        tmpObjs ~= reticle;
+        tmpObjs ~= death;
+        scene.addPair(guiCam, tmpObjs);
+
+        renderer.setScene(scene);
     	resman = ResourceManager.getResourceManager();
         this.settings = settings;
     	this.connectionType = settings.connection;
@@ -134,7 +150,6 @@ class GameManager {
         PlaySound(sounds[0]);
     	
 
-
     	lrAmnt = 0;
     	fbAmnt = 0;
     	udAmnt = 0;
@@ -146,9 +161,9 @@ class GameManager {
     	player.playerID = 0;
     	if (connectionType == ConnectionType.Server)
     		teams[player.team]++;
-    	renderer.register(player.getGameObject());
+    	scene.addToPair(camera, player.getGameObject());
 
-    	objloader = new ObjLoader();
+    	objloader = resman.objLoader;
 
     	for (int i = 1; i < ctfFlags.length; i++){
     		Texture t = resman.getTexture("Flag.bmp");
@@ -157,22 +172,19 @@ class GameManager {
 	    	flag.visible = true;
 	    	objloader.open("flag.obj", flag);
 			ctfFlags[i].setColor();
-	    	renderer.register(flag);
+	    	scene.addToPair(camera, flag);
 	    }
 
-
-
-    	//players ~= player;
 
 	    builder = new BlockBuilder(-1.0, 0.0, -4.0);
 	    GameObject b = builder.getGameObject();
 	    b.visible = true;
-	    renderer.register(b);
+	    scene.addToPair(camera, b);
 
 	    GameObject floor = new GameObject(-150,80,300,-160);
 	    floor.visible = true;
 	    floor.setColor(.2f,.9f,.5f);
-	    renderer.register(floor);
+	    scene.addToPair(camera, floor);
     	
 
 	    fpsTime = SDL_GetTicks();
@@ -187,12 +199,6 @@ class GameManager {
 	    if (connectionType == ConnectionType.Server) {
 	    	SDLNet_InitServer(1234, 20);
 	    	playerNum = 1;
-	    	/*
-	    	writeln("Please enter the build time, in minutes.");
-	    	char[] buf;
-    		stdin.readln(buf);
-    		string s = buf;
-    		*/
 	    	buildTime = settings.build_time * 60;
 	    } else if (connectionType == ConnectionType.Client) {
             if (settings.ip_addr.length < 4)
@@ -213,7 +219,6 @@ class GameManager {
 			step(0);
 			draw();
 		}
-
 		clean();
 	}
 
@@ -258,7 +263,7 @@ class GameManager {
 		player.y += dy;
 		player.z += dz;
 		bool output = true;
-		foreach (GameObject o ; renderer.objects) {
+		foreach (GameObject o ; renderer.scene.pair(camera)) {
 			if (o.solid) {
 				if (checkCollision(player, o)){
 					output = false;
@@ -323,7 +328,8 @@ class GameManager {
 			if (!player.isAlive){
 				player.respawnTimer--;
 				if (player.respawnTimer <= 0){
-					renderer.isDead = false;
+					isDead = false;
+                    death.visible = false;
 					clearbuffer();
 					writebyte(MSG_RESPAWN);
 					writebyte(player.playerID);
@@ -581,7 +587,7 @@ class GameManager {
 			p.y = 0f;
 			p.dy = 0;
 		} else {
-			foreach (GameObject o ; renderer.objects) {
+			foreach (GameObject o ; renderer.scene.pair(camera)) {
 				if (o.solid) {
 					if (checkCollision(p, o)){
 						if (p.dy > 0){
@@ -617,7 +623,7 @@ class GameManager {
 						Player tempPlayer = new Player(0, 0, 0, &c, pTeam);
 						tempPlayer.playerID = playerNum;
 						teams[tempPlayer.team]++;
-						renderer.register(tempPlayer.getGameObject());
+						scene.addToPair(camera, tempPlayer.getGameObject());
 						tempPlayer.mySocket = tempClient;
 						playerNum++;
 						clearbuffer();
@@ -739,7 +745,7 @@ class GameManager {
 				Camera c = new Camera(aspectRatio);
 				Player temp = new Player(0,0,0,&c,pTeam);
 				temp.playerID = pId;
-				renderer.register(temp.getGameObject());
+				scene.addToPair(camera, temp.getGameObject());
 				players ~= temp;
 				return 1+2;
 			case MSG_DEATH:
@@ -943,7 +949,7 @@ class GameManager {
 				if (plyr !is null) {
 					Bullet bullet = bulletPool.newObj();
 					bullet.set(plyr,plyr.camera.position.clone, plyr.camera.direction.clone, 10f);
-					renderer.register(bullet.gameObject);
+					scene.addToPair(camera, bullet.gameObject);
 				}
 				return 1+1;
 			case MSG_FLAGRESET: // Reset flag to home
@@ -1114,6 +1120,7 @@ class GameManager {
 			p.starty = p.y;
 			p.startz = p.z;
 			p.camera.setTranslation(p.x,p.y+p.eyeHeight,p.z);
+            p.loadPlayerModel();
 			p.getGameObject.visible = true;
 			p.update();
 		}
@@ -1174,7 +1181,8 @@ class GameManager {
 		if (player.hp<1){
 			player.die();
 			clearbuffer();
-			renderer.isDead = true;
+			isDead = true;
+            death.visible = true;
 			writebyte(MSG_DEATH);
 			writebyte(player.playerID);
 			if (connectionType == ConnectionType.Client)
@@ -1216,7 +1224,7 @@ class GameManager {
 			return;
 		Bullet bullet = bulletPool.newObj();
 		bullet.set(player,camera.position.clone, camera.direction.clone, 10f);
-		renderer.register(bullet.gameObject);
+		scene.addToPair(camera, bullet.gameObject);
 		clearbuffer();
 		writebyte(MSG_BULLET);
 		writebyte(player.playerID);
@@ -1367,7 +1375,7 @@ class GameManager {
         got.solid = true;
         got.setColor(r, g, b);
         got.updateMatrix();
-        renderer.register(got);
+        scene.addToPair(camera, got);
 	}
 
     GameObject checkCollisions(Vector position, Vector direction, float range, float step, bool movePosition = false) {
@@ -1376,7 +1384,7 @@ class GameManager {
         float closestIndex = range;
 
         int num = 0;
-        foreach (GameObject obj; renderer.objects) {
+        foreach (GameObject obj; renderer.scene.pair(camera)) {
         	if (!obj.visible)
         		continue;
         	if (obj == player.getGameObject())
@@ -1428,7 +1436,7 @@ class GameManager {
         //float z = position.z + direction.z * closestIndex; 
         //GameObject hitObj = new GameObject(x-.1,y-.1,z-.1,x+.1,y+.1,z+.1);
         //hitObj.visible = true;
-        //renderer.register(hitObj);
+        //scene.addToPair(camera, hitObj);
         return closestCol;
 	}
 }

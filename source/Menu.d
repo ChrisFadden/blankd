@@ -29,16 +29,19 @@ class Menu {
     Settings settings;
     Window window;
     Renderer renderer;
-    Camera menuCam;
+    Scene scene;
+    Camera camera;
     ResourceManager resMan;
     this(Window window, Renderer renderer, Settings settings) {
         this.window = window;
         this.renderer = renderer;
+        scene = new Scene();
+        renderer.setScene(scene);
         this.settings = settings;
         resMan = getResourceManager();
-        menuCam = new Camera(to!float(window.windowWidth)/window.windowHeight);
-        menuCam.setTranslation(0,10,0);
-        menuCam.moveRotation(0, -PI/2);
+        camera = new Camera(to!float(window.windowWidth)/window.windowHeight);
+        camera.setTranslation(0,10,0);
+        camera.moveRotation(0, -PI/2);
     }
 
     GameObject getTextObject(float x, float y, float height, string text) {
@@ -67,11 +70,13 @@ class Menu {
 
         GameObject selector = new GameObject(-9,0,0, -4,0,0.03);
 
-        ObjLoader objloader = new ObjLoader();
+        ObjLoader objloader = ResourceManager.getResourceManager.objLoader;
+        GameObject player = new GameObject(0,0,0,0);
         GameObject flagR = new GameObject(0,0,0,0);
         GameObject flagB = new GameObject(0,0,0,0);
         objloader.open("flag.obj", flagR);
         objloader.open("flag.obj", flagB);
+        objloader.open("Player.obj", player);
         flagR.x = 3;
         flagR.y = -2;
         flagR.rx = -PI/2;
@@ -82,19 +87,26 @@ class Menu {
         flagB.rx = PI/2;
         flagB.setColor(0,0,1);
         flagB.updateMatrix();
+        player.x = 5;
+        player.y = -2;
+        player.rx = -PI/2;
+        player.ry = -PI/2;
+        player.setColor(1,0,0);
+        player.updateMatrix();
 
-        renderer.setCamera(menuCam);
-        renderer.register(background);
-        renderer.register(title);
-        renderer.register(titleUnderline);
-        renderer.register(serverTxt);
-        renderer.register(clientTxt);
-        renderer.register(testTxt);
-        renderer.register(settingsTxt);
-        renderer.register(exitTxt);
-        renderer.register(selector);
-        renderer.register(flagR);
-        renderer.register(flagB);
+        scene.addPair(camera);
+        scene.addToPair(camera, background);
+        scene.addToPair(camera, title);
+        scene.addToPair(camera, titleUnderline);
+        scene.addToPair(camera, serverTxt);
+        scene.addToPair(camera, clientTxt);
+        scene.addToPair(camera, testTxt);
+        scene.addToPair(camera, settingsTxt);
+        scene.addToPair(camera, exitTxt);
+        scene.addToPair(camera, selector);
+        scene.addToPair(camera, flagR);
+        scene.addToPair(camera, flagB);
+        scene.addToPair(camera, player);
         
         SDL_Event event;
         bool continueMenu = true;
@@ -185,7 +197,7 @@ class Menu {
             renderer.draw();
         }
 
-        renderer.clearObjects();
+        scene.clearPair(camera);
 
         return settings;
     }
@@ -193,7 +205,7 @@ class Menu {
 
 string textEntry(float x, float y, float height, string prompt) {
         GameObject promptTxt = getTextObject(x,y,height,prompt);
-        renderer.register(promptTxt);
+        scene.addToPair(camera, promptTxt);
 
         SDL_Event event;
         bool continueEntry = true;
@@ -274,9 +286,9 @@ string textEntry(float x, float y, float height, string prompt) {
                         letterString ~= entryText[entryText.length-1];
                         float curX = (entryObjs.length ? entryObjs.back.rightx : promptTxt.rightx);
                         entryObjs ~= getTextObject(curX,y,height,letterString.dup);
-                        renderer.register(entryObjs.back);
+                        scene.addToPair(camera, entryObjs.back);
                     } else if (oldEntryText.length > entryText.length) {
-                        renderer.remove(entryObjs.back);
+                        scene.removeFromPair(camera, entryObjs.back);
                         entryObjs.removeBack();
                     }
                     //writeln(entryText);
@@ -286,9 +298,9 @@ string textEntry(float x, float y, float height, string prompt) {
 
             renderer.draw();
         }
-        renderer.remove(promptTxt);
+        scene.removeFromPair(camera, promptTxt);
         foreach (GameObject obj; entryObjs)
-            renderer.remove(obj);
+            scene.removeFromPair(camera, obj);
         return to!string(entryText);
     }
 }

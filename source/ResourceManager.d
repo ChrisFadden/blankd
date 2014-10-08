@@ -14,6 +14,7 @@ import derelict.sdl2.ttf;
 import ShaderProgram;
 import LoadWav;
 import Texture;
+import ObjLoader;
 
 static ResourceManager getResourceManager() {
     static ResourceManager instance;
@@ -30,6 +31,7 @@ class ResourceManager {
     //TTF_Font*[uint] fonts;
     SDL_Surface*[char] fontCharacters;
 	Texture[string] textures;
+    ObjLoader objLoader;
 
 	/*
 	** The other items like textures and sounds can go here too!
@@ -40,6 +42,7 @@ class ResourceManager {
 		shaders[true] = new ShaderProgram(true);
 		shaders[false] = new ShaderProgram(false);
         setupFont();
+        objLoader = new ObjLoader;
     }
 
 	~this()

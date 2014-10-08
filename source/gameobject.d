@@ -314,6 +314,33 @@ class GameObject {
         updateMatrix();
     }
 
+    void setPosition(float x, float y, float z){
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        updateMatrix();
+    }
+
+    void setRotation(Vector rotation){
+        this.rx = rotation.x;
+        this.ry = rotation.y;
+        this.rz = rotation.z;
+        updateMatrix();
+    }
+    void setRotation(float rx, float ry, float rz){
+        this.rx = rx;
+        this.ry = ry;
+        this.rz = rz;
+        updateMatrix();
+    }
+
+    void rotate(float rx, float ry, float rz){
+        this.rx += rx;
+        this.ry += ry;
+        this.rz += rz;
+        updateMatrix();
+    }
+
     void updateMatrix() {
         modelMatrix.setIdentity();
         modelMatrix.rotate(rx,ry,rz);
