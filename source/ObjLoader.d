@@ -12,6 +12,10 @@ class ObjLoader
 	void open(string fname, GameObject g)
 	{
 		File file = File(fname, "r");
+        g.ind.destroy();
+        g.verts.destroy();
+        g.norms.destroy();
+        g.texCords.destroy();
 
 		//String representation of verts, normals, texture coords, and face indices.
 		string[] v;

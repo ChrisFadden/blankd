@@ -1120,7 +1120,7 @@ class GameManager {
 			p.starty = p.y;
 			p.startz = p.z;
 			p.camera.setTranslation(p.x,p.y+p.eyeHeight,p.z);
-            p.loadPlayerModel();
+            //p.loadPlayerModel();
 			p.getGameObject.visible = true;
 			p.update();
 		}

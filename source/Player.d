@@ -55,7 +55,9 @@ class Player {
 		this.length = 1.2f;
 		this.height = 3.1f;
 		this.eyeHeight = 3.0f;
-        gameObj = new GameObject(-width/2, 0, length/2, width/2, height, -length/2);
+        //gameObj = new GameObject(-width/2, 0, length/2, width/2, height, -length/2);
+        gameObj = new GameObject(0,0,0,0);
+        ResourceManager.getResourceManager.objLoader.open("Player.obj", gameObj);
         gameObj.visible = false;
         writeln("Player has model: ", gameObj.hasModel);
         setTeam(team);
@@ -98,15 +100,6 @@ class Player {
 		oldy = y;
 		oldz = z;
 	}
-
-    void loadPlayerModel() {
-        writeln("Loading player model");
-        float oldR = gameObj.r;
-        float oldG = gameObj.g;
-        float oldB = gameObj.b;
-        ResourceManager.getResourceManager.objLoader.open("Player.obj", gameObj);
-        gameObj.setColor(oldR, oldG, oldB);
-    }
 
 	void spawn(){
 		gameObj.visible = true;
