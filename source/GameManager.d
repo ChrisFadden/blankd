@@ -660,7 +660,7 @@ class GameManager {
 				}
 				bool discon = false;
 				foreach (Player p; players) {
-					if (!readsocket(p.mySocket, &userDefined )){
+					if (!readsocket(p.mySocket, &hasEnoughData, &userDefined )){
 						p.getGameObject().visible = false;
 						p.active = false;
 						p.removed = true;
@@ -689,13 +689,65 @@ class GameManager {
 			
 		} else if (connectionType == ConnectionType.Client){
 			if (checkSockets() > 0){
-				if (!readsocket(getSocket(), &userDefined))
+				if (!readsocket(getSocket(), &hasEnoughData, &userDefined))
 					running = false;
 			}
 		}
 	}
 
-	static int userDefined(byte** array, TCPsocket socket, bool printMsg = false){
+	static int messageSize(byte MSG_ID){
+		switch (MSG_ID) {
+			case MSG_NEWBLOCK:
+				return 6*4+1+1;
+			case MSG_MYINFO:
+				return 1+2;
+			case MSG_NEWPLAYER:
+				return 1+2;
+			case MSG_DEATH:
+				return 2;
+			case MSG_RESPAWN:
+				return 2;
+			case MSG_SHOT:
+				if (connectionType == ConnectionType.Server){
+					return 1+1;
+				} else {
+					return 1;
+				}
+			case MSG_UPDATEXYZ:
+				return 1+1+(4*3);
+			case MSG_UPDATECAMERA:
+				return 1+1+(4*2);
+			case MSG_UPDATEMOVEMENT:
+				return 1+1+(4*2);
+			case MSG_JUMP:
+				return 1+1;
+			case MSG_BEGINBUILD:
+				return 1;
+			case MSG_BULLET:
+				return 1+1;
+			case MSG_FLAGRESET: // Reset flag to home
+				return 1+1;
+			case MSG_FLAGPICKUP: // Pickup flag
+				return 3;
+			case MSG_FLAGDROP: // Drop flag
+				return 2;
+			case MSG_FLAGSCORE: // Score
+				return 2;
+			case MSG_BEGINGAMEPLAY:
+				return 1;
+			case MSG_CLOSED:
+				return 1;
+			default:
+				return 1;
+		}
+	}
+
+	static bool hasEnoughData(byte** array, int bufferSize){
+		byte MSG_ID = peekbyte(array);
+		return messageSize(MSG_ID) <= bufferSize;
+	}
+
+	static int userDefined(byte** array, TCPsocket socket){
 		byte MSG_ID = readbyte(array);
 		//if (printMsg)
 		//	writeln("Secondary messages received: ", MSG_ID);
