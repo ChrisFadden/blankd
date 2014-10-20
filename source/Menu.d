@@ -47,9 +47,7 @@ class Menu {
     GameObject getTextObject(float x, float y, float height, string text) {
         float ratio;
         Texture textTex = resMan.getTextTexture(text.dup, &ratio);
-        //writeln("x ", x, " y: ", y, " width: ", ratio*height, " height: ", height);
         return new GameObject(x,y, ratio*height, -height, true, textTex);
-        //return new GameObject(-3,-3, 6, -3, true, textTex);
     }
 
     Settings run() {

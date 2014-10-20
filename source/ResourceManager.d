@@ -15,6 +15,7 @@ import ShaderProgram;
 import LoadWav;
 import Texture;
 import ObjLoader;
+import gameobject;
 
 static ResourceManager getResourceManager() {
     static ResourceManager instance;
@@ -124,4 +125,10 @@ class ResourceManager {
         }
         return new Texture(text, surface);
     }
+
 }
+    GameObject getTextObject(float x, float y, float height, string text) {
+        float ratio;
+        Texture textTex = getResourceManager().getTextTexture(text.dup, &ratio);
+        return new GameObject(x,y, ratio*height, -height, true, textTex);
+    }

@@ -94,7 +94,9 @@ class GameManager {
 
     static Player player;
     ObjLoader objloader;
+	static Camera guiCam;
     static GameObject death;
+    static GameObject scoreTxt;
     static bool isDead;
     GameObject g0;
     static ConnectionType connectionType;
@@ -112,19 +114,22 @@ class GameManager {
         scene = new Scene();
         scene.addPair(camera);
 
-        Camera guiCam = new Camera(to!float(window.windowWidth)/window.windowHeight);
-        guiCam.setTranslation(0,0,2);
+        guiCam = new Camera(to!float(window.windowWidth)/window.windowHeight);
+        guiCam.setTranslation(0,1,0);
+        guiCam.moveRotation(0, -PI/2);
+        scoreTxt = getTextObject(-0.5, -0.9, 0.2, "RED: 0 || BLUE 0");
+        //GameObject reticle = new GameObject(-.01,-.01,-.01, .01,.01,.01);
         GameObject reticle = new GameObject(-.01,-.01,-.01, .01,.01,.01);
-        reticle.z = 1;
-        reticle.visible = true;
+        reticle.y = 0;
         reticle.updateMatrix();
-        death = new GameObject(-10,-10,-0.1, 10,10,-0.1);
+        death = new GameObject(-10,-0.1,-10, 10,-0.1,10);
         death.visible = false;
         death.setColor(1.0,0.0,0.0,0.5f);
         death.updateMatrix();
         isDead = false;
 
         Array!(GameObject) tmpObjs;
+        tmpObjs ~= scoreTxt;
         tmpObjs ~= reticle;
         tmpObjs ~= death;
         scene.addPair(guiCam, tmpObjs);
@@ -1035,6 +1040,9 @@ class GameManager {
 		writeln("Score from team ", team == 1 ? "red": "blue");
 		score[team]++;
 		writeln("Score is RED ",score[1],", BLUE ",score[2]);
+        scene.removeFromPair(guiCam, scoreTxt);
+        scoreTxt = getTextObject(-0.5, -0.9, 0.2, "RED: " ~ to!string(score[1]) ~ " || BLUE "~ to!string(score[2]));
+        scene.addToPair(guiCam, scoreTxt);
 	}
 
 	static void beginBuildPhase(){
