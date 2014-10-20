@@ -8,20 +8,22 @@ immutable uint maxBufferSize = 512;
 byte writeBuffer[maxBufferSize] = 0;
 int bufferIndex;
 
+byte readBuffer[maxBufferSize] = 0;
+int readBufferSize = 0;
+
 SDLNet_SocketSet socketSet;
 TCPsocket socket;
 
 // Returns whether or not the socket is still connected
-bool readsocket(TCPsocket msocket, int function(byte**, TCPsocket, bool) func) {
+bool readsocket(TCPsocket msocket, bool function(byte**, int) canHandle, int function(byte**, TCPsocket) func) {
 	if (SDLNet_SocketReady(msocket)){
-		int len;
-		byte readBuffer[maxBufferSize];
-		if ((len = SDLNet_TCP_Recv(msocket, &readBuffer, maxBufferSize)) > 0) {
+		if ((readBufferSize += SDLNet_TCP_Recv(msocket, (&readBuffer) + readBufferSize, maxBufferSize)) > 0) {
 			byte* buf = cast(byte*)readBuffer;
-			bool print = false;
-			while (len > 0){
-				len -= func(&buf, msocket, print);
-				print = true;
+			while (readBufferSize > 0){
+				if (canHandle(&buf, readBufferSize))
+					readBufferSize -= func(&buf, msocket);
+				else
+					break;
 			}
 			return true;
 		} else {
@@ -31,6 +33,10 @@ bool readsocket(TCPsocket msocket, int function(byte**, TCPsocket, bool) func) {
 		}
 	}
 	return true;
+}
+
+byte peekbyte(byte** readBuffer){
+	return *readBuffer[0];
 }
 
 byte readbyte(byte** readBuffer){
